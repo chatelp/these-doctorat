@@ -1,0 +1,397 @@
+% These - Composition utile de services (LCP-nets)
+% (c) 2009-2010 Pierre CHATEL
+
+\section{Introduction}
+
+\lettrine{N}{ous avons} précédemment détaillé les étapes permettant d'implanter, dans le cadre d'une architecture (S)SOA, un niveau élevé d'agilité dans la composition de services, tout en minimisant son impact sur les performances des applications en tirant profit d'une séparation entre les moments statiques et dynamiques jalonnant le cycle de vie d'un processus métier. On cherche alors maintenant, non plus à préserver, mais à améliorer les performances de ces systèmes complexes tout au long de leur exécution. Cette amélioration passe ici par la prise en compte des préférences non-fonctionnelles des utilisateurs lors de l'ultime étape de composition: la sélection et l'invocation tardive d'un service. Cette prise en compte va permettre de maximiser l'\emph{utilité} de la liaison entre un processus et un service; et, ce faisant, d'améliorer la performance du processus dans son ensemble par une multitude d'optimisations locales à chaque site d'appel de service.
+
+Ce chapitre a donc pour vocation de poser les bases conceptuelles d'une composition \emph{utile} de services qui passe notamment par l'introduction d'un nouveau formalisme de préférences, celui des LCP-nets (``Linguistic CP-nets''), qui va permettre au programmeur d'un processus métier d'exprimer, \textit{a priori}, ses politiques de décision dans la liaison et l'utilisation des services physiques en fonction des valeurs de Qualité de Service effectives (ou ``courantes'') de ces derniers, obtenues lors de l'exécution du processus.
+
+Cependant, si les LCP-nets s'avèrent particulièrement adaptés au monde des SSOA, leur formalisme n'est, par nature, lié à aucun domaine de décision  multi-critères en particulier : c'est en ce sens que l'on peut qualifier le formalisme LCP-net de générique. Partageant la même philosophie, le mécanisme par lequel les préférences ainsi exprimées sont transformées et évaluées, peut lui aussi être mis à l'\oe{}uvre en dehors de ce contexte spécifique.
+
+En complément de cette \emph{généricité}, nous illustrerons aussi dans les sections suivantes la \emph{simplicité} d'utilisation du formalisme, telle que définie préalablement comme un des objectifs principaux de cette thèse. En effet, en l'absence dans notre contexte d'experts de l'élicitation de préférences, ce formalisme présentera la double caractéristique d'être d'une part qualitatif, par l'utilisation de concepts linguistiques, afin de gérer au mieux les imprécisions et incertitudes inhérentes à la modélisation de ce type de préférences, et d'autre part la capacité à exprimer les éventuelles mais potentielles contradictions entre plusieurs propriétés non-fonctionnelles offertes par un même service.
+
+Ce chapitre est organisé comme suit : dans un premier temps on introduit en~\ref{sec:Problématique d'une modélisation qualitative des préférences non-fonctionnelles} la problématique d'une modélisation qualitative des préférences non-fonctionnelles ainsi que la réponse qui y est apportée par le nouveau formalisme des LCP-nets que nous proposons dans la section~\ref{sec:Linguistic CP-nets (LCP-nets)}. S'en suit en~\ref{sec:De l'élicitation de LCP-nets à la sélection de services} une présentation détaillée des mécanismes que nous mettons actuellement en  \oe{}uvre, depuis l'élicitation de préférences jusqu'à la sélection de services. Nous nous efforcerons par ailleurs de mettre la présente approche en perspective tout au long de ce chapitre, en abordant l'intérêt d'un futur traitement entièrement linguistique des préférences, ainsi que son impact sur la démarche actuelle dans la section~\ref{sec:Vers un traitement entièrement linguistique des préférences}.
+
+% <-- JUCS 3 / Intro
+\section{Problématique d'une modélisation qualitative des préférences non-fonctionnelles\index{Approche qualitative|textbf}}
+\label{sec:Problématique d'une modélisation qualitative des préférences non-fonctionnelles}
+
+Nous avons choisi de fonder nos travaux de modélisation sur la famille *CP-nets de langages de représentation compacte de préférences qui ont été préalablement détaillés dans l'état de l'art de ce manuscrit (cf. section~\ref{sec:*CP-Nets}). Ce choix a été effectué car ces modèles offrent des avantages notables dans notre contexte applicatif, tels que leur facilité d'utilisation pour les modélisateurs (non-experts) de préférences, leur coût computationnel relativement faible, leur structuration robuste et leur potentiel manifeste en termes d'extensions pour le support de propriétés additionnelles qui pourraient s'avérer capitales vis-à-vis de notre contexte. D'autres formalismes ont été considérés, tels les réseaux GAI (cf. section~\ref{sec:Réseaux GAI}), mais ces approches, de par l'effort important sur l'étape d'élicitation ainsi que le coût en termes de raisonnement qu'elles impliquent, ne sont pas adaptées à notre contexte. \textit{A contrario}, les GAI-nets\index{Modélisation de préférences!GAI-nets} sont par contre particulièrement adaptées pour effectuer une discrimination sur une quantité très importante d'alternatives, ce qui n'est pas le cas ici.
+
+Cependant, les *CP-nets présentent deux limitations importantes pour l'approche dynamique de gestion de la Qualité de Service que nous souhaitons mettre en \oe{}uvre.
+
+Tout d'abord, la plupart des dimensions de QoS que nous sommes amenées à manipuler sont définies sur des domaines continus de valeurs numériques, mais la famille des *CP-nets dans son ensemble, que ce soient les CP-nets, UCP-nets ou TPC-nets, ne sait traiter que le cas discret des domaines finis de variables. \emph{Nous proposons alors d'effectuer une discrétisation systématique (un partitionnement flou) des domaines continus, par l'utilisation de termes linguistiques flous~\cite{zad75}, au lieu d'ensembles précis} (``crisp sets'', au sens de la théorie des ensembles\index{Théorie!des ensembles}). Cette approche évite d'ériger des barrières très strictes et artificielles entre les valeurs des domaines en permettant un passage lissé d'une classe de valeurs à une autre, et en permettant d'indiquer les imprécisions dans la détermination de ces classes. Par ailleurs, cette démarche évite la perte d'information liée à la discrétisation puisqu'il s'agit de conserver un intervalle continu pour les calculs bas niveau d'inférence, mais de faire apparaître au plus haut niveau (de l'utilisateur final) les termes linguistiques associés aux classes.
+
+C'est pourquoi, dans un contexte où les utilisateurs doivent exprimer leurs préférences entre des valeurs de domaines continues, la nature qualitative des ensembles flous, disposant de transitions progressives, s'est révélée capable de mieux capturer leur intention. Par conséquent, cette approche devrait aussi permettre une sélection plus \emph{utile} entre les services lorsqu'ils disposent à un instant donné de propriétés de QoS aux valeurs relativement proches, en évitant de mettre de grandes différences artificielles de préférence entre ces services qui offrent des caractéristiques non-fonctionnelles qu'on pourrait considérer, toutes proportions gardées, comme étant globalement similaires.
+
+Un autre écueil propre aux *CP-nets est que l'obtention de valeurs \emph{précises} d'utilité de la part d'utilisateurs non-spécialistes des domaines considérés est vouée à l'échec, ou pire, induit le recueil d'informations involontairement erronées. En effet, pour ces utilisateur, donner un nombre particulièrement précis pour exprimer une perception (ou une préférence dans notre cas de figure) n'est pas toujours possible~\cite{zad75,deg88,Her00a,Tru06}. Face à cette problématique, les *CP-nets fournissent seulement deux alternatives.
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item D'un côté, le modèle CP-net\index{CP-net}\index{Modélisation de préférences!CP-net} de base permet l'expression de préférences rudimentaires, bien qu'intuitives, \textit{via} l'établissement d'une simple relation d'ordre directement entre variables discrètes de Qualité de Service, évacuant ainsi la notion même d'une quantification de l'utilité des services. Il souffre cependant de faibles performances lors de la comparaison de deux affectations.
+\item De l'autre, le modèle UCP-net\index{UCP-net}\index{Modélisation de préférences!UCP-net} permet d'effectuer efficacement ces comparaison d'affectations, mais contraint pour cela l'utilisateur à définir préalablement des valeurs numériques précises d'utilité pour les services. Valeurs dont l'obtention, comme nous l'avons précédemment établi, est particulièrement problématique par rapport à une simple relation d'ordre.
+\end{itemize}
+
+Prises séparément, aucune de ces deux approches n'est satisfaisante dans notre contexte. De plus, elles ne sont adaptées qu'au cas discret, car la définition d'une relation d'ordre sur des ensembles continus de QoS ne peut se faire par de simples tables; ce qui conforte notre première proposition de partitionnement flou des domaines de définition des valeurs QoS. \emph{Une seconde proposition de cette thèse est alors de conserver la notion d'utilité tout en étendant l'approche qualitative à l'expression de ses valeurs}, et donc de ne pas cantonner son application aux dimensions de QoS.
+
+Par ailleurs, nous faisons reposer la comparaison entre les affectations de préférences sur celle de leurs valeurs globales d'utilité, analogues à celles promues par les UCP-nets, mais qui seront dorénavant calculées par la logique floue et des outils d'agrégation adaptés.
+
+
+\section{Linguistic CP-nets (LCP-nets)}
+\label{sec:Linguistic CP-nets (LCP-nets)}
+
+Nous avançons ici une nouvelle déclinaison des CP-nets, appelée LCP-nets\index{LCP-net|textbf}\index{Modélisation de préférences!LCP-net|textbf} (``Linguistic Conditional Preference networks'')~\cite{Chatel2008, Chatel2010a}, dans le but de bénéficier d'un mariage entre :
+
+\begin{itemize}
+\item \emph{l'approche linguistique} (cf. section~\ref{sec:De l'approche linguistique pour raisonner}), mise en \oe{}uvre au travers d'une modélisation floue des concepts (cf. section~\ref{sec:Modélisation floue des concepts});
+\item \emph{l'approche graphique}, promue par les *CP-nets (cf. section~\ref{sec:*CP-Nets});
+\item \emph{certaines propriétés propres aux UCP-nets et aux TCP-nets}, telles la possibilité d'évaluer l'utilité d'une affectation ou celle d'exprimer des compromis.
+\end{itemize}
+
+En réponse à la problématique d'une modélisation qualitative des préférences non-fonctionnelles, les LCP-net réalisent l'application d'une approche linguistique floue, de manière à obtenir un modèle qualitatif\index{Approche qualitative} unifié pour l'expression de préférences. Conceptuellement, ils permettent ainsi de définir, par un ensemble fini de règles exprimées dans leurs tables, une relation d'ordre sur des ensembles continus.
+
+Comparativement aux précédents modèles *CP-nets~\cite{Bou04, Bou01, Bra02}, ce nouveau formalisme permet la modélisation sous forme graphique de déclarations plus qualitatives que l'on pourrait retranscrire par exemple par \emph{``Je préfère une valeur \emph{approchant} $V_1$ à \emph{exactement} $V_2$ pour la propriété $X$, si une autre propriété $Y$ vaut \emph{approximativement} $V_Y$ et $Z$ vaut \emph{un peu plus que} $V_Z$''}. De plus, ces déclarations, que l'on peut assimiler à des règles floues élaborées, sont interprétées dans un contexte où la préférence sur $X$ doit prendre en compte toute autre déclaration qui s'applique à la valeur de $Y$.
+
+Comparativement aux modèles linguistiques existants pour la modélisation de préférences\\~\cite{herrera2009computing, wu2007aggregation, tong1980linguistic, yager1981new, buckley1984multiple, shendrik1986approach}, les LCP-nets sont conditionnels (la préférence entre les alternatives peut maintenant dépendre d'un facteur externe) et graphiques, ils permettent donc d'exprimer des préférences plus complexes et moins ambiguës que sous la forme de phrases.
+
+\subsection{Un ensemble de contraintes à prendre en compte}
+
+Les contraintes et propriétés particulières du contexte SSOA ont dû être intégrées lors de la conception des LCP-nets. On note tout particulièrement que :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item \emph{les préférences doivent être simples à définir} puisque, dans les contraintes qui s'imposent à nous, les programmeurs de processus métiers ne peuvent pas s'appuyer sur des experts de modélisation de préférence, ni ne disposent de beaucoup de ressources à allouer pour leur élicitation. Ce qui implique qu'un certain degré d'imprécision doit être toléré dans les modèles de préférences;
+\item \emph{les problèmes à traiter ne font habituellement usage que de peu de variables} (de l'ordre de 10 variables). 
+\item dans ce contexte, \emph{le temps de calcul pour la prise de décision fondée sur les préférences est une contrainte faible}, dans la mesure où celui-ci reste reste relativement faible par rapport au délai de l'invocation subséquente de service \textit{via} le réseau.
+\end{itemize}
+
+Elles nous amènent à développer les caractéristiques suivantes de notre formalisme de préférence : il est \emph{graphique} pour faciliter leur définition sans déraisonnablement compromettre leur calcul, puisque les modèles LCP-nets sont bien plus commodes à établir que de devoir écrire plusieurs ensembles de règles floues potentiellement interdépendantes, et il est \emph{qualitatif} de manière à faire face à l'imprécision de l'utilisateur ou des valeurs remontées par les sondes.
+
+Pour répondre à cette dernière caractéristique, des variables linguistiques~\cite{zad75}, ont été incorporées dans les LCP-nets, la sémantique de chacune d'entre elles étant donné par un ensemble flou. Par conséquent, les modeleurs de préférence peuvent manipuler facilement des termes linguistiques pré-existant durant l'élicitation. Par ailleurs, comme dans tout modèle graphique, les LCP-nets possèdent des n\oe{}uds qui correspondent aux variables du problème et dont les domaines continus sont discrétisés sous forme d'ensembles de termes linguistiques. Dans le contexte des SSOA, ces variables correspondent alors aux propriétés non-fonctionnelles des services.
+
+En résumé, les LCP-nets permettent aux utilisateurs d'exprimer des compromis entre les variables par l'utilisation d'\textit{i-arcs} ou \textit{ci-arcs} hérités des TCP-nets, possèdent des tables CPTs similaires à celles des UCP-nets, mais expriment les utilités avec des termes linguistiques plutôt qu'avec des valeurs numériques. Il est ainsi possible avec les LCP-nets :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item d'éliciter les affectations préférées pour un domaine spécifique de QoS (ou plusieurs domaines interdépendants), par l'utilisation de CPTs similaires à celles des UCP-nets~\cite{Bou01};
+\item de révéler l'importance relative des propriétés non-fonctionnelles, par l'utilisation d'arcs hérités des CP-nets;
+\item d'indiquer les compromis entre propriétés non-fonctionnelles, par l'utilisation d'i-arcs et ci-arcs hérités des TCP-nets~\cite{Bra02}.
+\end{itemize}
+
+\subsection{Cas d'utilisation et LCP-nets}
+\label{sec:Cas d'utilisation et LCP-nets}
+
+Le cas d'utilisation en lutte anti-incendie précédemment détaillé (cf. chapitre~\ref{ch:cas_utilisation}), fait état de préférences distinctes sur la sélection de drones de surveillance, de personnels au sol et de camions citerne de pompiers. Ces préférences, préalablement définies de manière textuelle (par exemple sur les camions, ``on souhaite obtenir les meilleurs valeurs de vitesse et de réserve de carburant''), vont être maintenant modélisées sous forme de LCP-nets, de la manière la plus simple qui soit. Les domaines de QoS et d'utilité considérés ont subi au préalable un partitionnement flou et les termes linguistiques utilisés dans les tables de préférences ($B_L$, $R_H$, \textit{low}, \textit{very high}, etc.) obtenus.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/lcpnet_drones.pdf}
+    \caption{Préférences sur la QoS d'un drone d'imagerie aérienne.}
+    \label{fig:lcpnet_drones}
+  \end{center}
+\end{figure}
+
+Les propriétés graphiques et qualitatives du formalisme, mentionnées dans la section précédente, sont ainsi tout d'abord illustrées dans la figure~\ref{fig:lcpnet_drones}, où la préférence d'un utilisateur pour le choix d'un drone d'imagerie aérienne est explicitée. Le but global de l'utilisateur, influencé par les pratiques courantes en gestion de crise environnementale, est d'obtenir les images le plus rapidement possible, de manière à pouvoir prendre une décision d'action au plus vite : en effet, des vies sont probablement en jeu. L'obtention de ce but sera alors notamment favorisée par une préférence d'optimisation de la bande passante au détriment du niveau de sécurité offert pour le transfert des données. Cet objectif est donc traduit en termes de préférences établies en fonction des trois propriétés de Qualité de Service supervisées sur les services : la sécurité ($S$), la bande-passante ($B$) et la résolution de l'image transmise ($R$). A la lecture des préférences, on peut ainsi constater que l'utilisateur va toujours préférer la bande passante à la sécurité, et si la bande passante est faible, il va favoriser des images de faible résolution de manière à les obtenir en minimisant la latence.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=70mm]{figures/lcpnet_personnels.pdf}
+    \caption{Préférences sur la QoS d'un personnel au sol.}
+    \label{fig:lcpnet_personnels}
+  \end{center}
+\end{figure}
+
+De la même manière, la retranscription compacte sous forme de LCP-net des préférences en termes de personnel au sol (qu'il s'agisse de pompiers ou de gendarmes) et illustrée par la figure~\ref{fig:lcpnet_personnels}. Les deux propriétés de QoS considérées sont la résistance au feu ($R$) et la fatigue physique ($F$). La préférence inconditionnelle relative de la résistance au feu par rapport à la fatigue physique est matérialisée par un i-arc tendu du n\oe{}ud $R$ au n\oe{}ud $F$ (représenté graphiquement par un arc avec un triangle noir en son milieu).
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=150mm]{figures/lcpnet_camions.pdf}
+    \caption{Préférences sur la QoS d'un camion citerne d'intervention anti-incendies.}
+    \label{fig:lcpnet_camions}
+  \end{center}
+\end{figure}
+
+Pour finir, le LCP-net correspondant à la description textuelle des préférences sur un camion citerne d'intervention anti-incendies est représenté dans la figure~\ref{fig:lcpnet_camions}. Contrairement aux deux modèles précédents, il apporte cependant une précision supplémentaire en effectuant une généralisation de la préférence exprimée. La description textuelle faisait en effet état d'une préférence inconditionnelle de la vitesse de déplacement ($V$) et de la réserve en carburant ($C$) par rapport à la contenance en eau ($E$), cette préférence étant dictée par l'ampleur importante de la crise considérée. Dans ce LCP-net, on intègre la notion d'ampleur sous forme d'un n\oe{}ud $A$, au même titre qu'une dimension classique de QoS, or il s'agit ici d'une \emph{donnée contextuelle} obtenue hors du champs des services. Cet exemple ne fait alors qu'appuyer sur le caractère particulièrement flexible du formalisme LCP-net qui n'est aucunement limité à la seule intégration de dimensions de QoS dans un contexte SOA. Ce n\oe{}ud $A$ est lié à un ci-arc tendu entre $V$ et $E$ et un autre entre $C$ et $E$, les tables qui y sont rattachées indiquent le sens effectif des relations en fonction de la valeur de $A$ ($A_L$ indique une faible ampleur, et $A_H$ une grande ampleur). Ces deux préférences conditionnelles vont donc dépendre de l'ampleur du sinistre : 
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item s'il s'agit bien d'un sinistre de grande ampleur, les deux ci-arcs sont équivalents des i-arcs accordant une prédominance $V$ et $C$ sur $E$ (on cherche à favoriser l'agilité et l'autonomie des camions); 
+\item dans le cas contraire, c'est la capacité d'extinction qui sera mise en avant via le n\oe{}ud $E$ prédominant sur $V$ et $C$. 
+\end{itemize}
+
+\subsection{Sérialisation XML}
+
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Sérialisation XML du modèle de préférences., label=listing:imaging_service_preference.lcpnet]{sources/imaging_service_preference.lcpnet}
+
+Enfin, tel que nous le verrons au chapitre~\ref{ch:implantation}, une implantation du langage LCP-net a été réalisée grâce au canevas EMF (``Eclipse Modeling Framework''). Le choix d'une sérialisation des modèles graphiques sous forme de fichier XML, facilitée par EMF, s'est alors imposé comme le prolongement naturel des formats couramment rencontrés dans les technologies SSOA. Ainsi, une fois les outils graphiques disponibles utilisés pour spécifier le LCP-net présenté à la figure~\ref{fig:lcpnet_drones}, le fichier suivant au format XML est obtenu par sérialisation (cf. code~\ref{listing:imaging_service_preference.lcpnet}). Il présente de manière intelligible l'ensemble des informations nécessaires à l'interprétation du modèle de préférences $ImagingServicePreference$, de la spécification des partitionnements flous des domaines aux tables de préférences conditionnelles. Seules les nombreuses expressions XPath~\cite{clark1999xml} en compliquent légèrement la lecture car elles introduisent des indirections (par exemple \textit{ linguisticValue="//@valueDomains.0/@subsets.0"} qui désignent le premier terme linguistique du partitionnement du domaine \textit{Security} : il s'agit de \textit{Security\_None}). 
+
+
+\section{De l'élicitation de LCP-nets à la sélection de services}
+\label{sec:De l'élicitation de LCP-nets à la sélection de services}
+
+Les sections suivantes regroupent l'ensemble des étapes effectuées en séquence afin de réaliser la prise de décision de liaison, entre un processus métier et un service, fondée sur les préférences LCP-nets et valeurs courantes de QoS. Cette prise de décision dirigée par les préférences des utilisateurs constitue le c\oe{}ur de notre approche pour la composition utile de services\index{Composition de services!b@utile|textbf}.
+
+Ainsi, l'un des aspects principaux des LCP-nets réside dans la transposition qui est effectuée, lors de leur compilation, entre un modèle graphique à destination des utilisateurs qui est fondé sur une combinaison des *CP-nets et de l'approche linguistique floue, et une représentation ``interne'' plus adaptée à la prise de décision sur les préférences. En particulier, les différentes tables d'un LCP-net sont traduites en autant de Systèmes d'Inférence Floue (``Fuzzy Inference System'' ou FIS)~\cite{jang1993anfis} sur lesquels sera effectué le raisonnement logique. En fait, les tables d'un LCP-net ne sont qu'une des représentations possibles d'un FIS. 
+
+L'évaluation d'un LCP-net est donc fondée sur celle des FIS qui lui sont attribués, en utilisant le canevas théorique de la logique floue. La transposition du système initial de représentation permet d'obtenir un niveau de flexibilité, lors de l'évaluation des préférences, comparable à celui disponible lors de leur élicitation. Par exemple, lors de l'évaluation d'un LCP-net, ses valeurs d'entrée peuvent aussi bien être fournies de manière précise ou floue, malgré le strict usage de termes linguistiques (et donc flous) dans ses tables de préférences conditionnelles.
+
+\subsection{Elicitation des préférences}
+
+Tel qu'indiqué précédemment, l'établissement des réseaux de préférences est effectué avant l'exécution du système : un LCP-net ainsi élicité va cependant être en mesure de diriger la sélection des services candidats en fonction de leurs valeurs courantes de QoS à l'exécution. Cette capacité permet ainsi aux utilisateurs d'adapter a priori l'orchestration de services à chaque contexte de déploiement.
+
+Par exemple, afin d'implanter un unique processus de lutte anti-incendie, la sélection dynamique de services peut être ajustée avant exécution en fonction de deux contextes usuels de déploiement auxquels correspondent des LCP-nets distincts : les feux courants d'origine civile, ou la gestion de crises environnementales à plus grande échelle dans laquelle le processus de lutte anti-incendie ne constitue qu'une sous-partie d'un plus grand ensemble de moyens déployés sur le théâtre des opérations. Dans ce dernier cas, des délais d'intervention plus courts pourraient être préférés à un meilleur niveau d'équipement, le théâtre des opérations étant par nature relativement éloigné.
+
+On retrouve cette volonté d'optimisation des délais de décision, et donc d'intervention, dans le modèle de préférences précédemment introduit pour la sélection d'un drone d'imagerie aérienne (cf. figure~\ref{fig:lcpnet_drones}). Ce modèle spécifique nous servira alors à illustrer des concepts présentés dans les sections suivantes. Dans ce LCP-net, la sécurité est donnée comme nulle ($S_{none}$) ou complète ($S_{full}$), lui est alors attribuée respectivement une valeur d'utilité très faible (\textit{very low}) ou très élevée (\textit{very high}). La préférence inconditionnelle relative de la bande passante par rapport à la sécurité est matérialisée par un i-arc tendu du n\oe{}ud $B$ au n\oe{}ud $S$. La bande passante est quant à elle partitionnée en trois variables linguistiques $B_L$ (bande passante faible), $B_M$ (bande passante moyenne) et $B_H$ (bande passante élevée) qui couvrent l'ensemble de son domaine de définition. La préférence établie entre ces valeurs est donnée par la CPT attachée au n\oe{}ud $B$ : elle exprime ainsi une préférence très faible (\textit{very low}) pour une bande passante faible, moyenne (\textit{medium}) pour une bande passante évaluée elle aussi comme moyenne, et finalement très élevée (\textit{very high}) pour une bande passante élevée.
+
+La résolution est elle aussi partitionnée par l'utilisation de deux variables linguistiques: $R_L$ (résolution faible) et $R_H$ (résolution haute). La préférence entre ces valeurs est par contre conditionnée par celle prise par la bande passante : cette préférence conditionnelle est figurée par un cp-arc établi entre les n\oe{}uds $B$ et $R$. Ainsi, si la bande passante est faible, une résolution faible est fortement préférée; si la bande passante est moyenne, la résolution moyenne dispose d'une plus grande utilité; et si la bande passante est élevée, une résolution élevée est fortement préférée.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=1.00\textwidth]{figures/lcpnet_fuzzy_subsets.pdf}
+    \caption{\label{fig:lcpnet_fuzzy_subsets}Partitionnements flous de
+      la \textit{bande passante}, \textit{résolution}, \textit{sécurité} et \textit{utilité}.}
+  \end{center}
+\end{figure} 
+
+La sémantique des termes linguistiques utilisés dans les tables de préférences, que ce soit sur la sécurité, la bande passante ou la résolution d'image, est donnée au préalable par le partitionnement flou indiqué dans la figure~\ref{fig:lcpnet_fuzzy_subsets}. A l'issue de ce partitionnement flou, de multiples sous-ensembles flous sont obtenues ($B_L$, $R_H$, \textit{low}, \textit{very high}, etc.).
+
+Après élicitation, un modèle de préférences est donc obtenu dans son intégralité. Dans le modèle spécifique que nous avons précédemment figuré, et qui servira de base pour l'illustration des prochaines étapes menant à une prise de décision de liaison entre processus et service, nous avons pu voir que la bande passante est toujours préférée à la sécurité par l'utilisateur, et que si la bande passante est faible, des images de basse résolution sont préférées car il souhaite que les images soient obtenues le plus rapidement possible.
+
+\subsection{Traduction des préférences}
+\label{sec:Traduction des préférences}
+
+Par une utilisation habile des outils mis à notre disposition dans le domaine de la logique floue, il est possible de traduire automatiquement les modèles graphiques de préférence LCP-net précédemment élicités vers une représentation bien plus adaptée pour mener une prise de décision efficace lors de l'exécution du système.
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Pseudo-code de l'algorithme de traduction de CPT., label=listing:lcpnet_traduction_pseudocode]{sources/lcpnet_traduction_pseudocode.txt}
+
+Cette utilisation se traduit par la mise au point d'un algorithme permettant d'obtenir de manière automatique les ensemble de règles floues des FIS qui correspondent à chaque table d'utilité d'un modèle :  les FIS ainsi obtenus sont ``locaux'' aux n\oe{}uds du réseau auxquels ils sont rattachés, et sont donc intimement liés chacune de leurs dimensions de QoS. Il s'agit d'un procédé semblable à celui utilisé que dans le domaine du contrôle flou~\cite{Drian93, castro1995fuzzy}. A l'exécution, les entrées de ces FIS fraîchement obtenus pourront être des valeurs précises (et donc numériques) ou floues (par exemple sous forme de sous-ensembles flous), obtenues des services supervisés. Le pseudo-code de cet algorithme de traduction est donné par l'extrait de code~\ref{listing:lcpnet_traduction_pseudocode}.
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=FIS obtenu par traduction du n\oe{}ud $R$., label=listing:Rnode_FIS]{sources/Rnode_FIS.fcl}
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=FIS obtenu par traduction du n\oe{}ud $B$., label=listing:Bnode_FIS]{sources/Bnode_FIS.fcl}
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=FIS obtenu par traduction du n\oe{}ud $S$., label=listing:Snode_FIS]{sources/Snode_FIS.fcl}
+
+%Jacques : Attention à la redite avec le chapitre sur l'implem
+Le même processus de traduction peut être appliqué à tous les n\oe{}uds du modèle, qu'ils soient conditionnels ou non. Ainsi, à partir des CPT rattachés aux n\oe{}uds $R$, $B$, $S$ et des partitionnements flous des domaines de \textit{résolution}, \textit{bande passante}, \textit{sécurité} et \textit{utilité}, nous obtenons un FIS spécifique pour chaque n\oe{}ud après application de notre algorithme (cf. codes~\ref{listing:Rnode_FIS},~\ref{listing:Bnode_FIS} et~\ref{listing:Snode_FIS}) : ces FIS sont ici représentés dans le langage FCL~\cite{IEC01} utilisé en interne par notre canevas de décision sur LCP-nets dont l'implantation sera présenté au chapitre~\ref{ch:implantation}.
+
+% Pierre 09/02/10 : on enlève le paragraphe ci dessous suite à une remarque d'Isis qui suggère que l'on pointe trop vers une limitation de l'implem (tout est crisp en interne et il faut fuzzifier/defuzzifier en permanence)
+
+%Les variables d'entrée ($R$, $B$, $S$) et de sortie ($Utility$) de ces FIS sont dans le cas présent fixées comme étant de type réel (\textit{i.e.} valeurs précises, ou ``crisp'', seulement). Si une valeur floue de résolution, de bande passante ou de sécurité est soumise lors de l'évaluation du système d'inférence floue, elle devra donc être préalablement \textit{defuzzifiée}. De même, une valeur de sortie linguistique en termes d'utilité pourrait être obtenue par le processus inverse.
+
+\subsection{Evaluation des préférences}
+\label{sec:Evaluation des préférences}
+
+Suite à la traduction préalable d'un modèle de préférences vers un mode de représentation plus adapté pour mener à bien la prise de décision, son évaluation peut être effectuée lorsque les données d'entrée nécessaires sont disponibles. Cette évaluation est scindée, ci-dessous, en quatre étapes clés permettant d'obtenir l'utilité de chaque service supervisé à partir de ses valeurs courantes de QoS : l'\emph{injection des valeurs de QoS des services}, l'\emph{inférence des utilités locales pour chaque service}, et finalement le \emph{calcul de l'utilité globale de chaque service}, assisté par le \emph{calcul du poids des n\oe{}uds} des préférences.
+
+% Afin de rester bref, nous nous attacherons cette fois tout
+% particulièrement aux valeurs prises par le n\oe{}ud $B$ représentant la
+% bande passante offerte par les services supervisés. Par ailleurs,
+% ces valeurs doivent être prisent en compte pour mener à bien
+% l'évaluation de $R$ : ceci est due à la présence d'un arc entre $B$
+% et $R$ dans le modèle graphique de préférence, et au fait que la CPT
+% rattachée au n\oe{}ud $R$ utilise les valeurs prisent par $B$ comme
+% entrées.
+
+Par ailleurs, si le concept de liaison tardive précédemment présenté dans le chapitre~\ref{ch:Composition active de services} suppose que l'injection des valeurs est effectuée dynamiquement au cours de l'orchestration de services sur la base de la QoS courante des services, le principe d'évaluation des préférences ici-présenté est indépendant de cette mise en \oe{}uvre particulière. En tant que telle, l'injection des valeurs peut avoir lieu à tout moment après la traduction des préférences.
+
+\subsubsection{Injection des valeurs de QoS des services}
+
+La première étape de l'évaluation des préférences se concrétise lorsque de multiples valeurs de Qualité de Service obtenues à partir d'un canevas externe de supervision, tel qu'abordé dans le chapitre~\ref{ch:Composition active de services}, sont injectées dans l'ensemble de FIS obtenu par traduction d'un modèle de préférences, dans le but ultime d'obtenir une quantification de l'utilité globale de chaque service candidat en sortie.
+
+Ces valeurs peuvent être de deux types : valeurs précises de QoS \emph{que l'on normalise sur l'échelle [0,1]}, ou valeurs floues qui peuvent nécessiter des ``ajustements'' \textit{via} une normalisation de domaine.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=60mm]{figures/lcpnet_bandwidth_subset.pdf}
+  \caption{Valeur précise de bande passante, sous forme de singleton.}
+  \label{fig:lcpnet_bandwidth_subset}
+\end{figure}
+
+Pour l'exemple qui nous sert de fil conducteur, nous nous focalisons sur l'offre non-fonctionnelle courante d'un service $S_1$ dans le but d'obtenir son utilité globale, un processus similaire pouvant être appliqué à tout autre service offrant les mêmes dimensions de QoS . A un instant $t$ les valeurs ($B'$, $S_{full}$, $R'$) ont été mesurées pour ce service, ce triplet constitue l'offre non-fonctionnelle \emph{courante} du service.
+
+$B'$ correspond à une valeur précise de bande passante évaluée à 30 Ko/s, cette valeur est ensuite normalisée sur [0,1] en 0.30. Si on se rapporte au partitionnement flou du domaine de la bande passante, on voit que $B'$ peut alors être représentée comme un singleton qui intersecte les sous-ensembles flous $B_L$ et $B_M$, tel que dépeint sur la figure~\ref{fig:lcpnet_bandwidth_subset}.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=130mm]{figures/lcpnet_resolution_subset.pdf}
+  \caption{Valeur floue de résolution, sous forme de SEF ajusté au domaine.}
+  \label{fig:lcpnet_resolution_subset}
+\end{figure}
+
+$R'$ correspond à une valeur floue de résolution qui doit d'abord être ``ajustée'' par une normalisation de domaine sur l'échelle [0,1], tel que représenté sur la figure~\ref{fig:lcpnet_resolution_subset}, avant son injection dans le système.
+%Pierre 25/02/10 : on déplace vers le chapitre d'implantation
+%Le SEF ajusté sera ensuite défuzzifié pour injection dans le moteur d'inférence. Si on choisit le calcul du centre de gravité du SEF comme méthode de défuzzification, la valeur obtenue sera $R'=0.5$
+
+%En tout état de cause, puisque $B$, $R$ et $S$ sont déclarées comme des variables réelles dans les trois FIS générés, toute entrée floue devra être defuzzifiée lors de son injection.
+
+\subsubsection{Inférence des utilités locales pour chaque service}
+
+Une fois les valeurs de QoS injectées, l'inférence des utilités locales à chaque n\oe{}ud du modèle peut être effectuée. Cette inférence est ici réalisée par le biais du Modus Ponens Généralisé (cf. section~\ref{sec:Raisonnement flou}).
+
+\begin{figure}[h]
+  \centering \includegraphics[width=130mm]{figures/lcpnet_fuzzy_inference.pdf}
+  \caption{Inférence floue, de la bande passante mesurée à l'utilité locale de $B$.}
+  \label{fig:lcpnet_fuzzy_inference}
+\end{figure}
+
+Puisque nous disposons d'une valeur $B'$ de bande passante, il est possible de continuer à dérouler notre exemple en vue d'obtenir l'utilité locale du n\oe{}ud B. En effet, comme son FIS nous l'indique, seul une entrée pour la variable B est requise, la préférence sur la bande passante n'étant définie conditionnellement à aucune autre propriété de Qualité de Service.
+
+Une trace visuelle du processus d'inférence floue réalisée par le biais du MPG, sur la base des informations et paramètres fournis par le FIS et la valeur $B'$, est donnée sur la figure~\ref{fig:lcpnet_fuzzy_inference}. Cette inférence utilise l'implication de Mamdani~\cite{mamdani1975experiment} et la T-Norme de Zadeh comme opérateurs flous. La figure montre que les deux points d'intersection du singleton $B'$ avec les sous-ensembles flous $B_L$ et $B_M$ du domaine d'entrée sont projetés sur les SEF correspondants du domaine de sortie, tel qu'indiqué dans les règles obtenues par traduction de la table du n\oe{}ud $B$, et ce dans le but d'obtenir un nouveau sous-ensemble flou (représenté par la forme géométrique grise) qui sera defuzzifié en calculant son centre de gravité ($CdG$). La valeur d'utilité locale 0.35 sur l'échelle [0,1] est alors obtenue en sortie du processus d'inférence. Si on souhaite obtenir un mot en sortie au lieu d'une valeur numérique, et cela sans perte de précision, il est possible d'utiliser un formalisme à base de 2-tuple (cf. section~\ref{sec:Formalismes à base de 2-tuples}).  Le même processus sera appliqué pour $R$ et $S$ à partir de l'offre non fonctionnelle de $S_1$ dans le but d'obtenir leurs utilités locales respectives.
+
+Tels que nous les voyons ici, les opérateurs d'inférence floue que nous avons mis en \oe{}uvre pour procéder à l'obtention des utilités locales sont prédéterminés. Cependant, un certain niveau de contrôle sur le choix de ces opérateurs pourrait être donné aux utilisateurs, en fonction de leur rôle dans le système, dans l'optique de permettre l'adaptation du processus d'inférence à chaque contexte spécifique de déploiement des préférences (par exemple au niveau de sa performance ou de sa précision). Il faut cependant disposer d'un solide niveau de connaissance sur les différents opérateurs existants pour réaliser un choix éclairé.
+
+Par ailleurs, si le mécanisme d'inférence ici-présenté consomme des valeurs numériques précises et produit des utilités locales sous forme réelle, une alternative serait d'effectuer une inférence linguistique ``de bout en bout'' : un processus entièrement linguistique pourrait en effet être en adéquation plus fine avec les intentions initiales de l'utilisateur qui ont été, rappelons le, retranscrites de manière linguistique lors de l'expression des LCP-nets. Les 2-tuples précédemment introduits dans la section~\ref{sec:De l'approche linguistique pour raisonner} permettent justement un traitement automatique des déclarations linguistiques théoriquement sans perte d'information. Si l'on considère alors les valeurs des propriétés de QoS des services comme fournies sous la forme de 2-tuples, un mécanisme \textit{ad hoc} d'inférence~\cite{Alc07} pourrait être étudié et implanté. Il nécessiterait notamment l'utilisation de plusieurs opérateurs spécifiques d'agrégation linguistique~\cite{Xu07}, fondés sur les opérateurs OWA de Yager~\cite{Yag88}. Cette alternative ne sera pas présentée dans le cadre de ce manuscrit de thèse. 
+%De surcroît, le choix de l'opérateur d'agrégation le plus approprié, qu'il soit linguistique ou non, s'est révélé comme directement dépendant du contexte d'application et doit faire l'objet d'une étude dédiée systématique.
+
+\subsubsection{Calcul de l'utilité globale de chaque service}
+
+Pour finir, au cours du calcul de l'utilité globale d'un service, l'agrégation des multiples utilités locales précédemment inférées est effectuée. Cependant, il est nécessaire de prendre en compte le fait que les arcs dans les modèles de préférences originels indiquent l'importance relative des n\oe{}uds (et donc des propriétés de QoS) qu'ils interconnectent. Cette importance relative implicite doit ainsi être répercutée sur chaque utilité locale pour l'obtention de l'utilité globale d'un service. Par exemple, dans notre précédent modèle, la bande passante est plus importante que la sécurité et la résolution, car elle se situe au ``sommet'' du graphe de préférence. $S$ et $R$ partagent quant à eux le même degré d'importance car ils sont situés à la même profondeur dans le graphe.
+
+Par ailleurs, si la nature numérique des utilités spécifiés dans les tables des UCP-Nets incite les utilisateurs à exprimer directement l'importance relative des propriétés de QoS en ajustant directement l'ordre de grandeur des valeurs d'utilités dans les différentes tables, on ne dispose plus de cette possibilité avec les termes linguistiques utilisés lors de modélisation des LCP-nets. Ainsi, afin de préserver l'importance relative des n\oe{}uds des LCP-nets lors du calcul de l'utilité globale, des poids sont calculés et associés à chaque n\oe{}ud du graphe de préférence.
+
+Cette quatrième étape clé de calcul du poids des n\oe{}uds est donc intégrée au sein même du calcul de l'utilité globale. Leur obtention est en fait directement corrélée à la profondeur des n\oe{}uds dans le graphe. Ces poids sont valués sur [0,1] et leur distribution obtenue \textit{via} une fonction spécialement définie \textit{a minima} sur [0, \textit{profondeur max du graphe}] : si on se réfère à la sémantique du formalisme LCP-net, plus la profondeur est faible, plus le poids obtenu par la fonction doit être élevé. L'ensemble des poids obtenus est ensuite normalisé afin de totaliser 1, dans le but d'effectuer une moyenne pondérée. Dans ce cas d'utilisation, nous fixons à l'avance une fonction de distribution des poids définie sur [0,100] :
+
+\[ g(x)=1/x^{2}+0.8 \] %Isis 14/12: j'ai mis g(x) car f est reserve
+                       %aux fonctions d'appartenance (comme \mu)
+
+\begin{figure}[h]
+  \centering \includegraphics[width=104mm]{figures/lcpnet_fonction_distribution.pdf}
+  \caption{La fonction $g$ de distribution des poids choisie pour cet exemple.}
+  \label{fig:lcpnet_fonction_distribution}
+\end{figure}
+
+A partir de cette fonction (cf. son profil donné par la figure~\ref{fig:lcpnet_fonction_distribution}), et de notre LCP-net d'exemple, nous obtenons les paires (\textit{profondeur}, \textit{poids}) suivantes après normalisation : (1, 0.529) et (2, 0.235). Ces paires sont ensuite associées à chaque n\oe{}ud du modèle de préférences (cf. figure~\ref{fig:lcpnet_preference_depth}).
+
+\begin{figure}[h]
+  \centering \includegraphics[width=130mm]{figures/lcpnet_preference_depth.pdf}
+  \caption{Poids des n\oe{}uds obtenus à partir de leur profondeur dans
+    le graphe.}
+  \label{fig:lcpnet_preference_depth}
+\end{figure}
+
+L'utilité globale d'un service est ensuite calculée en agrégeant l'ensemble des utilités locales \textit{via} un opérateur de référence $\Delta$ intégrant les poids préalablement obtenus au sein d'une simple moyenne pondérée. Dans notre exemple, les valeurs ($B'$, $S_{full}$, $R'$) ont été mesurées pour un service $S_1$ donné à un instant $t$, les utilités locales obtenues pour chacune de ces dimensions de QoS sont les suivantes : utilitéLocale($B'$)~=~0.35 (tel que démontré ci-dessus), utilitéLocale($S_{full}$)~=~1, utilitéLocale($B'$, $R'$)~=~0.20. L'opérateur $\Delta$ est alors appliqué comme suit à partir des poids précédemment calculés : \[ \Delta(B', S_{\scriptsize{\textit{full}}}, R') = 0.529 \times 0.35 + 0.235 \times 1 + 0.235 \times 0.20 \approx 0.47 \] L'utilité globale ainsi obtenue correspond à l'offre non-fonctionnelle courante de $S_1$, elle est évaluée à 0.47 sur l'échelle [0,1]. 
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=120mm]{figures/lcpnet_summary_part1.pdf}
+  \caption{Résumé des étapes engagées pour l'élicitation d'un LCP-net
+    globale d'un service.}
+  \label{fig:lcpnet_summary_part1}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=120mm]{figures/lcpnet_summary_part2.pdf}
+  \caption{Résumé des étapes engagées pour l'obtention de l'utilité
+    globale d'un service.}
+  \label{fig:lcpnet_summary_part2}
+\end{figure}
+
+La figure~\ref{fig:lcpnet_summary_part1} résume l'ensemble des étapes qui ont été engagées pour l'élicitation du partitionnement des domaines et celle des préférences, tandis que la figure~\ref{fig:lcpnet_summary_part2} illustre le processus d'obtention de l'utilité globale du service $S_1$ à partir des préférences élicitées, en se focalisant sur le n\oe{}ud $R$.
+
+%En définitive, bien que les utilités locales soient obtenues sous forme de valeurs précises, la valeur globale d'utilité agrégée avec $\Delta$ sous forme numérique peut ensuite être convertie par fuzzification\footnote{La fuzzification étant l'action de passer d'une valeur précise (dite ``crisp'') à une valeur floue (par exemple sous-ensemble flou, 2-tuple, etc.). Cette notion est définie par opposition à la \textit{defuzzification}.} en 2-tuple. Une approche d'inférence intermédiaire serait donc de ne pas mettre en place un processus linguistique ``de bout en bout'' tel qu'évoqué précédemment, mais de se limiter à une évaluation linguistique \textit{a posteriori} de l'utilité globale d'un service.
+
+\subsection{Sélection d'un service : indécision levée par l'usage d'un LCP-net}
+
+L'ultime palier, après avoir élicité, traduit et évalué les préférences au regard des différentes offres non-fonctionnelles courantes des services candidats, consiste à comparer leurs différentes utilités globales de manière à obtenir un ordre total sur les services, et d'en sélectionner le premier (donc celui à l'utilité maximale) comme résultat du processus global de décision.
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=90mm]{figures/lcpnet_comparaison.pdf}
+  \caption{Comparaison des services candidats sur la base de leur utilité globale.}
+  \label{fig:lcpnet_comparaison}
+\end{figure}
+
+Dans les étapes précédentes, nous avons détaillé le calcul de l'utilité globale d'un service $S_1$. Le même procédé a été appliqué à trois autres services $S_2$, $S_3$ et $S_4$ fonctionnellement et non-fonctionnellement équivalents à $S_1$. A partir de l'utilité globale de chacun de ces services calculée sur la base de leurs offres respectives courantes sur $B$, $S$ et $R$, il est possible de sélectionner $S_1$ comme service offrant l'utilité maximale (cf. figure~\ref{fig:lcpnet_comparaison}).
+
+\subsubsection{Intérêt patent de l'approche linguistique floue lors de la sélection}
+
+L'approche linguistique floue mise en \oe{}uvre par les LCP-nets va alors permettre, dans certains cas de figure, d'effectuer une décision de sélection entre deux services là où, paradoxalement, l'approche ``crisp'' (précise, par opposition à ``floue'') utilisée par les autres membres de la famille *CP-nets resterait muette. 
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=120mm]{figures/lcpnet_vs_ucpnet.pdf}
+  \caption{Deux modélisations pour une même préférence.}
+  \label{fig:lcpnet_vs_ucpnet}
+\end{figure}
+
+Pour illustrer cette affirmation, on compare l'évolution de l'utilité obtenue à l'issue du processus d'évaluation d'un LCP-net à une dimension (pour plus de simplicité, car \textit{utilité locale} et \textit{globale} sont alors confondues) à celle obtenue en sortie pour un UCP-net équivalent, en fonction de leur unique valeur d'entrée. Les deux réseaux de préférences modélisent l'affirmation \textit{``l'utilité d'un service est d'autant plus élevée que sa bande passante est élevée''}, cependant, le LCP-net est accompagné d'un partitionnement flou par trois SEF du domaine de la bande passante, là où l'UCP-net considère un découpage strict par trois intervalles distincts (cf. figure~\ref{fig:lcpnet_vs_ucpnet}).
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=100mm]{figures/lcpnet_ucpnet_utility.pdf}
+  \caption{UCP-net : Utilité d'un service en fonction de sa bande passante.}
+  \label{fig:lcpnet_ucpnet_utility}
+\end{figure}
+
+L'utilité d'un service en fonction de sa bande passante, calculée à partir de l'UCP-net est donnée par la figure~\ref{fig:lcpnet_ucpnet_utility}. On remarque la forme ``en escalier'' de la courbe d'utilité, elle correspond à la traduction directe sur le graphe de la table d'utilité ``crisp'' de l'UCP-net ainsi que du partitionnement de la bande passante qui l'accompagne. Par conséquent, on distingue trois zones pour lesquelles des services offrants des bandes passantes proches mais différentes seront considérés comme équivalents (même utilité) et où la décision n'est donc plus possible.
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=100mm]{figures/lcpnet_lcpnet_utility.pdf}
+  \caption{LCP-net : Utilité d'un service en fonction de sa bande passante.}
+  \label{fig:lcpnet_lcpnet_utility}
+\end{figure}
+
+\textit{A contrario}, on constate que les zones d'indécision sont particulièrement réduites (il n'en reste plus qu'une, de taille inférieure) en sortie de l'évaluation du LCP-net~\ref{fig:lcpnet_lcpnet_utility}. La courbe d'utilité a été lissée par le partitionnement flou du domaine d'entrée ainsi que le processus d'évaluation à base de règles floues issue de la traduction de l'unique CPT du réseau de préférences (cf. section~\ref{sec:Traduction des préférences}).
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=100mm]{figures/lcpnet_vs_ucpnet_comparaison.pdf}
+  \caption{UCP-net \textit{vs.} LCP-net : différences de précision.}
+  \label{fig:lcpnet_vs_ucpnet_comparaison}
+\end{figure}
+
+Pour deux services $S_1$ et $S_2$ offrant respectivement une bande passante courante de $0.3$ et $0.7$ sur l'ensemble $[0,1]$, on obtient deux valeurs d'utilité distinctes ($0.28$ et $0.57$) à l'issue du processus d'inférence floue sur le LCP-net, il est donc possible de choisir le service $S_2$ car son utilité est la plus élevée. \textit{A contrario}, deux utilités identiques évaluées à $0.5$ sont obtenues par l'UCP-net, il n'est alors pas possible de déterminer le service le plus utile. Cette comparaison est représentée sur la figure~\ref{fig:lcpnet_vs_ucpnet_comparaison}.
+
+\section{Vers un traitement entièrement linguistique des préférences}
+\label{sec:Vers un traitement entièrement linguistique des préférences}
+
+Dans le cas d'une mise en \oe{}uvre entièrement automatique du processus de décision telle que présentée dans ce chapitre, l'obtention de valeurs d'utilités locales et globales numériques est pertinente car les outils d'agrégation et de comparaison habituels s'avèrent alors adaptés et efficaces. Cependant, dans d'autres contextes d'application la prise de décision finale pourrait reposer sur l'intervention humaine. Dans ce second cas, une méthode d'inférence et d'agrégation entièrement linguistique, par exemple à base de 2-tuples flous, permettrait de faire ``remonter'' au preneur de décision des informations sous une forme qualitative plus intelligible qu'un ensemble de valeurs numériques réelles, et cela sans perte de précision.
+
+En se fondant sur le procédé représenté dans sa globalité par les figures~\ref{fig:lcpnet_summary_part1} et ~\ref{fig:lcpnet_summary_part2}, une partie des perfectionnements liés à un traitement linguistique ``de bout en bout'' des préférences qui ont été évoqués précédemment, pourrait être implantée comme suit :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item les partitionnements flous des domaines figurés à l'étape 1, y compris celui de l'utilité, entrainerait la production de termes linguistiques sous la forme de 2-tuples, \textit{i.e.} des paires $(s_i,\alpha)$, avec $\alpha=0$, c'est-à-dire dire sans déplacement latéral. Par exemple, la bande passante serait représentée, en gardant le partitionnement flou présenté sur la figure~\ref{fig:lcpnet_fuzzy_subsets}, par \{(\textit{low},0); (\textit{medium},0);
+  (\textit{high},0)\};
+\item à l'étape 2, les tables de préférence contiendraient elles-aussi des 2-tuples (par exemple (\textit{very low},0) ou (\textit{very low},$-0.2$)), au lieu de simples termes linguistiques (par exemple \textit{very low}). En effet, l'utilisateur exprime ses préférences de manière graphique, c'est pourquoi un déplacement latéral des termes linguistiques originaux pourrait apparaître. Par la suite, les règles obtenues par traduction des préférences en FIS pourraient posséder des 2-tuples : par exemple  ``If the resolution is (\textit{low},0) and the bandwidth is (\textit{high},0) then the utility is (\textit{very low},$-0.2$)";
+\item à l'étape 3, on procéderait à la traduction des préférences vers des systèmes d'inférence floue (FIS) pour 2-tuples, tel que proposé par Alcalá \textit{et al.}~\cite{Alc07};
+\item lors de l'étape 4a, les valeurs injectées le seraient sous forme de 2-tuples;
+\item l'étape 4b aurait pour résultat l'inférence d'utilités locales sous forme de 2-tuples;
+\item l'étape 4c de calcul des poids serait gardée en l'état;
+\item pour finir, l'étape 4d de calcul de l'utilité globale procéderait à l'agrégation de 2-tuples pondérés~\cite{Her00a} de manière à obtenir une utilité globale elle aussi sous forme de 2-tuple.
+\end{itemize}
+
+Il est aussi intéressant de noter que les 2-tuples flous pourraient s'avérer particulièrement utiles dans le cas où l'on souhaiterait offrir à l'utilisateur la possibilité de modifier les CPT des préférences \textit{a posteriori}, par l'ajout ou la suppression d'une colonne ou d'une ligne : le système procéderait alors à la mise à jour et calcul de nouvelles utilités dans les tables, ces utilités pourraient alors être exprimées avec un déplacement latéral (par exemple sous la forme (\textit{very high},$-0.1$)) quand bien même les utilités initiales des tables seraient sous forme $(s_i,0)$. En fait, dès que l'on souhaite procéder à une reconfiguration automatique d'un LCP-net, on doit changer la granularité des domaines considérés et les 2-tuples apparaissent comme un outil de choix pour y procéder, en permettant au système de conserver une relation avec l'ensemble de termes originaux (en l'occurrence grâce aux $s_i$ des 2-tuples).
+
+\section{Conclusion}
+
+Afin de permettre la sélection de services dans le contexte  multi-critères dans lequel nous nous trouvons, des préférences établies entre les propriétés non-fonctionnelles des services doivent être élicitées afin d'obtenir un ordre total sur les candidats. A cette fin, nous avons mis en avant dans ce chapitre la contribution scientifique de cette thèse portant sur l'établissement d'une nouvelle variante des CP-nets, appelée LCP-nets, qui combine certaines propriétés des UCP-nets et TCP-nets avec les avantages apportés par une approche linguistique floue pour discrétiser les domaines continus des variables. Un LCP-net permet par ailleurs l'expression de l'\emph{utilité qualitative} des affectations de ses variables dans des tables de préférences conditionnelles dédiées.
+
+Les LCP-nets s'avèrent ainsi particulièrement adaptés au contexte des SOA Sémantiques puisqu'ils permettent aux utilisateurs de partitionner efficacement les domaines continus des variables de Qualité de Service avec des termes linguistiques appropriés, ainsi que d'exprimer l'utilité des affectations d'une manière qualitative plutôt que numérique, cette dernière s'avérant souvent artificielle. L'exécution du canevas de support des LCP-nets dans ce contexte permettra alors de comparer les services candidats entre eux, sur la base des utilités globales obtenues. C'est donc en ce sens que l'on considère les LCP-nets comme la pierre angulaire de notre approche pour la \emph{composition utile de services}.
+
+Nous avons supposé pour le moment que les utilités des différents LCP-nets sont toujours exprimées en utilisant le même ensemble de termes linguistiques (cf. le partitionnement de l'utilité (``utility'') sur la figure~\ref{fig:lcpnet_fuzzy_subsets}), mais cette restriction pourrait être levée par la mise en \oe{}uvre d'un procédé entièrement linguistique fondée sur les 2-tuples par l'utilisation d'une approche multi-granulaire~\cite{HMHC02} lors du calcul de la fonction d'utilité globale. De même, l'hypothèse sur le positionnement des termes linguistiques (centrés sur 0.5, les termes étant alors distribués de manière équidistante) pourrait elle aussi être supprimée en implantant des approches permettant de faire face à des ensembles de termes déséquilibrés (``unbalanced term sets'')~\cite{herrera2008fuzzy}.
+
+Il est aussi important de souligner que bien qu'établis originellement pour le contexte particulier des SSOA, et présentés comme tel dans ce chapitre, le formalisme LCP-net et son canevas d'inférence \emph{ne sont pas liés à un domaine applicatif spécifique} et pourraient tout à fait être déployés et appliqués à d'autres contextes de décision multi-critères exhibant des contraintes similaires. Citons à titre d'exemple les cas d'utilisation proposés dans la littérature pour la présentation d'imagerie médicale~\cite{Bou04} et la planification d'un voyage en avion~\cite{Bra02}. Pour le second, les préférences qui étaient initialement portées dans les tables de manière très stricte, car fondées sur la relation d'ordre binaire `$>$' des CP-nets, pourraient dorénavant reposer sur une modélisation linguistique permettant d'indiquer plus finement le niveau de préférence. Il est aussi possible d'effectuer un partitionnement flou des domaines des variables considérées. Si on se limite à la variable $D$ qui représente le jour du vol par rapport à une date fixe de conférence à laquelle la personne doit assister :
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=80mm]{figures/lcpnet_partitionnement_vol.pdf}
+  \caption{Partitionnement flou d'un domaine temporel.}
+  \label{fig:lcpnet_partitionnement_vol}
+\end{figure}
+
+\begin{itemize}
+\item Dans l'exemple de base, la variable $D$ pouvait prendre la valeur $D_{1d}$ (je prend l'avion seulement un jour avant la conférence) ou $D_{2d}$ (je prend l'avion deux jours avant).
+\item Grâce aux SEF de l'approche linguistique floue mise en \oe{}uvre par les LCP-nets, on peut proposer le partitionnement suivant pour le domaine de la variable $D$ (cf. figure~\ref{fig:lcpnet_partitionnement_vol}) : \textit{Très en retard}, \textit{En retard}, \textit{A temps}, \textit{En avance}, \textit{Très en avance}.
+\end{itemize}
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=130mm]{figures/lcpnet_comparaison_cpnet_avion.pdf}
+  \caption{CP-net \textit{vs.} LCP-net : Préférence sur une date de départ en voyage.}
+  \label{fig:lcpnet_comparaison_cpnet_avion}
+\end{figure}
+
+On utilise alors les nouveaux termes linguistiques sur $D$ avec ceux du domaine \textit{utilité} utilisés dans les exemples précédents de ce chapitre pour obtenir le LCP-net basique suivant (cf. figure~\ref{fig:lcpnet_comparaison_cpnet_avion}, mis en comparaison avec la représentation CP-net de base, non linguistique, de la préférence. On constate que la préférence sous forme LCP-net est plus détaillée, tout en restant facilement intelligible pour l'utilisateur car entièrement linguistique. De plus, par le partitionnement flou, le modèle de préférences sera capable d'appréhender l'ensemble des cas intermédiaires entre 0 et 2 jours d'avance.
+
+Pour finir, la prochaine étape serait de concrétiser les améliorations évoquées dans la section~\ref{sec:Vers un traitement entièrement linguistique des préférences} en termes de traitement linguistique ``de bout en bout'' des modèles de préférences LCP-nets.

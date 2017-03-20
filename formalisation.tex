@@ -1,0 +1,432 @@
+% These - Formalisation
+% (c) 2009-2010 Jacques Malenfant, Pierre Chatel, Isis Truck
+
+\section{Introduction}
+\label{sec:intro}
+
+Dans cette thèse, nous avons proposé un modèle graphique pour représenter les préférences linguistiques (cf. chapitre~\ref{ch:Composition utile de services}) et l'avons déployé dans un cas d'utilisation spécifique (cf. chapitre~\ref{ch:cas_utilisation}). Nous consolidons ici cette contribution en la formalisant à travers un ensemble de notations et règles de calculs, afin d'en assurer la pérennité et la réutilisabilité à d'autres contextes de décision multi-critères.
+
+\section{Notations préliminaires}
+\label{sec:Notations préliminaires}
+
+En s'inspirant des définitions des TCP-nets nous introduisons maintenant les LCP-nets\index{LCP-net}\index{Modélisation de préférences!LCP-net} de façon formelle.
+Soient~:
+
+\begin{itemize}
+  \item $V_i$ une variable ($i \in \{1,\ldots,p\}$)~: par exemple la sécurité,
+  \item $D_i$ le domaine de définition de $V_i$~: par exemple $[0,100]$,
+  \item $T_{V_i}$ l'ensemble de termes linguistiques associés à $V_i$~: par exemple $\{S_{\mathit{none}},S_{\mathit{full}}\}$,
+  \item $\mathit{LV}$ (une variable linguistique) définie comme étant le triplet suivant~: $\mathit{LV}=\langle V, D, T_V \rangle$~:
+        par exemple $\langle$sécurité,$[0,100]$,$\{S_{\mathit{none}},S_{\mathit{full}}\}\rangle$.
+\end{itemize}
+
+Comme dans le formalisme UCP-nets, les préférences sont exprimées par des utilités, mais au travers de variables linguistiques,
+tout comme les autres variables.
+Elles prennent leurs valeurs dans le triplet unique
+$\langle V_U, D_U, T_{V_U} \rangle$ défini une fois pour toutes~:
+
+par exemple $\langle$utilité,$[0,1]$,$\{$very\_low,low,medium,high,very\_high$\}\rangle$.
+
+~\linebreak
+\emph{Une} utilité est un triplet $\mathit{LV_U}=\langle V_U, D_U, S_{V_U} \rangle$,
+avec $S_{V_U} \in T_{V_U}$, par exemple $\langle$utilité,$[0,1]$,low$\rangle$.
+
+% (\textsf{cpt} or \textsf{cit}) 
+
+
+~\\
+Une table de préférences conditionnelles $\mathit{CPT(LV)}$ associe des préférences sur $D$ pour toutes les affectations
+possibles aux parents de $\mathit{LV}$ notés $\mathit{Pa(LV)}$. 
+De plus, tout comme dans le formalisme TCP-nets, chaque arc non dirigé (arête) est annoté par une table d'importance
+conditionnelle $\mathit{CIT(LV)}$. Une $\mathit{CIT}$ associée à une arête $\mathit{(LV_i,LV_j)}$
+décrit l'importance relative de $\mathit{LV_i}$ par rapport à $\mathit{LV_j}$ connaissant la valeur de la variable linguistique
+d'importance conditionnelle correspondante $\mathit{LV_k}$.
+
+Graphiquement, une table de préférences ($\mathit{CPT}$ ou $\mathit{CIT}$) est un tuple de triplets, i.e. une table à
+$N$ dimensions. $N$ est le nombre de variables linguistiques liées à $\mathit{LV}$, y compris $\mathit{LV}$
+($N=|\mathit{Pa(LV)}|+1$) et une utilité $S_{V_U}$ est définie dans chaque cas.
+
+Ainsi, une table de préférences est représentée par le tuple
+
+$\langle LV_{i_{1}}, LV_{i_{2}}, \ldots, LV_{i_{N}},
+         LV_{U_{1}}, LV_{U_{2}}, \ldots, LV_{U_{\eta}} \rangle$ 
+avec $\eta=|T_{V_{i_{1}}}| \times |T_{V_{i_{2}}}| \times \ldots
+      \times |T_{V_{i_{N}}}|$ et $\min (\eta)= 2\times N$.
+      $LV_{U_{1}}, LV_{U_{2}}, \ldots, LV_{U_{\eta}}$ sont les \emph{mêmes} variables linguistiques d'utilité,
+      mais dupliquées $\eta$ fois.\\
+
+Par exemple, une table de préférences peut être le tuple suivant~:
+
+$\langle  \langle$résolution,$[320,1024]$,$\{R_{L},R_{H}\}\rangle$,
+         $\langle$bande passante,$[56,4096]$,$\{B_{L},B_{M},B_{H}\}\rangle$,\\
+         $\langle$utilité,$[0,1]$,very\_high$\rangle$,
+         $\langle$utilité,$[0,1]$,very\_low$\rangle$,
+         $\langle$utilité,$[0,1]$,high$\rangle$,
+         $\langle$utilité,$[0,1]$,low$\rangle$,\\
+         $\langle$utilité,$[0,1]$,very\_low$\rangle$,
+         $\langle$utilité,$[0,1]$,very\_high$\rangle
+\rangle$.\\
+
+Plus précisément, une table de préférences est égale à
+
+\begin{tabbing}
+   $\langle$ \= $\langle S^1_{V_{i_{1}}}, S^1_{V_{i_{2}}}, \ldots, S^1_{V_{i_{N}}}, S^1_{V_{U}} \rangle$\\ 
+             \> $\langle S^1_{V_{i_{1}}}, S^1_{V_{i_{2}}}, \ldots, S^2_{V_{i_{N}}}, S^2_{V_{U}} \rangle,$\\
+             \> $\ldots$\\
+             \> $\langle S^{|T_{V_{i_{1}}}|}_{V_{i_{1}}}, S^{|T_{V_{i_{2}}}|}_{V_{i_{2}}}, \ldots, S^{|T_{V_{i_{N}}}|}_{V_{i_{N}}},
+                  S^{\eta}_{V_{U}}\rangle$\\
+   $\rangle$ \\
+\end{tabbing}
+avec $S^1_{V_{i}}$ le premier terme linguistique dans le partitionnement de la variable $V_i$.
+
+Ainsi nous obtenons $\eta$ tuples $\langle S_{V_{i_{1}}}, S_{V_{i_{2}}},
+   \ldots, S_{V_{i_{N}}}, S_{V_{U}} \rangle$. La raison pour laquelle le minimum pour $\eta$ est égal à
+$2 \times N$ est parce qu'il est nécessaire que $|T_V| \ge 2$ pour être capable d'exprimer une préférence (!).
+
+
+En suivant le même exemple et en considérant que la résolution et la bande passante
+sont liées entre elles, la table de préférences associée peut être définie par ces six ($\eta=6$) tuples~:
+
+$\langle \langle R_{L},B_{L},very\_high \rangle$,
+        $\langle R_{L},B_{M},very\_low \rangle$,
+        $\langle R_{L},B_{H},high \rangle$,\\
+        $\langle R_{H},B_{L},low \rangle$,
+        $\langle R_{H},B_{M},very\_low \rangle$,
+        $\langle R_{H},B_{H},very\_high \rangle
+\rangle$.\\
+
+Ces tuples sont à voir comme six règles impliquant trois variables linguistiques différentes (deux $LV$ plus la $LV$ d'utilité), c'est-à-dire six fois un ensemble constitué de deux triplets
+$\langle V, D, S_{V} \rangle$ et d'un triplet $\langle V_U, D_U, S_{V_U} \rangle$:
+
+\begin{description}
+  \item[R1.] Si nous avons $\langle$résolution,$[320,1024]$,$R_{L}\rangle$ et
+        $\langle$bande passante,$[56,4096]$,$B_L\rangle$
+        alors nous avons $\langle$utilité,$[0,1]$,$very\_high\rangle$;
+  \item[R2.] $\ldots$
+  \item[$\ldots$] 
+  \item[R6.] Si nous avons $\langle$résolution,$[320,1024]$,$R_{H}\rangle$ et
+        $\langle$bande passante,$[56,4096]$,$B_H\rangle$
+        alors nous avons $\langle$utilité,$[0,1]$,$very\_high\rangle$.
+\end{description}
+
+~\\
+
+\section{Formalisme et test de dominance sur un LCP-net}
+\label{sec:Formalisme_LCP-net}
+
+
+Sur la base des notations précédentes, on définit alors un LCP-net $\mathcal{L}$ comme étant un tuple $\langle \mathit{SL}$,\textsf{cp,i,ci,cpt,cit}$\rangle$ où~:
+
+\begin{itemize}
+\item $\mathit{SL}$ est un ensemble de variables linguistiques $\{LV_1,\ldots,\mathit{LV_p}\}$,
+      \\par exemple $\mathit{SL}=\{\langle$sécurité,$[0,100]$,$\{S_{\mathit{none}},S_{\mathit{full}}\}\rangle$,
+                    $\langle$bande passante,$[56,4096]$,$\{B_{L},B_{M},B_{H}\}\rangle$,
+                    $\langle$résolution,$[320,1024]$,$\{R_{L},R_{H}\}\rangle\}$,
+
+\item \textsf{cp} est un ensemble de \textsf{cp}-arcs orientés. Un \textsf{cp}-arc
+      $\langle\overrightarrow{\mathit{LV_i},\mathit{LV_j}}\rangle$ est dans $\mathcal{L}$ si et seulement si les préférences
+      sur les valeurs de $\mathit{LV_j}$ dépendent de la valeur actuelle de $\mathit{LV_i}$. Pour chaque
+      $\mathit{LV}\in\mathit{SL}$,
+      $\mathit{Pa(LV)}=\{\mathit{LV^{\prime}} | \langle\overrightarrow{\mathit{LV^{\prime}},\mathit{LV}}\rangle \in$
+      \textsf{cp}$\}$,
+
+\item \textsf{i} est un ensemble d'\textsf{i}-arcs orientés. Un \textsf{i}-arc $(\overrightarrow{\mathit{LV_i},\mathit{LV_j}})$
+      est dans $\mathcal{L}$ si et seulement si $\mathit{LV_i}\triangleright\mathit{LV_j}$,
+
+\item \textsf{ci} est un ensemble de \textsf{ci}-arcs non-orientés. Un \textsf{ci}-arc ($\mathit{LV_i},\mathit{LV_j}$)
+      est dans $\mathcal{L}$ si et seulement si nous avons $\mathcal{RI}(\mathit{LV_i},\mathit{LV_j}|\mathit{LV_k})$, i.e.
+      si et seulement si l'importance relative de $\mathit{LV_i}$ par rapport à $\mathit{LV_j}$ est
+      conditionnée par $\mathit{LV_k}$, avec $\mathit{LV_k}\in\mathit{SL}\smallsetminus\{\mathit{LV_i},\mathit{LV_j}\}$.
+      Nous appelons $\mathit{LV_k}$ le \emph{sélecteur} de $(\mathit{LV_i},\mathit{LV_j})$ et le notons
+      $\mathcal{S}(\mathit{LV_i},\mathit{LV_j})$,
+
+\item \textsf{cpt} associe une $\mathit{CPT}$ à chaque variable linguistique
+ 	$\mathit{LV}\in\mathit{SL}$, où $\mathit{CPT(LV)}$ est une fonction de
+ 	$D_{\mathit{Pa(LV)\cup LV}}$ (i.e., affectations aux variables linguistiques parentes de $\mathit{LV}$ plus la $LV$ considérée)
+ 	dans $D_U$,
+
+\item \textsf{cit} associe à chaque \textsf{ci}-arc entre $\mathit{LV_i}$ et $\mathit{LV_j}$
+ 	une %(possibly partial)
+ 	$\mathit{CIT}$ qui est une fonction de $D_{\mathcal{S}(\mathit{LV_i},\mathit{LV_j})}$ %(domaine des variables associées au ci-arc)
+	dans l'ensemble des relations d'ordre sur $\{\mathit{LV_i},\mathit{LV_j}\}$.
+
+%%%% La CIT est une table particuliere qui contient des couples de CPT (une CPT pour le n\oe{}ud origine,
+%%%% une CPT pour le n\oe{}ud destination) au lieu des utilites classiques que l'on trouve ds les CPT
+
+%Exemple repris de l'article TCP-nets p.399 :
+%
+%      |   Tm         |     Tn       |
+%------------------------------------
+%Aklm  |CPT(S),CPT(C) |CPT(S),CPT(C) |
+%------------------------------------
+%Aba   |CPT(S),CPT(C) |CPT(S),CPT(C) |
+%
+%Ce n'est pas ca les ci-arcs!! Mais on pourrait reprendre cette idee pour creer un nveau type d'arc : les c-arcs ???
+% et des ct (ctables)
+%
+%\textsf{ct} associates with every \textsf{c}-arc between \mathit{LV}_i$ and $\mathit{LV}_j$
+% a %(possibly partial)
+% $\mathit{CT}$ from $D_{\mathcal{S}(\mathit{LV}_i,\mathit{LV}_j))}$ to couples of $\mathit{CPTs}$,
+% one $\mathit{CPT}$ attached to $\mathit{LV}_i$ and one $\mathit{CPT}$ attached to $\mathit{LV}_j$.
+%Starting from a \mathit{CT}, the (same) inference engine permits to compute the two $\mathit{CPTs}$
+%attached to the $\mathit{LVs}$ connected to the \textsf{c}_arc. We thus obtain one $\mathit{CPT}$
+%per $\mathit{LV}$, i.e. $p \mathit{CPTs}$ and then $p \mathit{lu}$.
+
+\end{itemize}
+
+
+~\\
+
+Les $\mathit{CPT}$ (attachées à une $\mathit{LV}$) fournissent une utilité locale pour cette $\mathit{LV}$.
+Cette utilité locale notée $\mathit{lu}$ est calculée grâce à un moteur d'inférence utilisant les règles évoquées plus haut.
+
+Ainsi, d'un côté, nous obtenons un LCP-net qui définit les préférences et de l'autre, $p$ utilités locales
+notées de la façon suivante~:
+\[\mathit{LU}=\displaystyle\bigcup_{i=1}^{p}\{\mathit{lu}_i\}\]
+
+Chaque n\oe{}ud (que l'on peut associer à une $LV$) de
+$\mathcal{L}$ est ensuite affecté d'un poids $w$, on obtient donc un vecteur de poids $W$~:
+
+\[W = \bigcup_{i=1}^{p}\{w_i\}\]
+$\mathcal{L}$ peut ainsi désormais être représenté par le tuple
+$\langle \mathit{SL}$,\textsf{cp,i,ci,cpt,cit},$W \rangle$, sachant que les valeurs prises par
+$W$ dépendent de la profondeur des n\oe{}uds.
+
+%basic unit-interval monotonic (BUM). cf. réf.:
+%@article{xu2008dynamic,
+%  title={{Dynamic intuitionistic fuzzy multi-attribute decision making}},
+%  author={Xu, Z. and Yager, R.R.},
+%  journal={International Journal of Approximate Reasoning},
+%  volume={48},
+%  number={1},
+%  pages={246--262},
+%  year={2008},
+%  publisher={Elsevier}
+%}
+
+L'algorithme de calcul de $W$ peut être fondé sur une fonction de la famille BUM (Basic Unit-interval Monotonic).
+Une fonction BUM $f_\mathit{BUM}$ est définie de $[0,1]$ dans $[0,1]$ et admet les propriétés suivantes~:
+%\begin{eqnarray*}
+%  f_\mathit{BUM}: [0,1] & \rightarrow & [0,1]\\
+\begin{itemize}
+  \item $f_\mathit{BUM}(0) = 0$
+  \item $f_\mathit{BUM}(1) = 1$ 
+%\end{eqnarray*}
+  \item $f_\mathit{BUM} \textrm{ est croissante (càd si }x>y \textrm{ alors }f_\mathit{BUM}(x)\ge f_\mathit{BUM}(y))$
+\end{itemize}
+
+Les poids $W$ sont donc calculés grâce à $f_\mathit{BUM}$ de la façon suivante~:
+%$$w_i=f_\mathit{BUM}\displaystyle\left(\cfrac{i}{p}\right)-f_\mathit{BUM}\left(\cfrac{j-1}{p}\right)$$
+$$w_i=f_\mathit{BUM}(i/p)-f_\mathit{BUM}((i-1)/p)$$
+
+La fonction $f_\mathit{BUM}$ choisie peut être $f_\mathit{BUM}(x)=x$ (dans ce cas, tous les poids sont égaux à $(1/p)$ avec $p$
+le nombre de n\oe{}uds)~; ou $f_\mathit{BUM}(x)=x^3$ (dans ce cas, $w_1$ est très petit par rapport à $w_p$)~; ou encore
+$f_\mathit{BUM}(x)=\sqrt{x}$ (dans ce cas, $w_1$ est le plus grand poids).
+Pour analyser le choix de $f_\mathit{BUM}$, on peut calculer la mesure d'\emph{orness} sur ce vecteur de poids~:
+
+$$\textit{orness}(W)=\displaystyle\cfrac{1}{p-1}\sum_{i=1}^{p}{(p-i)w_i}$$
+%cf réf Yager pour le orness :
+%@article{yager1988ordered,
+%  title={{On ordered weighted averaging aggregation operators inmulticriteria decisionmaking}},
+%  author={Yager, RR},
+%  journal={IEEE transactions on Systems, Man and Cybernetics},
+%  volume={18},
+%  number={1},
+%  pages={183--190},
+%  year={1988}
+%}
+
+Cette mesure, comprise entre 0 et 1, permet d'exprimer à quel point l'agrégateur utilisant ces poids
+ressemble à un OU. Par exemple, quand $f_\mathit{BUM}(x)=x$, $\textit{orness}(W)=0.5$. Mais lorsque $w_1$ est très grand par rapport aux poids ``suivants'', $\textit{orness}(W)$ tend vers 1. 
+%commenter ce résultat un peu, mais pas ici
+
+
+Comme dans les CP-nets, plus on descend dans la profondeur des n\oe{}uds, et moins ils sont importants~: on choisira donc un vecteur $W$ dont la mesure $\mathit{orness}$ est comprise entre 0.5 et 1\footnote{Dans notre implémentation, le vecteur de poids obtenu
+(cf. section \ref{sec:De l'élicitation de LCP-nets à la sélection de services}) vérifie bien ce critère.}, c'est-à-dire
+$f_\mathit{BUM}(x)=\sqrt{x}$ ou $\sqrt[3]{x}$, etc.
+
+Affecter des poids aux n\oe{}uds d'un graphe est quelque peu différent d'une affectation classique de poids à des valeurs.
+En effet, la différence réside dans l'ordonnancement de ces valeurs. Dans un graphe LCP-net, plusieurs n\oe{}uds peuvent avoir la
+même profondeur, donc l'ordre n'est pas total. C'est pourquoi, affecter seulement des $w$ à l'aide d'une fonction BUM, même judicieusement
+choisie, ne permet pas de répondre complètement à notre problème, puisque les n\oe{}uds de même profondeur seront discriminés
+(des poids différents leur seront affectés). Donc nous appliquons une fonction BUM telle que les $w$ associés obtenus soient
+décroissants ($w_i>w_{i+1}$, avec $i \in [1,p]$). Puis, pour chaque n\oe{}ud de même profondeur, on somme les poids qui leur sont associés et
+on effectue une équirépartition de cette somme entre ces n\oe{}uds.
+Ainsi, toutes les contraintes sont respectées, par construction des poids \emph{via} $f_\mathit{BUM}$~:
+
+\begin{itemize}
+  \item $\displaystyle \sum_{i=1}^p w_{i,l_i}=1$ avec $l_i$ le niveau de profondeur du n\oe{}ud $i$, $l_i \in [1,L]$ et $L\le p$
+  \item $\forall i \in [1,p], \forall l_i \in [1,L], \displaystyle \left\{ \begin{array}{l}
+                                                                        w_{i,l_i} > w_{i+1,l_{i+1}} \textrm{ si }l_i \neq l_{i+1}\\
+                                                                        w_{i,l_i} = w_{i+1,l_{i+1}} \textrm{ sinon}
+                                                                      \end{array}
+                                                                   \right.$
+\end{itemize}
+
+
+%\[W = \displaystyle\bigcup_{i=1}^{p}\{w_i\}\]
+
+~\\
+
+$W$ est combiné avec $\mathit{LU}$ pour obtenir l'utilité globale associée à une affectation $o$ noté $\mathit{GU}_o$.
+%We get $n~\mathit{GU}$. %interessant qd on parle des services (n instances de service dispo), mais pas ici.
+
+$\mathit{GU}_o = \Delta(\mathit{LU}_o,W)$, avec $\Delta$ un agrégateur pondéré, type OWA~\cite{Yag88} (par exemple une simple moyenne pondérée).
+
+~\\
+
+Une utilité locale est soit un terme linguistique, soit
+un nombre correspondant à la défuzzification (par l'opérateur $d$) du SEF~:
+$\mathit{lu}=f_{S_{V_U}}$ ou $\mathit{lu}=d(f_{S_{V_U}})$  
+avec:
+
+% le MPG ecrit correctement
+\[f_{S_{V_U}}=f_{S_{V_U}}(y)=\left\{
+                 \begin{array}{ll}
+                    \bot(f_{S_{V_U}^{1}}(y),\ldots,f_{S_{V_U}^{\eta}}(y)) & \textrm{ si les $\eta$ règles sont indépendantes}\\
+                    \top(f_{S_{V_U}^{1}}(y),\ldots,f_{S_{V_U}^{\eta}}(y)) & \textrm{ sinon}
+                 \end{array}\right.
+\]
+
+
+avec $y \in D_U$, $\bot$ une t-conorme et $\top$ une t-norme.
+
+~\\
+
+Pour simplifier, posons $\mathit{lu}_i = f_{S_{V_{U_i}}}(y)$.
+En conséquence, $\mathit{GU}_o$ est soit un terme linguistique, soit un nombre.
+Dans le cas où c'est un terme linguistique, il est toujours possible de trouver un opérateur
+de défuzzification $d$ qui fournit (donc) un nombre.
+
+Considérant que les règles sont indépendantes entre elles, on obtient, en appliquant
+le modus ponens généralisé, l'égalité suivante~:
+
+%\begin{align*}
+%f_{B^{\prime}}(y)=
+%   \displaystyle\sup_{(x_1,\ldots,x_N)\in X_1\times\dots\times X_N}
+%   \left\{\top\left[g(f_{A^{\prime}_1}(x_1),\dots,f_{A^{\prime}_n}(x_N),
+%            \Phi(g(f_{A^{1}_1}(x_1),\dots,f_{A^{1}_N}(x_N)),f_{B^{1}}(y))\right] \right. \\
+%  \left.          \vee\ldots\vee
+%          \top\left[g(f_{A^{\prime}_1}(x_1),\dots,f_{A^{\prime}_n}(x_N),
+%            \Phi(g(f_{A^{\eta}_1}(x_1),\dots,f_{A^{\eta}_n}(x_N)),f_{B^{\eta}}(y))\right]
+%   \right\}
+%\end{align*}
+
+\begin{align*}
+f_{S_{V_U}}(y)=
+   \displaystyle\sup_{(x_1,\ldots,x_N)\in D_1\times\dots\times D_N}
+   \left\{\top\left[g(f_{S_{V^{\prime}_1}}(x_1),\dots,f_{S_{V^{\prime}_N}}(x_N)),
+            \Phi(g(f_{S^{1}_{V_1}}(x_1),\dots,f_{S^{1}_{V_N}}(x_N)),f_{S_{V_U}^{1}}(y))\right] \right. \\
+  \left.          \vee\ldots\vee
+          \top\left[g(f_{S_{V^{\prime}_1}}(x_1),\dots,f_{S_{V^{\prime}_N}}(x_N)),
+            \Phi(g(f_{S^{\eta}_{V_1}}(x_1),\dots,f_{S^{\eta}_{V_N}}(x_N)),f_{S_{V_U}^{\eta}}(y))\right]
+   \right\}
+\end{align*}
+
+avec $f(x)$ la fonction d'appartenance de l'élément $x$, $\Phi$ une implication floue, $V^{\prime}$ les variables
+réelles observées (notons bien que la notation ``prime'' n'a pas le même sens que plus haut : ici, on a $N$ variables \emph{observées}
+notées de $V^{\prime}_1$ à $V^{\prime}_N$), $S_{V^{\prime}_1}$ le terme linguistique associé à la première
+variable observée ($V^{\prime}_1$) et $g$ un opérateur d'agrégation comme une t-norme ($\min$ par exemple).
+Ainsi, une affectation $o$ est en fait un tuple $\langle S_{V^{\prime}_1},\ldots,S_{V^{\prime}_p} \rangle$.
+
+%\section{Test de dominance}
+%\label{sec:domTest}
+~\\
+
+Afin de prouver la propriété de \emph{test de dominance}, nous montrons qu'une affectation $o$ peut toujours
+être trouvée comme étant strictement préférée à une autre affectation $o^{\prime}$.
+
+\textbf{Théorème.}\\
+   Etant donné un LCP-net $\mathcal{L}$ et une paire d'affectations $o$ et $o^{\prime}$,
+   $\mathcal{L}\models o\prec o^{\prime}$ si et seulement si $\mathit{GU_o}$ est plus petit que
+   $\mathit{GU_{o^{\prime}}}$.
+
+%there is an improving flipping sequence with
+%  respect to $\mathcal{L}$ from $o^{\prime}$ to $o$.
+
+\renewcommand*\proofname{Preuve}
+
+\begin{proof}
+%\hspace{-5cm}  \begin{tabular}{cc}
+%    inference from $\mathit{CPT(LV}_1^o\mathit{)}$ $\ldots$ 
+%      inference from $\mathit{CPT(LV_p^o)}$ &
+%                inference from $\mathit{CPT(LV}_1^{o^{\prime}}\mathit{)}$ $\ldots$ 
+%                    inference from $\mathit{CPT(LV_p^{o^{\prime}})}$ \\
+%    \hline\\
+%    $\mathcal{L} \vdash \mathit{lu}_1^o = f_{S_{V_{U,1}^o}} ~~~ \ldots ~~~ \mathit{lu}_p^o = f_{S_{V_{U,p}^o}}$ &
+%       $\mathcal{L} \vdash \mathit{lu}_1^{o^{\prime}} = f_{S_{V_{U,1}^{o^{\prime}}}} ~~~ \ldots ~~~
+%       \mathit{lu}_p^{o^{\prime}} = f_{S_{V_{U,p}^{o^{\prime}}}}$\\
+%    \hline\\
+%    $\mathcal{L} \vdash \mathit{LU}_o = \{\mathit{lu}_1^o,\ldots,\mathit{lu}_p^o\}$
+%          & $\mathcal{L} \vdash \mathit{LU}_{o^{\prime}}= \{\mathit{lu}_1^{o^{\prime}},\ldots,\mathit{lu}_p^{o^{\prime}}\}$ \\
+%    \hline\\
+%     \multicolumn{2}{c}{$\mathcal{L} \vdash \Delta(\mathit{LU_o,W}) < \Delta(\mathit{LU_{o^{\prime}}},W)$} \\
+%    \hline\\
+%     \multicolumn{2}{c}{$\mathcal{L} \vdash \mathit{d(GU_o)} < \mathit{d(GU_{o^{\prime}})}$} \\ % a mettre ? attention au sens de lecture!
+%    \hline\\
+%     \multicolumn{2}{c}{$\mathcal{L} \vdash \mathit{GU_o} \prec \mathit{GU_{o^{\prime}}}$} \\
+ %%que vaut-il mieux? Avec with... ou en integrant l'inegalite ds "infere"
+ %%  $\mathcal{L} \vdash \mathit{GU_o}$ & & $\mathcal{L} \vdash \mathit{GU_{o^{\prime}}}$ & with $\mathit{GU_o}<\mathit{GU_{o^{\prime}}}$\\
+%    \hline\\
+%    \multicolumn{2}{c}{$\mathcal{L}\models o\prec o^{\prime}$} 
+%  \end{tabular}
+
+%%%%%%
+% le bon à reprendre
+%A/C
+ $$\cfrac{\textrm{inférence calculée par }\mathit{CPT(LV}_1^o\mathit{)} ~~~ \ldots ~~~ \textrm{inférence calculée par }\mathit{CPT(LV_p^o)}}
+        {\mathcal{L} \vdash \mathit{lu}_1^o = f_{S_{V_{U,1}^o}} ~~~ \ldots ~~~ \mathit{lu}_p^o = f_{S_{V_{U,p}^o}}}
+ $$
+\vspace*{.3cm}
+
+%C/E
+ $$\cfrac{\mathcal{L} \vdash \mathit{lu}_1^o = f_{S_{V_{U,1}^o}} ~~~ \ldots ~~~ \mathit{lu}_p^o = f_{S_{V_{U,p}^o}}}
+        {\mathcal{L} \vdash \mathit{LU}_o = \{\mathit{lu}_1^o,\ldots,\mathit{lu}_p^o\}}
+ $$
+\vspace*{.3cm}
+
+%B/D
+ $$\cfrac{\textrm{inférence calculée par }\mathit{CPT(LV}_1^{o^{\prime}}\mathit{)} ~~~ \ldots ~~~ \textrm{inférence calculée par }\mathit{CPT(LV_p^{o^{\prime}})}}
+        {\mathcal{L} \vdash \mathit{lu}_1^{o^{\prime}} = f_{S_{V_{U,1}^{o^{\prime}}}} ~~~ \ldots ~~~
+           \mathit{lu}_p^{o^{\prime}} = f_{S_{V_{U,p}^{o^{\prime}}}}}
+ $$
+\vspace*{.3cm}
+
+%D/F
+ $$\cfrac{\mathcal{L} \vdash \mathit{lu}_1^{o^{\prime}} = f_{S_{V_{U,1}^{o^{\prime}}}} ~~~ \ldots ~~~
+         \mathit{lu}_p^{o^{\prime}} = f_{S_{V_{U,p}^{o^{\prime}}}}}
+        {\mathcal{L} \vdash \mathit{LU}_{o^{\prime}}= \{\mathit{lu}_1^{o^{\prime}},\ldots,\mathit{lu}_p^{o^{\prime}}\}}
+ $$
+\vspace*{.3cm}
+ 
+%E F/G
+ $$\cfrac{\mathcal{L} \vdash \mathit{LU}_o = \{\mathit{lu}_1^o,\ldots,\mathit{lu}_p^o\}~~~~~~
+          \mathcal{L} \vdash \mathit{LU}_{o^{\prime}}= \{\mathit{lu}_1^{o^{\prime}},\ldots,\mathit{lu}_p^{o^{\prime}}\}}
+        {\mathcal{L} \vdash \Delta(\mathit{LU_o,W}) < \Delta(\mathit{LU_{o^{\prime}}},W)}
+ $$
+\vspace*{.3cm}
+
+%G/H
+ $$\cfrac{\mathcal{L} \vdash \Delta(\mathit{LU_o,W}) < \Delta(\mathit{LU_{o^{\prime}}},W)}
+        {\mathcal{L} \vdash \mathit{d(GU_o)} < \mathit{d(GU_{o^{\prime}})}}
+ $$
+\vspace*{.3cm}
+
+%H/I
+ $$\cfrac{\mathcal{L} \vdash \mathit{d(GU_o)} < \mathit{d(GU_{o^{\prime}})}}
+        {\mathcal{L} \vdash \mathit{GU_o} \prec \mathit{GU_{o^{\prime}}}}
+ $$
+\vspace*{.3cm}
+ 
+%H/I
+ $$\cfrac{\mathcal{L} \vdash \mathit{GU_o} \prec \mathit{GU_{o^{\prime}}}}
+        {\mathcal{L}\models o\prec o^{\prime}}
+ $$
+ 
+\end{proof}
+
+\section{Conclusion}
+
+S'il est possible de représenter graphiquement un LCP-net comme un ensemble de n\oe{}uds, d'arcs et de CPTs, ce chapitre nous a montré que, mathématiquement, c'est un tuple constitué de LVs, de trois types d'arcs, de deux types de tables et d'un vecteur de poids.
+De surcroît, un LCP-net se présente après traduction comme un ensemble de LVs, de FIS et de poids associés aux n\oe{}uds qui 
+autorisent un raisonnement automatique sur ces préférences et posent les bases de leur mise en \oe{}uvre. 

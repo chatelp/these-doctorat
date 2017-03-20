@@ -1,0 +1,35 @@
+FUNCTION_BLOCK fbName
+
+VAR_INPUT
+	S : REAL;
+END_VAR
+
+VAR_OUTPUT
+	Utility : REAL;
+END_VAR
+
+FUZZIFY S
+	TERM Security_Full :=  (0.0, 0.0) (1.0, 1.0) ;
+	TERM Security_None :=  (0.0, 1.0) (1.0, 0.0) ;
+END_FUZZIFY
+
+DEFUZZIFY Utility
+	TERM Utility_H :=  (0.5, 0.0) (0.75, 1.0) (1.0, 0.0) ;
+	TERM Utility_L :=  (0.0, 0.0) (0.25, 1.0) (0.5, 0.0) ;
+	TERM Utility_M :=  (0.25, 0.0) (0.5, 1.0) (0.75, 0.0) ;
+	TERM Utility_VH :=  (0.75, 0.0) (1.0, 1.0) ;
+	TERM Utility_VL :=  (0.0, 1.0) (0.25, 0.0) ;
+	ACCU : MAX;
+	METHOD : COG;
+	DEFAULT := 0.0;
+	RANGE := (0.0 .. 1.0);
+END_DEFUZZIFY
+
+RULEBLOCK Rules
+	ACT : MIN;
+	AND : MIN;
+	RULE 1 : IF S is Security_None THEN Utility is Utility_VL;
+	RULE 2 : IF S is Security_Full THEN Utility is Utility_VH;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

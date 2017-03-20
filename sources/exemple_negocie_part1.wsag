@@ -1,0 +1,61 @@
+<wsag:Agreement AgreementId="myFirstSSOAAgreement">
+  <wsag:AgreementContext>
+	...
+  </wsag:AgreementContext>
+  <wsag:Terms>
+	<wsag:all>
+	  ...
+	  <wsag:ServiceProperties wsag:Name="techniqueRequis" wsag:ServiceName="requis">
+		<wsag:VariableSet>
+		  <wsag:Variable wsag:Name="Resolution" wsag:Metric="http://www.w3.org/2007/ont/unit#megapixels">
+			<wsag:Location>
+			  <ws-qml:QoS-dimension
+				ws-qml:semantic-concept="http://www.photo.org/QualityFactor/MeasureFactor/Resolution"/>
+			</wsag:Location>
+		  </wsag:Variable>
+		  <wsag:Variable wsag:Name="Bandwidth" wsag:Metric="http://www.w3.org/2007/ont/unit#megabitsps">
+			<wsag:Location>
+			  <ws-qml:QoS-dimension
+				ws-qml:semantic-concept="http://www.nca.or.kr/2006/wsqdl/QualityFactor/EvalFactor/Bandwidth"/>
+			</wsag:Location>
+		  </wsag:Variable>
+		</wsag:VariableSet>
+	  </wsag:ServiceProperties>
+	
+	  <wsag:ServiceProperties wsag:Name="techniqueOffert" wsag:ServiceName="offert">
+		<wsag:VariableSet>
+		  <wsag:Variable wsag:Name="Resolution" wsag:Metric="http://www.w3.org/2007/ont/unit#megapixels">
+			<wsag:Location xsi:type="semeuse:WSBinding" mode="pull" type="ws"
+						   epr="http://localhost:8080/monitoring_firefighting/services/Camera1"
+						   operation="getResolution">
+			  <ws-qml:QoS-dimension
+				ws-qml:semantic-concept="http://www.photo.org/QualityFactor/MeasureFactor/Resolution"/>
+			  <ws-qml:semantic-match requiredTargetName="Resolution"/>
+			</wsag:Location>
+		  </wsag:Variable>
+		  <wsag:Variable wsag:Name="BandePassante" wsag:Metric="http://www.w3.org/2007/ont/unit#megabytesps">
+			<wsag:Location xsi:type="semeuse:WSBinding" mode="pull" type="ws"
+						   epr="http://localhost:8080/monitoring_firefighting/services/Camera1"
+						   operation="getBandwidth">
+			  <ws-qml:QoS-dimension
+				ws-qml:semantic-concept="http://www.nca.or.kr/2006/wsqdl/QualityFactor/EvalFactor/Bandwidth"/>
+			  <ws-qml:semantic-match requiredTargetName="BandePassante">
+				<ws-qml:conversion-function sourceMetric="http://www.w3.org/2007/ont/unit#megabytesps"
+											targetMetric="http://www.w3.org/2007/ont/unit#megabitsps">
+				  <ws-qml:function>
+					<ws-qml:param name="MBs"/>
+					<ws-qml:expression>
+					  <ws-qml:binary-expression operator="*">
+						<ws-qml:integer-constant value="8"/>
+						<ws-qml:variable name="MBs"/>
+					  <ws-qml:binary-expression>
+					</ws-qml:expression>
+				  </ws-qml:function>
+				</ws-qml:conversion-function>
+			  </ws-qml:semantic-match>
+			</wsag:Location>
+		  </wsag:Variable>
+		</wsag:VariableSet>
+	  </wsag:ServiceProperties>
+	
+	  ...

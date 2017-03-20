@@ -1,0 +1,612 @@
+% These - Contexte technologique
+% (c) 2009-2010 Pierre CHATEL
+
+\lettrine{D}{ans ce chapitre}, on pose la base conceptuelle et terminologique nécessaire à la bonne compréhension de nos travaux. Ces derniers font en effet appel à de nombreuses notions issues de domaines en constante évolution. Il est ainsi important de garder à l'esprit le contexte industriel de notre recherche et le cadre technologique précis qui en découle. Il ne s'agit donc pas ici d'effectuer une description exhaustive de ces différents domaines, qu'il s'agisse de nouvelles approches, techniques, ou autres paradigmes de programmation; mais bien d'en effectuer une prise de vue à un instant précis, celui de la sphère technique dans laquelle nos travaux évoluent.
+
+Ce travail de thèse s'inscrit dans la lignée des travaux menés conjointement par Thales, Alcatel CIT Research and Innovation, Bull, Nokia, Schneider Electric et Vodafone dans le cadre du projet ITEA S4ALL\footnote{\href{http://www.itea-office.org/}{http://www.itea-office.org/}} (``Services for All'') dont le but est d'explorer les solutions techniques et consolider celles préexistantes permettant la mise en place d'un monde de services orientés utilisateurs simples à créer, partager et utiliser.
+
+Mais il est aussi lié à certaines des problématiques rencontrées au cours du projet CARROLL\footnote{\href{http://www.carroll-research.org/fr}{http://www.carroll-research.org/fr}}DYONISOS (INRIA Arles, CEA, Thales) dans le domaine des architectures fondées sur les services et des ``systèmes de systèmes'' dont le but est de permettre la composition dynamique de services et l'exécution de \textit{``workflows''}.
+
+Pour finir, le projet SemEUsE\footnote{``Sémantique pour bus de services'' : \href{http://www.semeuse.org/}{http://www.semeuse.org/}} a servi de substrat principal pour l'implantation des contributions scientifiques avancées dans ce manuscrit. Ce projet s'attache à la mise au point d'un ``bus de service sémantique''. Les objectifs suivants ont alors été définis : l'implantation d'applications omniprésentes, flexibles et fiables; l'utilisation de services Web sémantiques (cf.~\ref{sec:Services Web sémantiques}) disponibles à l'exécution; et l'exploitation d'offres de Qualité de Service métier de haut niveau (cf.~\ref{sec:Propriétés et contraintes non-fonctionnelles de services}) pour l'implantation des applications. Projet de trois ans, financé par l'Agence Nationale de la Recherche (ANR) et commencé en février 2008, il n'est donc pas encore clos au moment du dépôt de ce manuscrit. SemEUsE intègre les contributions de quatres partenaires académique (LIP6, INSA, INRIA, INT) et de trois partenaires industriels (Thales, Orange Labs, EBM Websourcing) au sein d'un consortium unique. 
+
+Afin d'accompagner le lecteur au travers de ces nombreux prérequis, nous nous attacherons dans un premier temps à détailler les concepts liés à l'Approche Orientée Services dans la section \ref{sec: Architectures Orientées Services}, ainsi nous nous pencherons tout particulièrement sur les technologies de services Web. Dans un second temps, en \ref{sec:Processus métiers}, nous présenterons les Processus Métier et la technologie BPEL qui sont à la base notre implantation. Pour finir, nous nous attarderons dans la section~\ref{sec:Propriétés et contraintes non-fonctionnelles de services} sur les notions de propriétés et contraintes non-fonctionnelles de services ainsi que sur les travaux les plus connus les mettant en \oe{}uvre.
+
+\section{Architectures Orientées Services}
+\label{sec: Architectures Orientées Services}
+
+On regroupe sous la dénomination d'Architecture Orientée Services\index{Architecture!Orientée Services|textbf}\index{SOA|textbf} ou \textit{``Service Oriented Architectures''} (SOAs), l'ensemble des architectures mettant en avant la notion abstraite de \emph{service} pour la mise en \oe{}uvre d'une réalisation logicielle, répartie ou non.
+
+De fait, la propriété de \emph{couplage lâche} entre les principales entités de l'architecture est particulièrement recherchée dans les SOAs. Elle favorise des systèmes s'appuyant sur des couches de médiation, imposées par des standards, capables d'exhiber un certain niveau d'interopérabilité au niveau de leurs communications. D'un point de vue technique, ce  couplage lâche induit alors d'effectuer le moins d'hypothèses possibles lors de la description des différentes entités en interaction. Dans le cas des SOAs, cette approche est rendue possible par la cohérence des normes communément utilisées, avec notamment l'utilisation de modèles d'échanges pivots des données.
+
+Les architectures orientées services sont ainsi le fruit d'une lente maturation technologique s'appuyant sur les travaux précurseurs à la base des notions d'objets et de composants. Une compréhension préalable de ces concepts est nécessaire à l'obtention d'une plus fine appréhension des SOAs.
+
+\subsection{Concepts de base}
+\label{sec:Concepts de base}
+
+\subsubsection{Objet}
+
+La complexification des systèmes logiciels a entraîné dans son sillage l'ingénierie logicielle vers un objectif de rationalisation de la production. Ainsi, de par leur évolution constante et l'augmentation de leur distribution sur le réseau, ces systèmes nécessitent la mise en place de paradigmes permettant d'assurer un certain niveau de qualité et fiabilité, tout en offrant une plus grande flexibilité et réutilisabilité.
+
+\emph{L'approche à objets}~\cite{jacobson1991object} s'est indubitablement révélée comme un standard \textit{de facto} parmi les différents paradigmes de développement logiciel. Cette approche a été rendue possible par l'adoption intrinsèque du paradigme objet au c\oe{}ur de langages tels Smalltalk, Java ou, dans une moindre mesure, C++. L'innovation portée par les objets a consisté à regrouper sous un même concept un ensemble de principes préexistants tels que :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item \emph{l'encapsulation}, l'interface d'un objet est bien distincte de son implantation, et son comportement exprimée via les méthodes de cette interface;
+\item \emph{l'héritage}, c'est-à-dire de la capacité à définir les caractéristiques d'un objet par extension;
+\item \emph{le polymorphisme}, il est possible d'interagir de la même façon avec des objet de formes différentes;
+\end{itemize}
+
+\subsubsection{Composant}
+
+Par rapport aux objets, le \emph{paradigme de composant} représente une augmentation du niveau d'abstraction lors de la conception logicielle. En ce sens, le composant ne remplace pas l'objet, il se construit même bien souvent autour, dans les langages de programmation courants (par exemple Java). Il répond d'un besoin concret car, si l'utilisation exclusive d'objets lors de la programmation de systèmes simples semble raisonnable, la programmation d'applications réparties de plus grande ampleur nécessite une augmentation du niveau d'abstraction de leurs briques de base, afin de maintenir leur complexité relativement appréhendable.
+
+Un composant dispose d'interfaces spécifiées à l'aide de contrats, dans l'optique d'une composition ultérieure à sa conception, par des entités tierces. L'implantation de ce paradigme par de nombreuses technologies telles que les Enterprise Java Beans (EJB) de Sun, COM de Microsoft, ou FRACTAL du consortium OW2, a permis le leur large diffusion. Ces technologies déchargent le plus souvent le développeur de la gestion de certaines problématiques de mise en \oe{}uvre telles que le support de la sécurité, de la persistance et des transactions, pour ne citer qu'elles. 
+
+Ces mécanismes de support à l'exécution des composants seraient difficiles à mettre en place dans des environnements plus faiblement couplés (tels les services, détaillés à la sous-section suivante). La contre-partie est que les composants sont souvent bien trop liés à leurs plate-formes de support respectives pour être efficacement interopérables. Il s'agit pourtant là d'une de leurs caractéristiques les plus fondamentales. Se pose alors dans ce contexte la question de la méthodologie à utiliser pour assembler les composants disponibles; question à laquelle la notion d'architecture, telle que définie par ces différentes technologies, tente de répondre.
+
+\subsubsection{Service}
+
+Dans la lignée de l'approche à objets ou à composants, le paradigme de service tend à fournir un niveau d'abstraction encore plus élevé lors du développement de systèmes informatiques en général, et des applications réparties en particulier. Cette augmentation du niveau d'abstraction passe par une adoption poussée du concept d'encapsulation des fonctionnalités et de celui de la réutilisabilité des services existants. Les services répondent ainsi directement aux problématiques d'intégration logicielle dans les applications réparties modernes.
+
+Tout comme un composant, un \emph{service} est défini comme étant une unité logicielle autonome. Ce qui est d'autant plus vrai pour les services Web qui sont définis comme étant \emph{sans état} (\emph{``stateless''}). Les services se distinguent cependant des composants dans la mesure où leur définition met en avant une \emph{indépendance poussée} par rapport aux plate-formes, un \emph{couplage faible} (ou ``lâche'') et une \emph{interopérabilité élevée}. Cette \emph{autonomie} relègue les considérations purement technologiques au second plan, les services étant indépendants du contexte de leur utilisation ainsi que de l'état courant des autres services. Par ailleurs, leur propriété de faible couplage permet de mettre en \oe{}uvre une orchestration des services : cette approche introduit une plus grande flexibilité dans le choix des services à composer ainsi que dans le moment effectif de leur liaison. C'est ainsi que, dans nos travaux, nous cherchons à promouvoir une approche de \emph{liaison tardive} des services lors de leur orchestration, de manière à exploiter plus avant cette flexibilité dans certains contextes particulièrement dynamiques.
+
+De surcroît, les opérations courantes sur un service (comme sa mise au point, sa publication, ses interactions) s'effectuent toutes via des standards technologiques afin de faciliter leur collaboration à large échelle; le cas d'application le plus courant étant le Web. Leur découverte, dans ce contexte, par des consommateurs de services, est assurée le plus souvent par des annuaires qui centralisent les offres de services.
+
+\subsubsection{Composition de services}
+
+La composition de services\index{Composition de services} est définie dans ce manuscrit de la façon suivante :
+
+\vspace*{.5cm}
+\begin{definition}[Composition de services]{
+Un processus de mise en collaboration de services permettant d'offrir de nouveaux services dits \emph{complexes}, ou \emph{composites}, la base de services existant, \emph{atomiques} ou eux-mêmes \emph{composites}.
+}\end{definition}
+\vspace*{.5cm}
+
+La notion de service complexe ne remet pas en cause celle d'autonomie des services; car, du point de vue de leurs clients, les services complexes exposent toujours un comportement autonome. Par conséquent, un service complexe est un service ``comme les autres'' : la dépendance avec les autres services requis est gérée à un niveau inférieur, invisible pour l'utilisateur final. La composition peut, par ailleurs, être effectuée selon deux approches subtilement différentes : l'\emph{orchestration} et la \emph{chorégraphie} de services.
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item Une chorégraphie promeut le service comme élément central de la composition : elle décrit en effet le flux des messages échangés par un service Web lors de son interaction avec les autres services en présence lors de l'exécution. Il s'agit donc de gérer la composition d'une manière décentralisée puisque chaque service Web a la charge d'une partie du flot de contrôle (ou ``workflow''). La spécification WSCI (``Web Services Choregraphy Interface'') permet ainsi de spécifier le comportement d'un service Web par rapport au reste de la composition.
+
+\item \textit{A contrario}, dans le cadre d'une orchestration, c'est le flot de contrôle dans sa globalité qui est mis sur le devant de la scène sous la forme d'un \emph{processus métier}. L'orchestration dépend d'un ``orchestrateur'' (ou ``chef d'orchestre'') responsable de la composition dans son ensemble et des échanges de message, et ce par rapport aux activités définies dans le processus.
+
+\end{itemize}
+
+En l'occurrence, c'est cette seconde approche d'orchestration (pour sa forte prédominance dans notre contexte industriel) qui servira de base à nos travaux d'implantation d'une composition active de services. 
+
+
+\subsection{Service Web}
+\label{sec:Services Web}
+
+La notion de service\index{Paradigme!de service!service Web} par elle-même est purement abstraite et ne s'encombre pas de considérations technologiques; cependant, l'implantation la plus répandue de la notion de service est réalisée par les \emph{services Web}. Bien qu'il n'existe pas de définition canonique de celle de service Web, nous nous reposons sur celle (suffisamment générale) proposée par Moreau~\cite{Moreau2009} : 
+
+\vspace*{.5cm}
+\begin{definition}[Service Web]{
+Un service Web est une application autonome qui peut être utilisée et découverte par d'autres applications à travers un réseau. L'ensemble de ces mécanismes reposent sur des normes et technologies Web.
+}\end{definition}
+\vspace*{.5cm}
+
+Cette définition, bien que générique, encapsule les principes fondateurs des services Web directement hérités du concept de service : le découplage et l'autonomie du service Web ainsi constitué. Les services Web sont en effet des applications destinées à être utilisées en partie dans un cadre \textit{machine-à-machine} de manière répartie sur le réseau. Les normes et technologies citées dans la définition sont celles que l'on retrouve usuellement dans le cadre du Web auxquelles sont ajoutées des spécificités propres aux domaines considérés.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/contexte_servicesWeb.pdf}
+    \caption{Architecture des services Web selon le W3C.}
+    \label{fig:contexte_servicesWeb}
+  \end{center}
+\end{figure}
+
+De fait, le W3C se veut beaucoup plus spécifique d'un point de vue technologique, et introduit le langage WSDL pour la description des interfaces des services ainsi que SOAP pour la communication (le plus souvent \emph{via} HTTP avec une sérialisation XML). On retrouve ces technologies à leurs places respectives sur la figure~\ref{fig:contexte_servicesWeb} qui introduit l'annuaire de services en tant que médiateur initial de la communication entre les consommateurs de services et les services eux-mêmes.
+
+Par ailleurs, les services Web sont des composants \emph{sans état} offrant un faible couplage. Afin d'y parvenir, des spécifications techniques pour la description et la communication ont été établies et associées aux services Web à des fins normatives. 
+
+L'émergence de spécifications propres aux services Web témoigne de l'implication des industriels dans ce nouveau paradigme, ces derniers cherchent ainsi à faire collaborer leurs grands systèmes répartis au travers du Web. Ces spécifications peuvent être divisées en deux groupes : normes de bases et normes complémentaires.
+
+Les normes de base, qui constituent les fondations techniques des services Web, sont WSDL, UDDI et SOAP. Chacune est responsable d'un aspect fondamental du fonctionnement des services :
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=70mm]{figures/contexte_servicesWeb_wsdl.pdf}
+    \caption{Structure d'un document WSDL 1.1.}
+    \label{fig:contexte_servicesWeb_wsdl}
+  \end{center}
+\end{figure}
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item  WSDL (``Web Service Description Language'') est un langage de type XML permettant de décrire les offres techniques et fonctionnelles des services Web~\cite{curbera-web, chinnici2007web}. Un document WSDL est ainsi structuré en une première partie décrivant l'interface fonctionnelle du service, et une seconde partie technique portant notamment sur les protocoles de communication à utiliser ainsi que ses points d'accès. Dans la structure d'un document WSDL 1.1 (cf. figure~\ref{fig:contexte_servicesWeb_wsdl}), on retrouve une interface qui désigne une collection d'opérations; un élément de liaison (\emph{binding}) pour effectuer une association entre une interface, un protocole de transport et un format de données; un \textit{port} qui définit l'adresse physique d'un \textit{binding}; et finalement un service qui constitue une collection de \textit{ports}.
+
+\item UDDI (``Universal Description, Discovery and Integration'') est une spécification d'annuaires, mise au point par l'OASIS\footnote{L'OASIS est un consortium mondial qui travaille pour la standardisation de formats de fichiers ouverts fondés notamment sur XML} et permettant la publication et la découverte des services, elle est cependant déployée le plus souvent dans le cadre technique des services Web. Un annuaire UDDI permet de localiser sur le réseau le service Web recherché. Il contient en outre des informations sur les fournisseurs de ces services ainsi que des méta-données sur les services (informations techniques ou légales). Un annuaire respectant la spécification UDDI est accessible au travers de plusieurs interfaces dédiées à la publication ou la recherche de services. Ainsi, un annuaire UDDI est accessible en mode \textit{pages blanches} (la liste des entreprises fournisseuses de services ainsi que des informations associées à ces dernières), \textit{jaunes} (les services Web de chacune des entreprises sous le standard WSDL), ou \textit{vertes} (des informations techniques précises sur les services fournis). Grâce à cette triple lecture, l'ensemble des informations utiles sont accessibles.
+
+\item SOAP (``Simple Access Protocol'') est un protocole d'échange de messages. Ces derniers sont transmis aux services Web sous forme de documents XML divisés en un \textit{entête} (\textit{``header''}) contenant les informations de support du message, complété d'un \textit{corps} (\textit{``body''}) contenant la charge utile du message, c'est-à-dire les données et opérations du domaine d'application. SOAP présente par ailleurs la particularité de n'être lié à aucun type de protocole de transport de données (de niveau inférieur) spécifique; on le rencontre cependant le plus souvent associé à HTTP, ce qui exprime la composante \textit{Web} de ces services.
+
+\end{itemize}
+
+Si les normes de base que nous venons d'aborder permettent d'effectuer les opérations de base du cycle de vie des services Web, elles servent de marche-pied à d'autres normes (ou spécifications) complémentaires. Il s'agit des normes communément appelées \textit{WS-*}, qui fournissent notamment des mécanismes de support de la QoS. Il est possible de les combiner, bien qu'elle soient le plus souvent à des niveaux de maturité différents car maintenues en parallèle par diverses organisations de standardisation. Ainsi, si elles peuvent effectivement se compléter efficacement, elles peuvent aussi se chevaucher, voire se concurrencer l'une l'autre. Citons, à titre d'exemple, WS-Policy qui traite spécifiquement des exigences, capacités et préférences de QoS du service, ainsi que WS-Security qui aborde les divers mécanismes permettant de mettre en place une sécurisation des échanges de messages \emph{intra} et \emph{extra} services.
+
+%<-- http://www.eclipse.org/stp/b2j/docs/tutorials/wsbpel/wsbpel_tut.php - OK
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Offre WSDL d'un service Web d'affichage de chaînes de caractères., label=listing:hello_world.wsdl]{sources/hello_world.wsdl}
+
+Nous présentons ici un exemple d'offre\footnote{fondé sur le tutoriel suivant de le Fondation Eclipse :\\\href{http://www.eclipse.org/stp/b2j/docs/tutorials/wsbpel/wsbpel\_tut.php}{http://www.eclipse.org/stp/b2j/docs/tutorials/wsbpel/wsbpel\_tut.php}} au format WSDL 1.1 d'un service Web très simple (cf. code~\ref{listing:hello_world.wsdl}) qui se charge uniquement d'effectuer l'affichage d'une chaîne de caractères qui lui est passée en argument \textit{via} l'opération \textit{print}. Cette offre de service décrit comment utiliser le service (son \textit{API}) et quelle est son implantation concrète. S'il est possible de diviser un fichier WSDL de manière à ce qu'un service Web puisse être décrit une fois mais implanté de multiple fois, de différentes façons, nous nous restreignons dans cet exemple à la configuration de base qui dispose d'une implantation pour une description dans un fichier unique.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+targetNamespace="http://www.eclipse.org/tptp/choreography/2004/engine/Print"
+\end{lstlisting}
+\smallskip 
+
+La définition d'un attribut XML \textit{targetNamespace} permet de s'assurer que tous les éléments créés par ce fichier WSDL seront assignés à un espace de noms qui leur est propre et qui permet de les distinguer de leurs pairs. En l'occurrence les messages WSDL ainsi que le \textit{portType} créé dans le fichier vont hériter de l'espace \texttt{"http://www.eclipse.org/tptp/choreography/2004/engine/Print"}.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<!-- engine printout port -->
+<message name="PrintMessage">
+	<part name="value" type="xsd:string"/>
+</message>
+\end{lstlisting}
+\smallskip 
+
+Les messages WSDL sont utilisés pour spécifier la forme des conteneurs de données utilisés lors de l'invocation d'une opération. Il s'agit essentiellement de listes de \textit{parts}, chacune d'entre elles étant un type de données XSD simple ou complexe. Dans l'extrait ci-dessus, le \textit{'PrintMessage'} est défini comme ayant une \textit{part} nommée \textit{'value'} de type \textit{'xsd\string:string'}.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<portType name="Print">
+	<operation name="print">
+		<input message="tns:PrintMessage"/>
+	</operation>
+</portType>
+\end{lstlisting}
+\smallskip 
+
+Les \textit{portTypes} représentent la définition du service Web lui-même. Ils décrivent l'\textit{API} du service. Il s'agit d'une liste d'opérations avec des entrées (\textit{'inputs'}) et des sorties (\textit{'outputs'}). Chaque entrée ou sortie est un \textit{message} WSDL qui doit avoir été défini précédemment dans le fichier WSDL ou importé. Une \textit{operation} peut aussi disposer d'un nombre illimité d'éléments \textit{fault} qui définissent un message d'erreur utilisé en lieu et place du message \textit{output} par défaut. Un \textit{portType} est donc similaire à une interface ou une classe abstraite du monde objet, il ne spécifie aucune implantation particulière, seulement ce qui peut être réalisé. On peut aussi remarquer que le \textit{portType} (\textit{'Print'}) n'a pas de préfixe d'espace de noms, ceci est dû au fait qu'il est automatiquement affecté au \textit{targetNamespace} précédemment défini, comme tout élément créé au sein du fichier WSDL.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<binding name="PrintPortWsifBinding" type="tns:Print">
+	<java:binding/>
+	
+	<format:typeMapping encoding="Java" style="Java">
+		<format:typeMap typeName="xsd:string" formatType="java.lang.String"/>
+	</format:typeMapping>
+	
+	<operation name="print">
+		<java:operation methodName="print" parameterOrder="value"/>
+	</operation>
+</binding>
+\end{lstlisting}
+\smallskip 
+
+Un \textit{binding} WSDL spécifie concrètement comment le service Web est implanté, contrairement à toutes les précédentes informations qui étaient abstraites. De fait, cette offre de service ne sera exploitable par ses clients que si elle contient un élément de ce type : un WSDL basique est une description de l'offre en termes de services qui n'est pas tenue de préciser le \textit{où} et le \textit{comment} technique d'accès à ce service.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=70mm]{figures/contexte_servicesWeb_bindings.pdf}
+    \caption{De nombreux moyens d'accès à un service Web en fonction de son offre.}
+    \label{fig:contexte_servicesWeb_bindings}
+  \end{center}
+\end{figure}
+
+Un service peut être "lié" de plusieurs façons, avec de nombreux \textit{bindings} (cf. figure~\ref{fig:contexte_servicesWeb_bindings}). Les plus courants sont le \textit{binding} SOAP/HTTP qui véhicule des messages SOAP \textit{via} le protocole HTTP lors de l'interaction avec les services Web, et le \textit{binding} Java que nous allons exploiter dans cet exemple car il permet de définir un service Web très rapidement en liant à un \textit{portType} une classe Java qui sera utilisée directement comme implantation de ce service. Dans le \textit{binding} ci-dessus, l'opération \textit{'print'} du précédent \textit{portType} a été appariée à une méthode Java \textit{'print'}, et le type XSD \textit{'string'} au type Java \textit{'String'}. A partir de cette information d'appariement, une classe Java spécifique peut être par la suite indiquée dans le fichier WSDL comme l'\textit{address} d'une implantation de service. Cette classe sera instanciée, et lorsqu'un appel sera effectué sur la méthode \textit{'print'} du service, elle sera transmise avec toutes les conversions de données nécessaires à la méthode Java \textit{'print'} indiquée dans le \textit{binding}.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<service>
+	<port name="JavaPrintPort" binding="tns:PrintPortWsifBinding">
+		<java:address className="org.eclipse.tptp.choreography.jengine.internal.extensions.wsdlbinding.wsif.ports.EnginePrinterPort"/>
+	</port>
+</service>
+\end{lstlisting}
+\smallskip 
+
+Un élément \textit{service} permet de définir des \textit{ports} WSDL. Chaque \textit{port} est une instance particulière de service Web qui est implantée \textit{via} un \textit{binding} spécifique et est disponible à une adresse donnée. Le \textit{port} dans l'extrait de code ci-dessus défini un service Web lié grâce au \textit{binding} \textit{'PrintPortWsifBinding'} et qui peut être trouvé à l'adresse \textit{'org.eclipse...EnginePrinterPort'}. On remarque ainsi très rapidement que le type d'adresse utilisé dépend du \textit{binding}. Le \textit{binding} Java sait interpréter l'attribut \textit{'className'} comme le nom qualifié d'une classe Java et comprend que cette dernière doit être instanciée et les opérations WSDL transmises aux méthodes Java indiquées dans le précédent \textit{binding}.
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Implantation Java d'un service Web d'affichage de chaînes de caractères., label=listing:hello_world.java]{sources/hello_world.java}
+
+Enfin, la classe Java définie par l'extrait de code~\ref{listing:hello_world.java} correspond à l'implantation du service telle que pointée par dans le \textit{port}. Elle implante la méthode \textit{'print'} telle que définie dans le \textit{binding}.
+
+% <-- Chap 2.4.3 These Aurélien - OK
+% <-- http://www.w3.org/TR/sawsdl/ section 1.4 pour l'exemple SAWSDL
+\subsection{Service Web sémantique}
+\label{sec:Services Web sémantiques}
+
+On qualifie de \emph{sémantique} un service Web mettant en \oe{}uvre des technologies issues de la récente rencontre entre le monde des services Web et celui du Web sémantique~\cite{T.Berners-Lee2001}. Ainsi, si les normes et spécification de services Web que nous avons précédemment abordées fixent un cadre syntaxique à leur utilisation, et ceci en répertoriant les fonctionnalités et les données de ces services de manière rigoureuse et réutilisable, le Web sémantique s'efforce quant à lui de les rendre ``intelligible'' par un programme informatique. Cette notion va ici se traduire par la capacité d'un programme à mener à bien des raisonnements complexes, de manière autonome, sur des méta-informations (ou ``méta-données'') venant caractériser les fonctionnalités et les données des services Web.
+
+D'un point de vue technique, une offre de service Web (donc son interface sur le monde extérieur) est décrite en WSDL. Les informations contenues par cette description sont d'ordre technique (l'adresse du service, le protocole utilisé pour la communication, etc.) et fonctionnel (quel service est rendu par cette entité, caractérisé par ses méthodes et le type de ses données), mais vont, en tout état de cause, se présenter sous la forme d'informations syntaxiques : \emph{la forme} des méthodes et données est décrite, mais pas \emph{leur fond}.
+
+Une première étape à la description du ``fond'' des services par rapport à leur ``métier'', et donc du sens accordé à leurs méthodes, données, et même aux services eux-mêmes dans leur ensemble, fut de porter des méta-informations, dans les balises de commentaires prévues à cet effet au sein des offres de services. Cependant, cette \emph{sémantique} primitive ne permet pas l'interprétation autonome des méta-données par un programme puisque les commentaires sont, par nature, destinés à être lus par un opérateur humain : elles ne peuvent que servir de documentation ou de guide pour un ingénieur. La jonction avec les travaux du Web sémantique s'effectue alors dans une volonté commune d'élever ses méta-informations au rang de véritable sémantique métier librement interprétables par une machine : le langage naturel dans lequel sont  dépeints les commentaires étant particulièrement mal adapté à un traitement automatique, ces travaux proposent alors de décrire les méta-données de manière formelle, pour certains à l'aide d'ontologies fondées sur la logique de description~\cite{kutz2003basic}, tel que rendu possible par le langage OWL-DL~\cite{welty2004owl}.
+
+Se pose alors la question du lien entre la description syntaxique d'un service et les informations d'ordre sémantique qui le complètent. Plusieurs solutions techniques existent, avec leur avantages et inconvénients respectifs. Citons pour les plus connues OWL-S~\cite{martin2004owl}, WSMO~\cite{roman2005wsmo} ou encore SAWSDL~\cite{kopecky2007sawsdl}. C'est cette dernière qui sera mise à l'\oe{}uvre dans nos travaux, et ce pour des raisons aussi bien techniques qu'industrielles. En effet, elle s'est imposée, depuis l'obtention en 2007 de son statut de ``Recommandation W3C'' comme \emph{la} spécification incontournable dans le monde des services Web sémantiques. Hormis le prestige et la pérennité que lui confère un tel statut, c'est surtout sa facilité à intégrer aisément les services patrimoniaux déjà déployés dans les entreprises (SAWSDL étant défini comme extension de WSDL 2.0) qui a fini d'asseoir sa prédominance. Qui plus est, elle est aisée à déployer et ne fait pas d'hypothèses spécifiques sur le type de logique utilisé pour la description sémantique. Elle permet ainsi, par le biais des attributs \textit{sawsdl\string:modelReference}, \textit{sawsdl\string:loweringSchemaMapping} et \textit{sawsdl\string:liftingSchemaMapping}, spécifiquement prévus par la spécification, d'annoter sémantiquement les principaux éléments syntaxiques d'une offre de service. La valeur de ces attributs étant le plus souvent une URL pointant vers un concept extrait d'une ontologie métier. 
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Exemple d'offre de service au format SAWSDL., label=listing:contexte_sawsdl_exemple]{sources/contexte_sawsdl_exemple.sawsdl}
+
+Ce principe est illustré dans l'extrait de code~\ref{listing:contexte_sawsdl_exemple} extrait de la spécification SAWSDL, où un service basique de vente à distance est annoté sémantiquement par des concepts extraits d'une ontologie dont l'URL est \texttt{http\string://www.w3.org/2002/ws/sawsdl/spec/ontology/purchaseorder}. Ce service expose une seule méthode \textit{order} en attente d'un numéro de compte client et d'une liste d'articles à commander, elle va ensuite retourner l'état de la commande (\textit{confirmée}, \textit{en attente}, \textit{rejetée}). Chaque annotation \textit{sawsdl\string:modelReference} identifie un concept bien précis de l'ontologie : l'élément \textit{OrderRequest} du schéma de données de ce SAWSDL est ainsi décrit grâce au concept éponyme de l'ontologie \textit{purchaseorder}. Il est possible de raisonner automatiquement sur \emph{le concept} \textit{OrderRequest}, par exemple lors d'une recherche de services dans un annuaire, car celui-ci est défini formellement dans une ontologie, par rapport aux autres concepts du domaine métier couvert par cette dernière, et ceci contrairement à \emph{l'élément} \textit{OrderRequest} qui en lui-même ne constitue qu'un nom de méthode. Un intérêt direct est alors de proposer, suite à une recherche dans un annuaire, des services sémantiquement proches ou équivalents, là où une recherche purement syntaxique (par exemple sur les noms exacts des services ou de leurs méthodes) aurait échouée. 
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/contexte_servicesWeb_transformations.pdf}
+    \caption{Transformation de données par \textit{lifting} et \textit{loweringSchemaMappings}.}
+    \label{fig:contexte_servicesWeb_transformations}
+  \end{center}
+\end{figure}
+
+Pour finir, une annotation \textit{sawsdl\string:loweringSchemaMapping} est aussi liée à l'élément \textit{OrderRequest}, elle pointe vers un fichier XML de description des correspondances entre les éléments internes d'\textit{OrderRequest} et les concepts ontologiques disponibles. Cette annotation, utilisée conjointement avec \textit{sawsdl\string:liftingSchemaMapping}, assoit l'ontologie comme un modèle pivot qui apporte un élément de réponse, bien que basique, aux problèmes récurrents d'adaptation de données propres aux services Web sémantiques. En effet, dans les SSOAs, à partir du moment où la mise en correspondance d'une offre et d'une demande de service est dirigée par des critères sémantiques de haut niveau extraits d'ontologies, cette correspondance ne préjuge en rien d'une parfaite correspondance, au plus bas niveau syntaxique, entre les structures de données indispensables au passage de valeurs compréhensibles par les deux parties en présence. Ainsi, par une utilisation appropriée des \textit{lifting} et \textit{loweringSchemaMapping}, on est capable par exemple, de mettre en correspondance deux éléments annotés par le concept ontologique commun \textit{OrderRequest} (un élément côté processus client, l'autre côté service Web), donc équivalents sémantiquement, mais subtilement différents syntaxiquement (par exemple sous-éléments du type dans un ordre ou de noms différents, champs composites, etc.). Il suffit de décrire au préalable, sous forme de transformations XSLT, les correspondances de ces éléments vers, et à partir de, la structure du concept ontologique \textit{OrderRequest}; puis, dans un second temps, d'enchaîner ces transformations pour faire ``naviguer'' les données entre clients et services. Cette approche est synthétisée dans la figure~\ref{fig:contexte_servicesWeb_transformations}. Bien que simple à mettre en \oe{}uvre, elle n'est cependant pas sans défaut ni inconvénient : l'approche suppose déjà l'existence de concepts ontologiques suffisamment détaillés pour contenir toutes les données à transformer, ce qui n'est pas le cas de toutes les ontologies métier; ensuite, elle ne précise pas par quels moyens les transformations sont obtenues : génération automatique ou mise à contribution des utilisateurs ? Pour finir, elle induit la création d'un nombre très important de ces transformations vers, et à partir de, l'ontologie pivot.
+
+Les services Web sémantiques et la technologie SAWSDL apportent donc une réponse technique non-négligeable à la problématique de la gestion d'une \emph{grande diversité} en termes de services \emph{équivalents} disponibles à l'exécution. Cette diversité est, par ailleurs, une caractéristique importante du cas d'utilisation de nos travaux (cf. chapitre~\ref{ch:cas_utilisation}). Elle est en effet favorisée par la mise en \oe{}uvre probante et effective de la propriété de couplage lâche promue par les Architectures Orientées Services, grâce à l'utilisation de sémantique métier dans les offres et demandes de services.
+
+\subsection{Composition de services Web}
+\label{sec:Composition de services Web}
+
+D'un point de vue technique, la spécification BPEL4WS (``Business Process Execution Language for Web Services''), appelée aussi WS-BPEL, ou plus communément BPEL, a récemment émergée comme un standard de fait, issue de la récente fusion de précédents travaux menés par IBM et Microsoft dans le domaine des langages \textit{d'exécution} de processus métier. Le langage BPEL, que nous étudierons plus en détail dans la section~\ref{sec:Processus métiers}, est en effet aujourd'hui incontournable pour la spécification et la mise en \oe{}uvre de compositions de services. C'est notamment vers ce langage que se sont tournés les derniers efforts de l'industrie pour la mise au point des nombreux moteurs d'orchestration, dont les plus répandus sont abordés ci-dessous. Il faut cependant noter que, bien que fondés sur la même spécification BPEL, ils ne sont que rarement interopérables; cet état de fait est en grande partie dû à l'implantation par certains industriels d'extensions propriétaires à la spécification originelle dans leurs moteurs.
+
+% <-- Chap 2.4.2 These Aurelien - OK
+\subsubsection{Moteurs d'orchestration de services Web}
+\label{sec:Moteurs d'orchestration de services Web}
+
+Un \emph{moteur d'orchestration} est une implantation du concept, précédemment évoqué, d'orchestrateur central. On ne considère ici que les moteurs capables d'interpréter la spécification de processus BPEL, les plus répandus à l'heure actuelle, et recherchons tout particulièrement le support du mécanisme d'extension défini dans WS-BPEL 2.0. Ce dernier, exploité lors de l'implantation de la liaison tardive de services (cf.~\ref{sec:Liaison tardive d'un service}), permet de définir des activités \emph{ad hoc} dérivées des activités BPEL standards, voire de toutes nouvelles activités. 
+
+Le but de cette section n'est pas d'établir une liste exhaustive de ces moteurs; cependant, nous nous arrêtons sur certaines caractéristiques saillantes de trois moteurs libres particulièrement répandus : 
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item \emph{ActiveBPEL} d'Active Endpoints\footnote{\href{http://www.activevos.com/community-open-source.php}{http://www.activevos.com/community-open-source.php}} est disponible en majeure partie sous la licence virale GPL v2 ce qui induit l'utilisation d'une licence similaire dans tout produit qui en serait dérivé. Il ne propose aucun mécanisme d'extension des processus métier car il implante la version 1.1 de la spécification BPEL mais dispose cependant d'une grande notoriété dans la communauté SOA, probablement due à son apparition précoce.
+\item \emph{Orchestra}\footnote{\href{http://orchestra.ow2.org/xwiki/bin/view/Main/}{http://orchestra.ow2.org/xwiki/bin/view/Main/}}, développé par le consortium OW2, est distribué sous licence LGPL ce qui facilite son intégration ou dérivation dans des réalisations industrielles ``fermées''. Contrairement à ActiveBPEL, il dispose d'un véritable support des extensions d'activités spécifiés par WS-BPEL 2.0. Son usage est cependant moins répendu.
+\item \emph{Apache ODE}\footnote{\href{http://ode.apache.org/}{http://ode.apache.org/}} est distribué sous licence Apache v2 ce qui permet donc de fonder des produits industriels propriétaires sur sa base de code. Il dispose d'un excellent support des extensions WS-BPEL 2.0 (il fourni d'ailleurs lui-même un ensemble d'extensions pré-établies) mais reste pour l'instant relativement moins connu et répandu qu'ActiveBPEL ou Orchestra.
+\end{itemize}
+
+\subsubsection{Autres approches de composition}
+
+Nous avons évoqué ci-dessus plusieurs alternatives pour l'orchestration de services Web, elles se fondent toutes sur l'usage d'un moteur d'orchestration qui permet une séparation stricte entre la définition d'un processus métier, client des services disponibles dans son voisinage, et les services eux-mêmes. Mais bien souvent, une approche beaucoup plus statique, bien que pragmatique, à la composition de services consiste à la décrire directement par l'usage d'un langage généraliste de programmation. En effet, des langages comme Java disposent de plusieurs bibliothèques permettant de manipuler des services Web. De plus, certaines approches hybrides ont fait leur apparition : c'est le cas du projet ``BPEL to Java''\footnote{\href{http://www.eclipse.org/stp/b2j/}{http://www.eclipse.org/stp/b2j/}} qui permet de générer à partir d'une description BPEL un programme Java capable de mener à bien l'orchestration afférente de manière autonome.
+
+
+% <-- Chap 2.2 These Aurélien - OK
+\section{Processus métier}
+\label{sec:Processus métiers}
+
+Cette section a pour but de définir précisément la notion de processus métier précédemment évoquée, et ce au travers de la présentation d'un ensemble non-exhaustif des solutions que l'on considère comme prédominantes sur ce segment (BPMN, diagrammes d'activités, BPEL, etc.).
+
+La dénomination de ``processus métier'' est celle qui a été retenue dans ce manuscrit, mais il en existe d'autres qui recoupent un même noyau conceptuel : on peut ainsi parler de ``procédures d'entreprise'', ``processus d'affaire'', ``procédés'' ou, sous sa forme anglo-saxonne, de ``(business) process''. De toutes ces dénominations émerge une sémantique commune que nous fondons sur les travaux de Johansson \textit{et al.}~\cite{johansson1993business} : 
+
+\vspace*{.5cm}
+\begin{definition}[Processus métier]
+Un ensemble d'activités liées qui prend une entrée et la transforme en sortie. La transformation effectuée par le procédé doit créer de la ``valeur ajoutée'' par rapport à l'entrée et produire donc une valeur de sortie plus ``utile'' au requérant du processus métier.
+\end{definition}
+\vspace*{.5cm}
+
+Par extension de cette précédente définition, nos travaux se situent dans le cadre des processus informatisés : les entrées/sorties sont des données et les activités des instructions ou programmes externes. Ainsi, dans notre contexte, un processus métier est constitué d'un flot de contrôle, d'un flot de données (techniques et métiers), et d'un ensemble d'activités atomiques assurées en majeure partie par des partenaires externes au processus (en l'occurrence, des services).
+
+On effectue alors la distinction entre les normes dites \emph{de conception} de processus métier, qui se limitent à une description de haut niveau (souvent graphique) des processus, et celles \emph{d'exécution} à proprement parler. Si elles permettent toutes de représenter de manière relativement naturelle la décomposition d'une tâche particulière en étapes distinctes, ainsi que d'exposer la logique contrôlant l'exécution de ces étapes, seuls les processus exprimés (directement ou non) par le biais d'une norme d'exécution contiennent suffisamment d'information de bas niveau pour pouvoir être exécutées de manière automatique, sans intervention humaine \textit{a posteriori}, par un moteur d'orchestration de services (cf.~\ref{sec:Moteurs d'orchestration de services Web}).
+
+\subsection{Normes de conception}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/context_bpmn_diagram.pdf}
+    \caption{Exemple caractéristique de processus BPMN.}
+    \label{fig:context_context_bpmn_diagram}
+  \end{center}
+\end{figure}
+
+BPMN~\cite{white2004introduction} est une norme graphique, simple d'utilisation (car disposant d'un ensemble relativement réduit d'éléments $\approx 10$), et adaptée à la modélisation haut-niveau de processus métiers. Les processus BPMN n'ont donc pas vocation à être directement exécutés dans un système informatique, mais sont plutôt mis en \oe{}uvre dans les phases amont de d'ingénierie logicielle, quitte à être traduits \textit{a posteriori} (par transformation de modèle et/ou intervention humaine) dans un format exécutable. La figure~\ref{fig:context_context_bpmn_diagram} présente ainsi un exemple caractéristique de processus BPMN de haut niveau, pour la gestion d'un groupe de travail par email, où les principales activités sont effectivement décrites de manière discursive (``Vérifier état du groupe de travail'', ``Groupe de travail encore actif ?'', etc.).
+
+Un diagramme d'activités UML permet aussi de modéliser un processus interactif (global ou partiel) pour un système donné, et ce, qu'il soit logiciel ou non. Il est créé à partir d'une des sous-spécifications du langage de modélisation ``unifié'' UML~\cite{rumbaugh2004unified}, et une de ses forces réside justement dans sa capacité à référencer \emph{et compléter} des modèles UML de types différents; comme des diagrammes de classe, de cas d'utilisation, etc.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[height=110mm]{figures/context_for_loop_diagram.pdf}
+    \caption{Diagramme d'activité UML de la boucle \textit{for}.}
+    \label{fig:context_for_loop_diagram}
+  \end{center}
+\end{figure}
+
+Les diagrammes d'activités peuvent alors être vus comme des représentations comportementales de haut niveau permettant d'exprimer une dimension temporelle sur tout ou partie des modèles UML considérés. En ce sens, ils sont sémantiquement proches des diagrammes UML de communication ou d'état-transition, voire des diagrammes BPMN, ce qui a déjà été étudié~\cite{white2004process} et peut être constaté visuellement sur la figure~\ref{fig:context_for_loop_diagram} représentant la simple boucle \textit{for(A;B;C) D;} d'une manière proche d'un organigramme. Ces diagrammes se distinguent cependant de BPMN dans la mesure où ce dernier est centré sur la modélisation d'un processus dans sa globalité alors que les diagrammes d'activité ont pour vocation de mettre au jour les objets-même du système. 
+
+\subsection{Norme d'exécution : BPEL 2.0}
+
+BPEL est un langage de processus qui dispose d'une syntaxe XML et permet la mise en \oe{}uvre de services Web complexes. Ces processus sont exécutables par des moteurs d'orchestration, et constitués en majeure partie d'activités de gestion du flot contrôle et de données, ainsi que de communication avec les services Web requis et clients du processus. Dans la spécification WS-BPEL 2.0, la distinction est effectuée entre activités \emph{basiques} et \emph{avancées} de gestion du flot de contrôle:
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item Activités basiques : \textit{invoke} permet d'appeler le port d'un service Web partenaire; \textit{receive} permet de se mettre en attente de la réception d'un message; \textit{reply} correspond à la réponse adressée au client du processus; \textit{wait} met le processus en attente pour un temps déterminé; \textit{assign} permet d'affecter une valeur à une variable; \textit{throw} lève une exception traitée ou non au sein du processus; et finalement, \textit{empty} qui correspond à une instruction sans effet.
+
+\item Activités avancées de gestion du flot de contrôle : \textit{flow} exécute un ensemble d'activités de manière concurrente et reliées entre elles par des liens; \textit{sequence} exécute en séquence un ensemble d'activités; \textit{switch} permet de sélectionner une branche d'activités parmi plusieurs, en fonction de conditions; \textit{while} effectue des itérations jusqu'à satisfaction d'un critère, \textit{pick} bloque le processus jusqu'à ce qu'un événement spécifique se produise (réception d'un message, alarme temporelle, etc.); \textit{scope} définit une zone restreinte du processus permettant la définition de variables, de fautes et de gestionnaires d'exception; \textit{compensate} permet d'invoquer un processus de compensation d'exception.
+
+\end{itemize}
+
+% <-- http://www.eclipse.org/stp/b2j/docs/tutorials/wsbpel/wsbpel_tut.php - OK
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Extrait d'un processus métier basique au format BPEL., label=listing:hello_world.bpel]{sources/hello_world.bpel}
+
+Pour illustrer le plus simplement possible ces concepts, nous nous tournons vers l'inévitable exemple \textit{ 'HelloWorld !'} bien connu des informaticiens. Mais cette fois, l'affichage de la chaîne de caractères sera effectué grâce à un service Web (cf. le service que nous avons défini dans la section~\ref{sec:Services Web}). Le programme \textit{ 'HelloWorld !'} est ici défini à l'aide du processus BPEL présenté dans l'extrait de code~\ref{listing:hello_world.bpel} : la définition de la logique applicative se trouve effectivement dans le code BPEL, celle des types des données dans des schémas XSD complémentaires, et celle des entrées/sorties du programme dans les descriptions WSDL qui lui sont associées.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<import importType="http://schemas.xmlsoap.org/wsdl/" 
+	location="../../test_bucket/service_libraries/tptp_EnginePrinterPort.wsdl" 
+	namespace="http://www.eclipse.org/tptp/choreography/2004/engine/Print" />
+\end{lstlisting}
+\smallskip 
+
+La déclaration \textit{import} peut être utilisée pour importer des fichiers WSDL ou XSD externes au sein du processus BPEL. Dans les deux cas, ce mécanisme permet de décorréler du fichier BPEL des définitions tierces de types de données ou d'offres en termes de services qui peuvent alors être partagées et réutilisées par plusieurs processus. Il est à noter que les fichiers WSDL disposent d'un mécanisme similaire pour l'import de fichiers XSD ou même WSDL. Dans cet exemple, on référence \textit{directement} un service Web défini dans le fichier WSDL \textit{'...tptp\_EnginePrinterPort.wsdl'}.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<partnerLinks>
+	<partnerLink 	name="printService" 
+				partnerLinkType="print:printLink" 
+				partnerRole="printService"/>
+</partnerLinks>
+\end{lstlisting}
+\smallskip 
+
+Les \textit{partnerLink} sont utilisés en BPEL pour désigner les partenaires de la composition auxquels on s'adresse. En l'occurrence il s'agit des services Web liés au processus : un \textit{partnerLink} est indirectement apparié à la définition d'un \textit{portType} d'une offre de service au format WSDL, donc à un service Web en particulier. Concrètement, cela signifie qu'\emph{un couplage fort entre services et processus est établi lors de la définition de ces derniers}, ce qui rend BPEL, \emph{en l'état}, incompatible avec les SSOAs, mais aussi avec une utilisation réellement dynamique d'annuaires.
+
+Par ailleurs, les \textit{partnerLinks} ne se limitent pas à désigner les entités auxquelles le processus s'adresse : ils peuvent aussi décrire comment ces entités externes s'adresse à lui. En effet, n'oublions pas qu'un processus métier, lors de son orchestration, est perçu lui aussi comme un service Web dans son environnement. Dans la définition ci-dessus, un attribut \textit{partnerRole} caractérise le service Web auquel le processus va s'adresser; il aurait aussi pu définir un second attribut \textit{myRole} pointant vers la définition ``externe'' de ce processus sous forme d'un fichier WSDL.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<variables>
+	<variable 	name="hello_world" 
+			messageType="print:PrintMessage" />
+</variables>
+\end{lstlisting}
+\smallskip 
+
+Les variables sont utilisées pour contenir les données au cours de l'exécution du processus BPEL. Elles peuvent recueillir des valeurs XSD ou des messages WSDL. Dans l'exemple ci-dessus, une variable \textit{'hello\_world'} est déclarée comme contenant pour des messages WSDL du type \textit{'print:PrintMessage'}. Ainsi, en lieu et place de l'attribut \textit{messageType}, la variable aurait pu avoir un attribut \textit{type} spécifiant un type XSD simple (par exemple \textit{'xsd\string:string'} ou \textit{'xsd\string:interger'}) ou complexe.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<assign>
+	<copy>
+		<from><literal>Hello World !</literal></from>
+		<to>.value</to>
+	</copy>
+</assign>\end{lstlisting}
+\smallskip 
+
+En BPEL, les variables sont manipulées lors de l'accès aux services Web externes (\textit{i.e.} passage d'arguments, stockage des valeurs de retours) ou par affectation directe. C'est ce dernier cas de figure qui est illustré par l'extrait de code ci-dessus : un valeur littérale de chaîne de caractères étant affectée à la variable \textit{'hello\_world'}. En l'occurrence, la variable \textit{'hello\_world'} correspond à un message WSDL disposant d'une partie \textit{'value'} de type \textit{'xsd\string:string'} que l'on référence ici par une syntaxe XPATH classique (utilisation du séparateur \textit{'.'}).
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<invoke partnerLink="printService" operation="print" inputVariable="hello_world" />
+\end{lstlisting}
+\smallskip 
+
+L'activité \textit{invoke} correspond à l'invocation d'un service Web spécifique. C'est à cet emplacement que le processus BPEL transmet les données stockées dans la variable \textit{'hello\_world'} au service Web partenaire pour effectuer leur affichage. Le \textit{partnerLink} indique indirectement au moteur d'orchestration l'``adresse'' du service Web à invoquer et, \textit{via} l'attribut \textit{operation}, laquelle de ses méthodes doit être invoquée. 
+
+Ce que le service Web va effectivement réaliser et comment il va y parvenir n'est absolument pas spécifié dans ce processus BPEL. Une infime partie de cette information est cependant indiquée sous forme syntaxique dans l'offre de service au format WSDL que le processus référence (cf. l'offre de service d'affichage précédemment définie dans la section~\ref{sec:Services Web}). Dans un contexte SSOA, cette information pourrait être significativement augmentée par l'utilisation de concepts ontologiques du domaine au sein de l'offre de service.
+
+\smallskip 
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox}
+\begin{lstlisting}
+<partnerLinkType name="printLink">
+	<role name="printService" portType="tns:Print"/>
+</partnerLinkType>
+\end{lstlisting}
+\smallskip 
+
+L'élément \textit{partnerLink} vu précédemment, référence un \textit{partnerLinkType} qui n'est pas défini dans le fichier BPEL. Cet élément, défini dans l'extrait de code ci-dessus, doit être ajouté au fichier WSDL\textit{'...tptp\_EnginePrinterPort.wsdl'}. Cependant, les \textit{partnerLinkTypes} ne sont pas à proprement parler des éléments de la spécification WSDL, mais bien de BPEL. C'est cette dernière spécification, postérieure à WSDL, qui requiert qu'une instance de \textit{partnerLink} soit forcément associée à un \textit{portType} WSDL spécifique. C'est l'élément \textit{partnerLinkType} qui effectue cette association tout en définissant le rôle de chaque pair impliqué en son sein : en l'occurrence, dans cet exemple, seul le rôle \textit{'printService'} du service Web doit être implanté.
+
+Pour finir, il existe des alternatives à BPEL, malgré la sur-représentativité de ce dernier dans notre contexte :  citons à titre d'exemple YAWL~\cite{van2005yawl}, qui se présente comme un langage relativement récent de ``flot de travail'', fondé sur des principes issus des réseaux de Petri~\cite{petri2008petri} et ayant pour objectif de couvrir la majeure partie des besoins courants des modélisateurs en permettant d'intégrer et de se coupler à d'autres normes existantes. La Fondation YAWL\footnote{\href{http://yawlfoundation.org/}{http://yawlfoundation.org/}} met par ailleurs à disposition l'ensemble du canevas et des outils construits autour du langage sous licence LGPL, ce qui pourrait contribuer à son succès sur le long terme.
+
+\section{Propriétés et contraintes non-fonctionnelles de services}
+\label{sec:Propriétés et contraintes non-fonctionnelles de services}
+
+Cette section a pour objet d'introduire les concepts de \emph{propriétés} et \emph{contraintes non-fonctionnelles} de services, ainsi que celui de \emph{conformité} entre offres et demandes de service. De par le caractère particulièrement concret de ces concepts, cette introduction passe en majeure partie par la présentation les travaux les plus courants s'y référant. Ces derniers permettent ainsi d'exprimer notamment, à une granularité et une précision plus ou moins élevée, les propriétés non-fonctionnelles que peuvent exhiber certains services. Au degré le plus fin, il s'agit de typer et classifier les propriétés elles-mêmes : de nombreux efforts en termes de \emph{taxonomies} ou \emph{ontologies}  (cf. section \ref{sec:Taxonomies et ontologies de QoS}) ont été pratiqués à cet effet. A une granularité moindre, se pose par ailleurs la question de l'articulation entre les propriétés non-fonctionnelles, ainsi que celle de leur évaluation par les fournisseurs et consommateurs de services : ce rôle étant généralement assuré par l'abstraction de \emph{contrat de service} que nous détaillerons (cf.~ \ref{sec:Contrats de Qualité de Service}). Si ce manuscrit n'a cependant pas pour objet de présenter une contribution scientifique directe sur ces notions, notre approche pour la composition active de services repose sur ce contexte technique dans certaines de ses phases les plus amont, en particulier lors du filtrage des services (cf. section~\ref{sec:Filtrage de services}).
+
+Dans notre cadre SOA, la notion de propriété non-fonctionnelle d'un service est indissociable du concept de \emph{Qualité de Service} (\textit{``Quality of Service''}, ou QoS). Afin de préciser cette notion, nous proposons la définition contextuelle suivante :
+
+\vspace*{.5cm}
+\begin{definition}[Propriété non-fonctionnelle]{
+Les propriétés non-fonctionnelles (ou \emph{extra-fonctionnelles}) d'un service correspondent aux modalités de réalisation de ses fonctionnalités (ou  propriétés fonctionnelles), c'est-à-dire à l'ensemble de ses caractéristiques de Qualité de Service. Les valeurs de QoS caractérisent la qualité du service telle que \emph{rendue} à ses clients s'il s'agit de programmes informatiques, ou \emph{perçue} par ces derniers, s'il s'agit d'opérateurs humains.
+}\end{definition}
+\vspace*{.5cm}
+
+A partir de cette première définition, il est possible de construire de manière incrémentale, celle de contrainte non-fonctionnelle.
+
+\vspace*{.5cm}
+\begin{definition}[Contrainte non-fonctionnelle]{
+Une contrainte non-fonctionnelle\index{Contrainte non-fonctionnelle} correspond à une exigence particulière d'un client d'un service, le plus souvent un processus métier, portant sur une propriété non-fonctionnelle offerte par ce service. Les contraintes non-fonctionnelles sont communément regroupées au sein de déclarations établies par les consommateurs de services sur la base de leur propres besoins et qui seront évalués sur la base des propriétés non-fonctionnelles des fournisseurs de services. On parle alors le plus souvent, dans ce cas, de \emph{contrat} ou \emph{politique} de QoS.
+}\end{definition}
+\vspace*{.5cm}
+
+Dans le contexte des SOA, la QoS devient ainsi une notion cruciale : avec la prolifération des services (Web), elle constitue un critère décisif dans le choix d'un service approprié parmi des offres de plus en plus compétitives et aux fonctionnalités souvent similaires. Dès lors elle constitue une priorité pour les fournisseurs de services et leurs partenaires, puisque chaque service possède ses propres caractéristiques de QoS, et chaque client possède des exigences spécifiques. Nous distinguons alors deux grandes catégories de Qualité de Service :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item \textbf{La QoS technique}; il s'agit le plus souvent de propriétés non-fonctionnelles réseau telles que la \textit{latence} ou la \textit{disponibilité}. Les différentes taxonomies de QoS y font directement référence.
+\item \textbf{La QoS (du) domaine du système}; qui permet d'exprimer des propriétés non-fonctionnelles selon des termes métiers. Leur définition est rendue possible notamment par l'utilisation d'ontologies métiers de QoS.
+\end{itemize}
+
+Ainsi, quelle que soit la spécification utilisée pour l'expression des propriétés et des contraintes non-fonctionnelles des services, la problématique la plus courante à laquelle les travaux que nous évoquons doivent faire face est celle du \emph{calcul de la conformité} entre offres et demandes de services. On dit alors d'une offre qu'elle est conforme à une demande de service si le service décrit par cette offre peut être utilisé pour répondre à la demande initiale. La notion de conformité est donc liée à celle de \emph{compatibilité}; ce qui donne en logique du premier ordre :
+
+\begin{displaymath}
+\forall \alpha,\beta \textrm{ Demande}(\alpha) \land \textrm{Offre}(\beta) \land \textbf{Conforme}(\beta, \alpha) \implies \textbf{Compatible}(\beta, \alpha)
+\end{displaymath}
+
+Une offre et une demande sont alors compatibles si leur intersection est satisfiable :
+
+\begin{displaymath}
+\forall \alpha,\beta \textrm{ Demande}(\alpha) \land \textrm{Offre}(\beta) \land \textbf{Compatible}(\beta, \alpha) \implies \neg (\beta \land \alpha \subseteq \bot )
+\end{displaymath}
+
+Sachant que les offres et demandes de services peuvent être effectuées selon un point de vue fonctionnel ou non-fonctionnel, la notion de conformité porte en elle-même les deux caractéristiques. Une offre devra donc le plus souvent être simultanément conforme fonctionnellement (elle décrit la fonctionnalité recherchée) et non-fonctionnellement (elle propose des caractéristiques de QoS acceptables dans la plage de valeurs spécifiées par la demande de service). Nous considérons alors la conformité fonctionnelle comme préalable indispensable à la conformité non-fonctionnelle : il faut s'assurer que le service est capable de fournir la fonctionnalité métier demandée avant même de considérer les propriétés de QoS qui le caractérisent.
+
+Il faut cependant noter que la notion de conformité peut varier en fonction des besoins et applications, ainsi que des outils mis en \oe{}uvre pour en effectuer le calcul. Dans un précédent article~\cite{Chatel2007a}, nous présentons une définition de la conformité fonctionnelle se basant sur le calcul d'héritage entre concepts ontologiques mais d'autres approches plus puissantes sont possibles tel que le calcul de \textit{subsumption} fourni par un raisonneur sur ontologies. Li \textit{et al.} calculent ainsi le degré de compatibilité entre offres et demandes et distinguent cinq types de relations entre concepts ontologiques (\textit{exact}, \textit{plugIn}, \textit{subsume}, \textit{intersection}, \textit{disjoint})~\cite{li2004software}.
+
+\subsection{Taxonomies et ontologies de QoS}
+\label{sec:Taxonomies et ontologies de QoS}
+
+\vspace*{.5cm}
+\begin{definition}[Taxonomie]{
+Une taxonomie~\cite{cumming2003tomatoes} est une liste structurée ou arbre, sous forme de hiérarchie avec les termes les plus généraux à son sommet. Les taxonomies furent utilisées par les biologistes pour classifier les êtres vivants en espèces, familles, etc.
+
+Idéalement, chaque élément (ou \emph{taxon}) dans une taxonomie devrait être mutuellement exclusif et non-ambigu. Pour chaque élément, les éléments plus précis ou plus généraux sont indiqués (s'ils existent) et les éléments liés sémantiquement peuvent aussi être indiqués. Une taxonomie se distingue des autres formes de classification telles que le dictionnaire contrôlé, la liste, le thésaurus ou les ontologies.
+
+Il existe aussi une variante sur ce modèle appelée taxonomie polyhiérarchique: il s'agit d'une taxonomie dont la structure est à mi-chemin entre une taxonomie classique et un thésaurus. Dans ce type de taxonomie un même élément peut apparaître à plusieurs endroits simultanément, cela est rendu possible par l'adjonction de dimensions additionnelles à la taxonomie.
+}\end{definition}
+\vspace*{.5cm}
+
+Sabata \textit{et al.} définissent une taxonomie pour la spécification de la QoS des différentes composantes (des applications aux ressources) des systèmes répartis~\cite{sabata1997taxonomy}. Pour les auteurs, la QoS est une combinaison entre métriques et politiques. Les métriques de QoS sont utilisées pour spécifier les paramètres de performance, les besoins en termes de sécurité et l'importance relative de chaque tâche du système. Dans cette taxonomie trois types de paramètres (propriétés) de performance sont définis : \textit{timeliness}, \textit{precision} et \textit{accuracy}. 
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/contexte_taxo_sabata.pdf}
+    \caption{Taxonomie de QoS pour Sabata \textit{et al.}}
+    \label{fig:contexte_taxo_sabata}
+  \end{center}
+\end{figure}
+
+La figure~\ref{fig:contexte_taxo_sabata} présente la taxonomie définie par Sabata \textit{et al.} Elle est très simple et ne propose pas de point d'extensions. Son utilisation est donc très limitée puisqu'elle n'offre pas à l'utilisateur la possibilité de définir ses propres métriques à partir des métriques de base. De plus, dans cette taxonomie les paramètres de QoS sont indissociables des métriques (il ne s'agit pourtant pas du même concept) ce qui aurait tendance à indiquer que ces travaux ne considèrent que les QoS quantitatives.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=110mm]{figures/contexte_taxo_mokhtar.pdf}
+    \caption{Catégories et dimensions de QoS dans les environnements AmI.}
+    \label{fig:contexte_taxo_mokhtar}
+  \end{center}
+\end{figure}
+
+Mokhtar \textit{et al.} présentent une classification inspirée des travaux effectués par Sabata \textit{et al.} pour la spécification des propriétés de QoS dans les environnements AmI (\textit{``Ambient Intelligence''})~\cite{mokhtar2005qos}. Cette classification (cf. figure~\ref{fig:contexte_taxo_mokhtar}) est volontairement restreinte pour faciliter le calcul des correspondances entre offre et demande dans ces environnements particulièrement limités en puissance de calcul. De même que dans les précédents travaux~\cite{sabata1997taxonomy}, les types de QoS sont fixés à l'avance par le canevas et ce dernier n'est pas capable de prendre en compte des nouvelles dimensions définies par l'utilisateur (il cherche à optimiser des valeurs numériques calculées à partir de formules arithmétiques définies pour chaque métrique de QoS). Cette caractéristique n'est pas limitative dans le cadre des environnements AmI mais ce canevas n'est pas suffisamment évolué pour apporter un réel gain de performance s'il était appliqué aux architectures (S)SOA.
+
+\begin{definition}[Ontologie]{
+Une ontologie est un modèle des entités et relations dans un domaine spécifique. Elle se distingue d'une taxonomie dans la mesure où elle représente un modèle conceptuel (avec des connaissances plus complexes) voire une théorie logique\index{Théorie!logique} (avec une représentation des connaissances très riche, complexe, consistante et significative). Une ontologie dispose d'une sémantique formelle, c'est-à-dire une théorie de modèle pour son langage. De ce fait, elle supporte l'inférence \textit{via} son modèle formel, et peut être décidable et solvable en fonction de son expressivité.
+}\end{definition}
+\vspace*{.5cm}
+
+L'utilité de la définition d'une ontologie de QoS applicable à la caractérisation non-fonctionnelle des services dans une architecture SOA a été étudiée à de très nombreuses reprises : en effet, son utilisation constitue un moyen efficace pour introduire la ``sémantique'' dans les SOAs et les hisser au rang de \textit{Semantic SOAs}. De fait, par la définition d'un modèle commun des connaissances du système, une ontologie de ce type permet :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item aux fournisseurs de services de publier la QoS offerte par leurs services selon une sémantique partagée par tous;
+\item aux consommateurs de spécifier de manière non-ambiguë leurs besoins en termes de Qualité de Service;
+\item au canevas de support des SSOAs de bénéficier des services offerts par les raisonneurs logiques sur ontologies pour faciliter le calcul de conformité entre offres et demandes non-fonctionnelles de services.
+\end{itemize}
+
+OWL-DL~\cite{mcguinness2004owl} est un langage de définition d'ontologies décidables particulièrement répandu dans le domaine SSOA, et dont le modèle formel est fondé sur les Logiques de Description (ou DL). Il introduit les notions de \textit{concepts} (\textit{i.e.} classes, entités), \textit{propriétés} de concepts (\textit{i.e.} attributs, rôles) et de \textit{relations} entre concepts (\textit{i.e.} associations). Il permet d'effectuer les inférences logiques suivantes, qui vont borner les raisonnements automatiques de certains travaux présentés dans la suite de cette section :  \textit{vérification de consistance}, \textit{satisfiabilité des concepts}, \textit{classification} et \textit{réalisation}. 
+
+Cependant, le paradigme OWL s'avère inefficace pour raisonner sur des expressions numériques de QoS (inéquations, valeurs mesurées, etc.) car les services d'inférence DL ne sont pas adaptés pour traiter ce type de connaissance. Une approche multi-paradigmes semble donc nécessaire pour traiter l'ensemble des types de connaissance qui cohabitent pour décrire non-fonctionnellement les acteurs d'une architecture SOA : c'est en sens que les approches à base d'ontologies de QoS sont le plus souvent associées à d'autres technologies telles que les contrats de service (cf. section~\ref{sec:Contrats de Qualité de Service}).
+
+Les travaux suivants, parmi les plus connus, définissent tous des ontologies (OWL ou non) pour application dans un contexte non-fonctionnel :
+
+\subsubsection{WS-QoS}
+
+Tian \textit{et al.}~\cite{tian2003concept} définissent le canevas WS-QoS de support des contraintes de QoS dans les SOA ; ce canevas inclut une ontologie de QoS afin de réaliser la sélection dynamique de services Web en se fondant sur les besoins en termes de services ou de réseau. Cependant, les auteurs de cette ontologie ont choisi de l'écrire dans un pseudo-langage fondé sur une structure XML, perdant par la même occasion les avantages liés à l'utilisation de OWL (comme une sémantique bien claire et les possibilités accrues de raisonnement logique).
+
+\subsubsection{DAML-QoS}
+
+L'ontologie DAML-QoS~\cite{zhou2004daml} a été écrite en OWL et présente certains avantages, notamment ses liens avec OWL-S utilisé pour décrire les services fonctionnellement. Initialement développée avec DAML+OIL puis OWL 1.0, un de ses principaux problèmes était la mauvaise utilisation qui était effectuée des contraintes de cardinalité OWL pour exprimer les bornes sur les propriétés de QoS. Mais ce problème a pu être levé grâce à la meilleure expressivité de OWL 1.1 et au support de la quantification sur les types des données.
+
+Afin de permettre la définition et la mesure de la QoS dans un système, l'ontologie DAML-QoS est organisée selon un principe de couches. Elle définit trois niveaux (ou étages) distincts dans l'ontologie :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item le niveau de profil de la QoS;
+\item le niveau de définition des propriétés de QoS;
+\item le niveau des métriques.
+\end{itemize}
+
+\subsubsection{QoSOnt}
+
+G. Dobson \textit{et al.} ont travaillé sur QoSOnt~\cite{dobson2005qosont}, une ontologie assez proche de DAML-QoS, qui se concentre sur la définition de métriques et sur le calcul de correspondance entre les besoins de QoS.
+
+L'ontologie QoSOnt a été définie de manière suffisamment générique pour permettre son extension dans les cas particuliers, elle reste ainsi indépendante de toute vision particulière de la QoS. De plus, elle est organisée sous forme de plusieurs couches afin de favoriser son extensibilité et sa réutilisabilité. Les couches les plus hautes sont fondées sur les couches les plus basses, on peut descendre ainsi à partir des couches domaine (par exemple \textit{network} et \textit{service}) jusqu'aux concepts de base de QoS.  La couche la plus haute, \textit{Usage Domains}, permet de lier les attributs de QoS définis dans la couche inférieure aux différents domaines d'application qui y sont définis. Cependant, comme pour WS-QoS, les auteurs ont défini leur ontologie dans un pseudo-langage fondé sur une structure XML. 
+
+\subsubsection{Synthèse}
+
+Des ces différents travaux, il ressort que de nombreuses ontologies ont déjà été définies pour l'expression des notions de Qualité de Service. Les concepts qu'elles proposent sont à des niveaux d'abstractions les plus divers, cependant, de par la nature même des ontologies, il est toujours possible de dériver ses propres concepts ``métiers'' de classes déjà existantes. En conséquence de quoi, en cas de nouveau besoin en terme d'ontologie, il apparaît peu pertinent de développer ses propres modèles en partant de zéro, mais bien au contraire de se fonder, sinon de s'inspirer de l'existant.
+
+Par ailleurs, il est possible de s'interroger sur le lien entre ontologies et normes (ou standards). En effet, si un standard de description des QoS (par nature généraliste) venait à s'imposer, l'utilisation d'une ontologie (permettant à tout à chacun de définir ses propres sous-concepts spécifiquement adaptés à ses propres besoins) ne saurait alors être recommandée, et ce malgré sa plus grande souplesse. A l'inverse, si une ontologie était capable de définir un ensemble de connaissances communes et fixées, pourquoi ne pas en faire alors une norme ? Si cette vision, volontairement dichotomique, peut sembler sans rapport avec la complexités des canevas logiciels faisant intervenir simultanément de multiples technologies, elle illustre cependant bien le rapport ambiguë entretenue par les deux approches, en particulier dans le monde de l'industrie qui à historiquement favorisée les approches normatives pour des raisons le plus souvent commerciales. Dans le contexte (S)SOA, de part la diversité des intervenants et la difficulté intrinsèque d'obtenir un accord entre eux, les ontologies se présentent donc, par leur souplesse, comme une solution à fort potentiel, mais qui induit la nécessité d'effectuer des calculs de correspondance sémantique.
+
+\subsection{Politiques}
+
+\begin{definition}[Politique]{
+Une politique est utilisée pour réguler le comportement des composants d'un système sans avoir à changer leur code ni nécessiter l'accord ou la coopération des composants impliqués. Elles guident les entités au sein d'un domaine sur leur façon d'agir en fournissant des règles sur leur comportement. En changeant de politique, un système peut être ajusté aux variations des contraintes externes qui lui sont imposées et aux conditions de l'environnement.
+}\end{definition}
+\vspace*{.5cm}
+
+\subsubsection{De nombreuses alternatives technologiques}
+
+``Web Service Policy Framework'' (WS-Policy)~\cite{bajaj2006web} est un canevas multi-usages pour la description des propriétés, besoins et caractéristiques générales des entités de l'architecture SOA. Là où WSDL permet la représentation des aspects fonctionnels d'un service, WS-Policy est utilisé pour la représentation de ses attributs non-fonctionnels. Cette spécification se présente donc comme un complément de WSDL et non comme un remplaçant. WS-Policy définit un ensemble basique de constructions en XML qui peuvent être utilisées et étendues par d'autres spécifications de services Web pour décrire un ensemble de propriétés et besoins et servir de point de départ au calcul de correspondance.  Dans ce langage, une politique est définie comme une collection d'alternatives. Chaque alternative est une collection d'assertions utilisées pour représenter un besoin, une propriété ou un comportement d'un service Web et peut avoir un nombre indéfini d'attributs et de fils.
+
+SemPolicy~\cite{verma2005semantic} est une spécification de représentation des contraintes et des propriétés non-fonctionnelles des services Web qui est une extension de WS-Policy intégrant des expressions sémantiques extraites d'ontologies non-fonctionnelles. Elle se fonde sur le postulat que le manque de sémantique dans les politiques diminue l'efficacité du calcul de compatibilité entre les politiques, et propose alors l'utilisation conjointe d'ontologies et de règles SWRL pour effectuer ce calcul. Une ontologie OWL de WS-Policy a été mise au point (sorte de méta-modèle de WS-Policy) ainsi chaque politique peut être chargée dans le système comme une instance de cette ontologie.
+
+On retrouve par ailleurs cette idée d'utiliser des ontologies dans les travaux de Uszok \textit{et al.} sur la gestion des contrats et des politiques pour les services Web sémantiques~\cite{uszok2004policy, tonti2003semantic}. KaoS se présente comme un système complet pour la spécification, la gestion, l'analyse et l'application de politiques représentées en OWL. Il provient de recherches effectuées initialement dans le cadre des applications à agents logiciels et du ``grid computing''. 
+
+Une politique KAoS est une déclaration contraignant l'exécution d'un type particulier d'action par un ou plusieurs acteurs en fonction de différents aspects d'une situation donnée : une action est définie comme une classe ontologique utilisée pour clarifier les instances d'actions qui sont souhaitées ou en cours d'exécution. KaOS utilise par ailleurs des concepts issus d'ontologies (encodées en OWL) pour construire les politiques.
+
+Suivant une philosophie générale similaire, le langage Rei~\cite{kagal2002rei} de spécification de politique est fondé sur une combinaison de OWL-Lite, variables logiques et de règles. L'expression de relations est possible car Rei est basé sur la Logique du 1er Ordre qui apporte cette capacité par rapport à la Logique Propositionnelle. Le langage Rei définit ainsi plusieurs ontologies basiques indépendantes de tout domaine mais va aussi nécessiter des ontologies métiers, définissant des concepts liés au domaine d'application de chaque politique. Les ontologies basiques sont, tout comme pour KAoS, extensibles par le modélisateur.
+
+\subsubsection{Synthèse}
+
+Les politiques mettent en exergue l'importance d'une régulation du comportement des systèmes en fonction de multiples contraintes, en particulier non-fonctionnelles. Les travaux effectués sur le sujet sont là aussi particulièrement riches et nombreux. Cependant, ils s'inscrivent le plus souvent dans une approche relativement statique de l'adaptation du comportement des composants de ces systèmes, par rapport aux conditions de l'environnement. Dans un contexte SSOA où les composants sont effectivement des services, les variations ne correspondent toutefois pas à de grandes tendances environnementales répertoriées desquelles ils est aisément possible de pré-établir des politiques, mais à une multitudes de variations et changements locaux en terme de QoS de chacun de ces services, ainsi que de leur apparition et disparition fréquente au court du cycle de vie d'un même processus métier (en particulier pour le type de processus métiers mis à l'\oe{}uvre dans notre cas d'utilisation au chapitre~\ref{ch:cas_utilisation}). Ces contraintes spécifiques nécessitent alors la mise en place d'une approche adaptée, particulièrement dynamique.
+
+
+\subsection{Contrats de Qualité de Service}
+\label{sec:Contrats de Qualité de Service}
+
+Il est possible de voir les contrats comme un regroupement d'assertions sur les propriétés d'un programme. Chacune d'elle constitue alors une expression booléenne à satisfaire pour son exécution~\cite{floyd1967assigning, hoare1969axiomatic}. Pour la suite de ces travaux, nous proposons cette vision communément admise des contrats :
+
+\vspace*{.5cm}
+\begin{definition}[Contrat de Qualité de Service]{
+Dans un contrat de Qualité de Service (ou SLA, ``Service Level Agreement''), les contraintes non-fonctionnelles sont rattachées aux entités qu'elles caractérisent \textit{via} des préconditions, effets, post-conditions ou invariants dans le cadre de la modélisation d'un accord le plus souvent bilatéral entre un consommateur et un producteur de service.
+}\end{definition}
+\vspace*{.5cm}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[height=100mm]{figures/contexte_classification_contrats.pdf}
+    \caption{Les 4 niveaux de contrats selon Beugnard \textit{et al.}}
+    \label{fig:contexte_classification_contrats}
+  \end{center}
+\end{figure}
+
+Des travaux reconnus de l'ENST/Irisa~\cite{beugnard1999making} établissent une classification en quatre niveaux (cf. figure~\ref{fig:contexte_classification_contrats}) des différentes formes de contrat pour les architectures à base de composants\index{Architecture!à base de composants}. Dans cette classification, les contrats sont rangés par degré de ``négociabilité'' : en partant des contrats non-négociables jusqu'aux contrats négociables à l'exécution du système.
+
+Dans cette section, nous nous intéressons tout particulièrement aux contrats de Qualité de Service (niveau IV) dans les architectures SOA, mais nous aborderons aussi ceux applicables aux architectures à base de composants logiciels qui pourraient éventuellement être adaptés aux SOAs. En effet, contrairement aux spécifications bien établies dans le domaine fonctionnel des services Web (par exemple WSDL, SOAP ou UDDI), il n'existe pas de standards officiellement reconnus comme tels en ce qui concerne la description et l'établissement des contraintes de QoS. 
+
+\subsubsection{GCCL}
+
+Malenfant \textit{et al.} ont mis au point le langage de contrat GCCL (``Generalized Common Contract Language'') pour répondre à certaines problématiques liées à l'assemblage des composant et au calcul de leur correspondance fonctionnelle et non fonctionnelle par rapport aux contrats établis.~\cite{malenfant2002design}. Ce travaux permettent en fait une adaptation de la programmation contractuelle au domaine du Génie Logiciel des composants et on pour objectif de fournir le moyen :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item d'exprimer des besoins fonctionnels et non fonctionnels ainsi que définir leur sémantique. Pour ce faire, il fait principalement usage de \emph{pré}, \emph{post} conditions et d'invariants;
+\item de certifier la justesse d'une composition d'un ensemble de composants;
+\item de vérifier, à l'exécution, que les composants et le canevas honorent leurs obligations contractuelles.
+\end{itemize}
+ 
+\subsubsection{De QML à CQML+}
+
+QML (``QoS Modeling Language'')~\cite{frolund1998quality} permet la spécification de contraintes non-fonctionnelles. Ce langage présente une approche contractuelle basée sur les trois entités suivantes : les \emph{types de contrats}, les \emph{contrats} et les \emph{profils}. En QML, les aspects non-fonctionnels sont décrits en spécifiant les niveaux attendus de qualité : on cherche ainsi à déterminer si une valeur est préférable à une autre de manière à inférer les compatibilités entre contrats. La vérification de compatibilité des contraintes non-fonctionnelles d'une architecture peut ainsi être effectuée statiquement, avant exécution. Cette approche statique limite directement l'adaptabilité de ces architectures à l'exécution.
+
+Par la suite, CQML~\cite{aagedal2001quality}, suivi de CQML+~\cite{rottger2003cqml+} vont successivement bâtir sur les fondations posées par QML. Ces travaux vont respectivement introduire la notion de \emph{catégorie} comme brique de base de la spécification de QoS, puis celle d'un véritable \emph{méta-modèle d'exécution} dans le cadre duquel les contrats peuvent être définies. Il s'agit là d'un premier pas vers une approche plus dynamique pour leur vérification.
+
+\subsubsection{WS-Agreement}
+
+La spécification WS-Agreement définit un langage de syntaxe XML, ainsi qu'un un protocole pour capturer la relation entre un consommateur et un producteur de service~\cite{andrieux2004web} : chaque SLA va définir un ou plusieurs SLO (``Service Level Objective'') qui indiquent les besoins et les compétences de tout participant à l'accord de service, relativement à la disponibilité de ses ressources et la qualité de son service.
+
+Dans le canevas WS-Agreement, un contrat est le résultat d'une première étape de négociation entre producteur et consommateur de service. Cette négociation est rendue possible par l'offre par un fournisseur de plusieurs niveaux non-fonctionnels de service (appelés templates) au sein d'une même spécification : par exemple, un producteur de service pourra indiquer qu'il offre différents niveaux possibles de QoS dans son contrat ; à la charge du consommateur de choisir une offre en fonction de ces propres capacités et des contraintes qu'il devra respecter par rapport au producteur.
+
+\subsubsection{Synthèse}
+
+Les évolutions technologiques récentes en terme de contrats (par exemple WS-Agreement) sont souvent liées à celles des SOAs. De ce fait, elle se révèlent comme un support intéressant pour la spécification de contraintes non-fonctionnelles de services. Cependant, une approche de composition \emph{uniquement} fondée sur les contrats ne saurait répondre à toutes les facettes de la problématique que nous avons levée dans l'introduction de ce manuscrit, pour notre contexte : en effet, les contrats sont particulièrement focalisés sur les étapes de définition et de négociation des besoins entre consommateurs et fournisseurs de services, mais restent habituellement muets quant aux mécanismes à mettre en \oe{}uvre, à l'exécution, pour traiter les évolutions en terme de Qualité de Service, quand bien même celles si seraient cantonnés aux bornes acceptables décrites dans lesdits contrats.
+
+\section{Conclusion}
+
+Dans ce premier chapitre de contexte, nous avons effectué un panorama des différentes solutions techniques déjà à notre disposition pour l'implantation des solutions à la problématique détourée lors de l'introduction de ce manuscrit. Sans être exhaustif, il nous permet de poser les éléments (qui nous seront utiles par la suite) de service Web, de SSOA ainsi que de contrats de Qualité de Service. Ce chapitre met aussi en avant les absences auxquelles nos contributions devront répondre, notamment en terme de coordination agile (c'est-à-dire active et utile) de services. Ce sentiment devrait être conforté par l'état de l'art (cf. section~\ref{sec:etat_art_compo}), plus spécifique, que nous effectuons au chapitre suivant sur la composition dynamique de services sous contraintes non-fonctionnelles. Pour finir, si nous avons été ici amenés à balayer un champ technologique plus large que le sous-ensemble qui sera effectivement utilisé dans le cadre général de nos travaux, cette approche a été motivée par la nécessité d'assurer une compatibilité la plus large possible à l'implantation.

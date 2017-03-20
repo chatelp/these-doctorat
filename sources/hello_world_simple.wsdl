@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" (...) >
+
+    <portType name="Print">
+        (..)    
+    </portType>
+    
+	//lie au portType 'Print'
+    <binding name="PrintPortWsifBinding" type="tns:Print">
+        (..)
+    </binding>
+    
+	//lie au binding 'PrintPortWsifBinding'
+    <service>
+        <port name="JavaPrintPort" binding="tns:PrintPortWsifBinding">
+            //adresse concrete d'acces au service d'affichage
+        </port>
+    </service>
+    
+	//lie au portType 'Print'
+    <partnerLinkType name="printLink">
+        <role name="printService" portType="tns:Print"/>
+    </partnerLinkType>
+    
+</definitions>

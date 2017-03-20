@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<process
+
+	<import importType="http://schemas.xmlsoap.org/wsdl/" 
+		location="../../test_bucket/service_libraries/tptp_EnginePrinterPort.wsdl" 
+		namespace="http://www.eclipse.org/tptp/choreography/2004/engine/Print" />
+	
+	//le partnerLinkType est defini dans le WSDL importe par le processus !
+	<partnerLinks>
+		<partnerLink 	name="printService" 
+				partnerLinkType="print:printLink" 
+				partnerRole="printService"/>
+	</partnerLinks>
+	
+	(...)
+
+	//l'invocation passe forcement par une abstraction partnerLink
+	<invoke partnerLink="printService" operation="print" inputVariable="hello_world" />
+
+</process>

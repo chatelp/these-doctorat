@@ -1,0 +1,350 @@
+% Master These
+% (c) 2009-2010 Pierre CHATEL
+
+%Pierre : --> pour sortie pdf (cf. p20 manuel thloria)
+\pdfoutput=1
+
+\documentclass[11pt]{thloria}
+
+%----------------------------------------------------------------------
+%                     Chargement de quelques packages
+%----------------------------------------------------------------------
+
+\usepackage{listings, graphicx, lettrine, algorithm, algorithmic, amsmath, amssymb, amsthm}
+\usepackage[all]{xy}
+
+%Pierre : --> pour sortie pdf (cf. p20 manuel thloria)
+\usepackage[pdftex]{tlhypref}
+\usepackage[french]{minitoc-hyper}
+
+%Pierre : pour permettre les retours à la ligne dans les captions tout en gardant la bonne justification
+% http://groups.google.com/group/latexusersgroup/browse_thread/thread/1c3776747ec05437/e638cb6a1ac9b00a?pli=1
+\usepackage[justification=centering]{caption}
+
+%-------------------------------------------------------------------
+%                             Marges <-- doc maitre Isis
+%-------------------------------------------------------------------
+
+\textwidth 16.6cm       % largeur du texte
+\topmargin -.1in        % marge de haut
+\textheight 22.2cm      % hauteur du texte
+\oddsidemargin -0.4cm   % marge pour les pages impaires
+\evensidemargin -0.4cm  % marge pour les pages paires
+
+% pour les problèmes de ref biblio qui depassent de la ligne:
+\tolerance=200
+\setlength{\emergencystretch}{2em}
+
+% pour eviter qu'une meme footnote soit placée sur 2 pages
+\interfootnotelinepenalty=10000
+
+% pour eviter les veuves et les orphelines
+\clubpenalty=10000
+\widowpenalty=10000 
+\displaywidowpenalty=10000
+
+%Pierre : espacement entre les paragraphes
+\setlength{\parskip}{2mm}
+
+%Pierre : raccourcis
+\def\SEFs{sous-ensembles flous }
+\def\SEF{sous-ensemble flou }
+
+%-------------------------------------------------------------------
+%                             En-tetes
+%-------------------------------------------------------------------
+
+\newcommand\upun[1]{\uppercase{\underline{\underline{#1}}}}
+\FormatHeadingsWith\upun
+
+\newcommand\itheadings[1]{\textit{#1}}
+\FormatHeadingsWith{\itheadings}
+
+% pour avoir un trait sous l'en-tete:
+\setlength{\HeadRuleWidth}{0.4pt}
+
+%-------------------------------------------------------------------
+%                         Les references
+%-------------------------------------------------------------------
+
+\NoChapterNumberInRef
+\NoChapterPrefix
+
+%-------------------------------------------------------------------
+%                           Brouillons
+%-------------------------------------------------------------------
+
+% ceci ajoute une marque `brouillon' et la date
+% \ThesisDraft
+
+%-------------------------------------------------------------------
+%                   Pour collecter un glossaire et un index
+%-------------------------------------------------------------------
+
+\makeglossary
+\makeindex
+
+%-------------------------------------------------------------------
+%                   Autres commandes du préambule
+%-------------------------------------------------------------------
+
+\DontShowLogos
+
+
+%Pierre : environnement pour avoir des définitions numérotées
+\newtheorem{definition}{Définition}
+
+\begin{document}
+
+
+      \OddHead={{\leftmark\rightmark}{\hfil\slshape\rightmark}}
+      \EvenHead={{\leftmark}{{\slshape\leftmark}\hfil}}
+      \OddFoot={\hfil\thepage}
+      \EvenFoot={\thepage\hfil}
+      \pagestyle{ThesisHeadingsII}
+
+%-------------------------------------------------------------------
+%                          Encadrements
+%-------------------------------------------------------------------
+
+% encadre les chapitres dans la table des matieres:
+% (ces commandes doivent figurer apres \begin{document}
+
+\FrameChaptersInToc  
+
+%-------------------------------------------------------------------
+%               mini-tables des matieres par chapitre
+%-------------------------------------------------------------------
+
+% preparer les mini-tables des matieres par chapitre.
+% (commande de minitoc.sty)
+\dominitoc
+
+%-------------------------------------------------------------------
+%                         Page de titre:
+%-------------------------------------------------------------------
+
+% Titre v0
+%\ThesisTitle{Influence des contraintes non-fonctionnelles sur le
+%  processus décisionnel lors de l'orchestration de services Web}
+
+% Titre v0.1
+%\ThesisTitle{Une approche pour la prise de décision sous contraintes
+%  non-fonctionnelles lors de la coordination de services}
+
+% Titre v0.2
+%\ThesisTitle{Une approche qualitative pour la prise de décision sous
+%  contraintes non-fonctionnelles et la coordination performante de
+%  services}
+
+% Titre v0.3
+%\ThesisTitle{Une approche qualitative pour la prise de décision sous
+%  contraintes non-fonctionnelles dans le cadre d'une coordination dynamique de
+%  services}
+  
+% Titre v0.4 18/01/10
+%\ThesisTitle{Une approche qualitative pour la prise de décision sous
+%  contraintes non-fonctionnelles dans le cadre d'une composition dynamique de
+%  services}
+  
+  % Titre v0.5 29/01/10
+\ThesisTitle{Une approche qualitative pour la prise de décision sous
+  contraintes non-fonctionnelles dans le cadre d'une composition agile de
+  services}
+  
+\ThesisDate{5 mai 2010}
+\ThesisAuthor{Pierre Châtel}
+
+% Type de la these (autres solution: \ThesisINPL, \ThesisNancyII)
+\ThesisNancyI
+
+%-------------------------------------------------------------------
+%                              jurry
+%-------------------------------------------------------------------
+
+%Pierre : creation d'une nouvelle categorie dans le jury
+\NewJuryCategory{Encadrant}{\it Encadrant industriel :}
+                        {\it Encadrant industriel :}
+
+\def\blanc{\hspace*{1cm}}
+
+%\President    = {Emmanuel Chailloux & Professeur, Université Pierre et Marie Curie -- Paris 6}
+\Rapporteurs  = {Luis Martínez López & Professeur, Université de Jaén, Espagne\\
+			Laurence Duchien & Professeur, Université Lille 1}
+\Directeur    = {Jacques Malenfant & Professeur, Université Pierre et Marie Curie -- Paris 6\\
+			%Isis Truck & Maître de Conférences, Université Paris 8} 
+			Isis Truck & Maître de Conférences,\\&Université Vincennes - Saint-Denis -- Paris 8} 
+\Examinateurs = {Florence Sèdes & Professeur, Université Paul Sabatier -- Toulouse 3\\
+			Emmanuel Chailloux & Professeur, Université Pierre et Marie Curie -- Paris 6}
+\Encadrant = {Hugues Vincent & Responsable de Laboratoire R\&D,\\&Thales Communications France}
+
+\MakeThesisTitlePage
+                 
+%-------------------------------------------------------------------
+%                          remerciements
+%-------------------------------------------------------------------
+\begin{ThesisAcknowledgments}
+
+Ces remerciements sont adressés à toutes les personnes m'ayant assisté dans mon travail et soutenu au quotidien, par leurs actions ou leur simple présence, au cours de ces années de thèse. J'espère avoir l'opportunité de tous les remercier chaleureusement en personne, au delà  du cadre formel de ce chapitre. Cependant, \textit{``contrairement à la parole, l'écrit ne s'évanouit pas dans l'air''}, et c'est dans cet esprit que je tiens à remercier tout particulièrement les personnes suivantes.
+
+En tout premier lieu, ma gratitude est tournée vers mes deux directeurs de thèse, Jacques Malenfant et Isis Truck, dont le professionnalisme et la pugnacité sans faille ont permis de dresser le chemin suivi par cette thèse et de m'y accompagner. J'ai pu, avec eux, partager de très enrichissantes discussions, souvent animées, qui ont ouvert de nouveaux horizons à ma curiosité scientifique. Ils sont devenus pour moi, à l'issue de ces trois années, autant des maîtres à penser, que des amis sur lesquels je sais pouvoir compter.
+
+Par ailleurs, je suis honoré par la participation de Laurence Duchien et Luis Martínez López au jury de cette thèse, en tant que rapporteurs; ainsi que celle de Florence Sèdes et Emmanuel Chailloux en leur qualité d'examinateurs.
+
+Je souhaite aussi exprimer ma plus vive reconnaissance à Pascal Llorens, pour m'avoir accueilli au sein de son service de recherche et développement à Thales Communication, ainsi qu'à mon encadrant industriel Hugues Vincent qui a su me soutenir et m'a permis d'acquérir, par sa rigueur naturelle, une double culture : scientifique et industrielle. 
+
+Je tiens aussi à remercier mes collègues du service SC2 pour leur support moral et intellectuel, en particulier ceux avec lesquels j'ai pu construire de véritables liens d'amitié pendant toutes ces années:  Antoine Leger et Tran Huynh, pour ne citer qu'eux. Une thèse étant avant tout une aventure humaine, ce manuscrit est aussi un peu le leur.
+
+Finalement, mes sentiments les plus chers vont à mon compagnon, ma famille et mes amis : Gilles, par ta présence au quotidien et tes encouragements, c'est à toi que je dois d'avoir réussi à passer sans encombre l'ultime ligne droite que représente ma dernière année de thèse. J'éprouve aussi le plus grand respect envers mes parents, qui ont toujours soutenu mes choix sur le long terme, et m'ont aidé à les atteindre:  leur support a été essentiel. Pour finir, une pensée toute particulière pour mes amis. Merci à vous tous : Claire, Aurélien, Anneli, Pierre-Arnaud, Karine, Gabriel, Laure, Fabien, Franco, Olga, et les autres.
+
+\end{ThesisAcknowledgments}
+
+%-------------------------------------------------------------------
+%                            dedicace
+%-------------------------------------------------------------------
+
+\begin{ThesisDedication}
+
+``Broadly speaking, the history of software development is the
+      history of ever later binding times\ldots''\\
+- M. Halpern, Encyclopedia of Computer Science~\cite{Halp93}
+
+\end{ThesisDedication}
+
+%-------------------------------------------------------------------
+%                  ecriture de `Chapitre' et `Partie' 
+%                      dans la table des matieres
+%-------------------------------------------------------------------
+
+\WritePartLabelInToc
+\WriteChapterLabelInToc
+
+%-------------------------------------------------------------------
+%                        table des matieres
+%-------------------------------------------------------------------
+
+\tableofcontents
+
+\listoffigures
+%\listoftables
+\lstlistoflistings
+
+\mainmatter
+
+\chapter{Introduction}
+\label{ch:intro_gene}
+\input{intro_gene}
+
+\part{Contexte et Etat de l'Art}
+\label{part:Contexte et Etat de l'Art}
+
+\chapter{Contexte technologique}
+\label{ch:contexte}
+\minitoc
+\input{contexte}
+
+\chapter{Etat de l'Art}
+\label{ch:etat_art}
+\minitoc
+\input{etat_art}
+
+\chapter{Un cas d'utilisation en gestion de crise environnementale}
+\label{ch:cas_utilisation}
+\minitoc
+\input{cas_utilisation}
+
+\part{Contributions et mise en \oe{}uvre}
+\label{part:Contributions}
+
+\chapter{Composition active de services}
+\label{ch:Composition active de services}
+\minitoc
+\input{compo_active}
+
+\chapter{Composition utile de services}
+\label{ch:Composition utile de services}
+\minitoc
+\input{compo_utile}
+
+\chapter{Composition agile de services}
+\label{ch:Composition agile de services}
+\minitoc
+\input{compo_agile}
+
+\chapter{Formalisation du modèle LCP-net}
+\label{ch:formalisation}
+\minitoc
+\input{formalisation}
+
+\chapter{Mise en \oe{}uvre}
+\label{ch:implantation}
+\minitoc
+\input{implantation}
+
+% http://groups.google.fr/group/fr.comp.text.tex/msg/99effa6d51b5a18c?pli=1
+%\makeatletter
+%\renewcommand*{\toclevel@chapter}{-1}
+\chapter{Conclusion et perspectives}
+\label{ch:conclusion_gene}
+\input{conclusion_gene}
+%\renewcommand*{\toclevel@chapter}{0}
+%\makeatother
+
+%-------------------------------------------------------------------
+%                         Le glossaire
+%-------------------------------------------------------------------
+%\BeginGloWith{Voici un glossaire tout-\`a-fait fictif,
+%              introduit par un texte sur toute la largeur
+%              des deux colonnes.}
+%\twocolumn
+%\PrintGlossary
+
+%-------------------------------------------------------------------
+%              L'index (toujours sur deux colonnes)
+%-------------------------------------------------------------------
+%\BeginIndWith{Voici un index}
+\PrintIndex
+
+
+%-------------------------------------------------------------------
+%                       La bibliographie
+%-------------------------------------------------------------------
+
+\nocite{*}
+\bibliographystyle{apalike_isis}
+\bibliography{bibliography_these}
+\newpage
+~\\
+\thispagestyle{empty} 
+
+%-------------------------------------------------------------------
+%                          Les resumes
+%-------------------------------------------------------------------
+% (si le resume' apparait sur une colonne etroite, avec la
+% bibliographie a gauche, c'est sans doute parce que vous avez
+% oublie' de generer les fichiers d'index et de glossaire...)
+
+%\NumberAbstractPages
+\begin{ThesisAbstract}
+  \begin{FrenchAbstract}
+
+   La mise en \oe{}uvre d'une composition de services, dans le contexte de l'entreprise et du Web, ouvre la perspective de nombreux champs d'investigations et d'améliorations. Les contributions de cette thèse ont alors pour vocation de réaliser une composition particulièrement dynamique, souple, et capable de prendre en compte de multiples contraintes non-fonctionnelles. Elles s'articulent autour des concepts de composition active, utile et agile.
+   
+   La \textbf{composition active} est à même de compléter efficacement les approches \emph{dynamiques} classiques, pour en améliorer les capacités d'adaptation aux changements non-fonctionnels. Elle repose sur une transposition du principe de liaison tardive au contexte des SSOA, alors disposé pour intégrer la \emph{QoS courante} des services à l'exécution. La \textbf{composition utile} est liée à notre nouveau formalisme \emph{LCP-net} pour l'expression de préférences utilisateur. L'élicitation de préférences non-fonctionnelles, établies \emph{entre} les propriétés de QoS des services et leurs valeurs, permet d'obtenir un ordre total ou quasi total sur chaque ensemble de services candidats lors de leur sélection. Enfin, la \textbf{composition agile} correspond à la ``somme'' des deux précédentes : il s'agit d'une utilisation habile des préférences utilisateurs LCP-net lors de la liaison tardive des services. Nous y posons aussi les bases d'une gestion de la QoS globale des processus métiers.
+
+  \KeyWords{Architecture Orientée Services, composition de services, contrainte non-fonctionnelle, approche qualitative, approche linguistique, décision multi-critères, logique floue, modélisation de préférences, liaison tardive.}
+ 
+  \end{FrenchAbstract}
+  
+  \begin{EnglishAbstract}
+    
+  Service composition implementation, in a Web and business context, opens many investigation and improvements prospects. The contributions in this thesis are then intended to perform a particularly dynamic and flexible composition, able to take into account multiple non-functional constraints. They revolve around the concepts of active, useful and agile composition.
+  
+  \textbf{Active composition} is able to effectively complement dynamic approaches, in order to improve their capability to adapt to non-functional changes. It relies on a transposition of the late-binding principle to the SSOA context, then able to integrate the current QoS values of services at execution time. \textbf{Useful composition} is linked to our new \emph{LCP-net} formalism for expressing user preferences. The elicitation of non-functional preferences, established \emph{between} services QoS properties and their values, will afterward provide a total or almost total order over each candidate services sets, during service selection. Finally, \textbf{agile composition} is the ``sum'' of the last two, where we lay the groundwork for global QoS management during processes execution.
+  
+  \KeyWords{Service Oriented Architecture, service composition, non-functional constraint, qualitative approach, linguistic approach, multi-criteria decision making, fuzzy Logic, preference modeling, late binding.}
+  
+  \end{EnglishAbstract}
+  %\thispagestyle{empty} % Isis : pour virer le numéro de cette dernière page du manuscrit
+\end{ThesisAbstract}
+\end{document}

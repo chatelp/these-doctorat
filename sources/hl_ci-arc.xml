@@ -1,0 +1,8 @@
+<arcs>
+	<ciarc name="Y-Z">
+		<table>
+			<line selectorSetValues="Bandwidth_L, Resolution_H" startNode="Y" endNode="Z"/>
+			<line selectorSetValues="Bandwidth_H, Resolution_L" startNode="Z" endNode="Y"/>
+		</table>		
+	</ciarc>
+</arcs>

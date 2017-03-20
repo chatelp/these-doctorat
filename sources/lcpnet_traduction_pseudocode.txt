@@ -1,0 +1,37 @@
+FIS traductionNoeudVersFIS(noeud origine) {
+	// création d'un nouveau FIS
+	FIS fis = new FIS();
+		
+	// I - création des variables d'entrée du FIS
+	
+	pour chaque(noeud d'entrée de la CPT, y compris le noeud d'origine) {
+		1 - création d'une variable réelle correspondante;
+		2 - création du domaine de définition de la variable à partir des partitionnements flous;
+			2.1 - conversion de chaque SEF en fonction d'appartenance;
+		3 - ajout de la variable d'entrée au fis	
+	}
+	
+	// II - création de la variable de sortie du FIS à partir de la définition de l'utilité
+	
+	1 - création d'une variable réelle correspondante;
+	2 - création du domaine de définition de la variable à partir des partitionnements flous de l'utilité;
+		2.1 - conversion de chaque SEF en fonction d'appartenance;
+	3 - ajout de la variable de sortie au fis
+	
+	/// III - création d'une règle floue par cellule dans la CPT
+	
+	// création d'un ensemble vide de règles floues (un par noeud) 
+	FuzzyRuleSet ruleSet = new FuzzyRuleSet();
+	
+	pour chaque(ligne de la CPT du noeud) {
+		pour chaque(cellule de la ligne) {
+			1 - création d'une règle floue	
+			2 - déduction des 'antécédents' de la règle à partir des valeurs des noeuds d'entrée
+			3 - déduction du 'conséquent' de la règle à partir de la valeur de la cellule
+			4 - ajout de la règle à l'ensemble ruleSet
+		}
+	}
+	
+	return fis.addFuzzyRuleSet(ruleSet);
+}
+

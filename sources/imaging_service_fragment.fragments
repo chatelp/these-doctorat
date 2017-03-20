@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fragments:LCPnetFragment xmi:version="2.0" (...) fragmentName="ImagingServiceFragment">
+  <nodes xsi:type="fragments:LNodeFragment" name="" fragmentName="R_antifragment" antiFragment="true">
+    <baseLNode href="imaging_service_preference.lcpnet#//@nodes.2"/>
+  </nodes>
+  <nodes xsi:type="LCPnet:LNode" name="Z" inArcs="//@arcs.1" valueDomain="//@valueDomains.0">
+    <domain xsi:type="LCPnet:LNodeValue" name="Zoom_Low" linguisticValue="//@valueDomains.0/@subsets.0"/>
+    <domain xsi:type="LCPnet:LNodeValue" name="Zoom_Medium" linguisticValue="//@valueDomains.0/@subsets.1"/>
+    <domain xsi:type="LCPnet:LNodeValue" name="Zoom_High" linguisticValue="//@valueDomains.0/@subsets.2"/>
+    <linguisticTable name="zoom_clpt">
+      <lines>
+        <utility nodeValue="//@nodes.1/@domain.0">
+          <utility href="imaging_service_preference.lcpnet#//@utilityDomain/@subsets.1"/>
+        </utility>
+        <utility nodeValue="//@nodes.1/@domain.1">
+          <utility href="imaging_service_preference.lcpnet#//@utilityDomain/@subsets.2"/>
+        </utility>
+        <utility nodeValue="//@nodes.1/@domain.2">
+          <utility href="imaging_service_preference.lcpnet#//@utilityDomain/@subsets.3"/>
+        </utility>
+      </lines>
+    </linguisticTable>
+  </nodes>
+  <nodes xsi:type="fragments:LNodeFragment" name="" outArcs="//@arcs.1" fragmentName="B_Modifier">
+    <linguisticTable xsi:type="fragments:CLPTFragment" name="">
+      <lines xsi:type="fragments:CLPTLineFragment">
+        <utility xsi:type="fragments:LNodeValueUtilityFragment" name="">
+          <utility href="imaging_service_preference.lcpnet#//@utilityDomain/@subsets.1"/>
+          <baseLNodeValueUtility href="imaging_service_preference.lcpnet#//@nodes.1/@linguisticTable/@lines.0/@utility.0"/>
+        </utility>
+        <utility xsi:type="fragments:LNodeValueUtilityFragment" name="">
+          <utility href="imaging_service_preference.lcpnet#//@utilityDomain/@subsets.3"/>
+          <baseLNodeValueUtility href="imaging_service_preference.lcpnet#//@nodes.1/@linguisticTable/@lines.0/@utility.2"/>
+        </utility>
+        <baseCLPTLine href="imaging_service_preference.lcpnet#//@nodes.1/@linguisticTable/@lines.0"/>
+      </lines>
+      <baseCLPT href="imaging_service_preference.lcpnet#//@nodes.1/@linguisticTable"/>
+    </linguisticTable>
+    <baseLNode href="imaging_service_preference.lcpnet#//@nodes.1"/>
+  </nodes>
+  <arcs xsi:type="fragments:ArcFragment" name="" fragmentName="BtoR_antifragment" antiFragment="true">
+    <baseArc href="imaging_service_preference.lcpnet#//@arcs.1"/>
+  </arcs>
+  <arcs xsi:type="LCPnet:IArc" name="BtoZ" startNode="//@nodes.2" endNode="//@nodes.1"/>
+  <valueDomains name="Zoom">
+    <subsets name="Zoom_Low">
+      <fuzzySubset y="1.0"/>
+      <fuzzySubset x="0.5"/>
+    </subsets>
+    <subsets name="Zoom_Medium">
+      <fuzzySubset/>
+      <fuzzySubset x="0.5" y="1.0"/>
+      <fuzzySubset x="1.0"/>
+    </subsets>
+    <subsets name="Zoom_High">
+      <fuzzySubset x="0.5"/>
+      <fuzzySubset x="1.0" y="1.0"/>
+    </subsets>
+  </valueDomains>
+  <baseLCPnet href="imaging_service_preference.lcpnet#/"/>
+</fragments:LCPnetFragment>

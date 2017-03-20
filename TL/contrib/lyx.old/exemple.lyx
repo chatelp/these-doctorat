@@ -1,0 +1,447 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass thloria
+\begin_preamble
+% Pour avoir un trait sous l'en-tete:
+\setlength{\HeadRuleWidth}{0.4pt}
+
+% Style d'en-tÃªtes
+%\pagestyle{ThesisHeadingsII}
+
+% Affichage de la version (nom fichier + date)
+%\ThesisDraft
+
+% Liens hypertextes
+\usepackage{tlhypref}
+
+% Mini tables des matiÃ¨res
+\usepackage[french]{minitoc-hyper}
+\dominitoc
+\end_preamble
+\language frenchb
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language french
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+Hypo
+\layout Author
+
+Otterano, Nîmes
+\layout Date
+
+20 août 2008
+\layout Diplome
+
+Doctorat de l'Université cap'
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+
+\backslash 
+[3mm]{
+\backslash 
+UseEntryFont{ThesisSpecialty}
+\end_inset 
+
+(spécialité zigomatique)
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+def
+\backslash 
+blanc{
+\backslash 
+hspace*{1cm}}
+\end_inset 
+
+
+\layout President
+
+Le préside an
+\layout Rapporteurs
+
+L'heure à porteur 1 
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+&
+\end_inset 
+
+ de Paris
+\newline 
+Le rat porteur 2
+\newline 
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+blanc
+\end_inset 
+
+ \SpecialChar \ldots{}
+ suite 
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+&
+\end_inset 
+
+ taratata
+\newline 
+L'heure apporte heure 3
+\layout Examinateurs
+
+L'examina teu Rhin 
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+&
+\end_inset 
+
+ d'ici
+\newline 
+L'hexamine hasteur 2 
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+&
+\end_inset 
+
+ là
+\layout EntetePageDeTitre
+\noindent 
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+centerline{
+\backslash 
+parbox[t][0cm][b]{
+\backslash 
+textwidth}{Logo1
+\backslash 
+hfill Logo2
+\backslash 
+hfill Logo3}}
+\backslash 
+par
+\backslash 
+nointerlineskip
+\backslash 
+vskip1mm
+\backslash 
+noindent
+\backslash 
+hrulefill
+\end_inset 
+
+
+\newline 
+Départ te ment, deux formes à Sion
+\hfill 
+École docte orale
+\layout PiedPageDeTitre
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+hrule
+\backslash 
+vskip2mm
+\backslash 
+centerline{
+\end_inset 
+
+Labbe oratoire
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\layout FinPageDeTitre
+
+\layout Remerciements
+
+L'air Homère Ciment\SpecialChar ~
+!
+\layout Dedicace
+
+Spéciale dédicace à Franck et Barry\SpecialChar \ldots{}
+
+\layout Standard
+
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
+\layout FinPreface
+
+\layout SectionSpeciale
+
+Introduction
+\layout Standard
+
+Test de l'introduction\SpecialChar \ldots{}
+
+\layout Part
+
+La première partie
+\layout Chapter
+
+Le premier chapitre
+\layout MiniTOC
+
+\layout Standard
+
+Test du premier chapitre\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La première section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La deuxième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La troisième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Chapter
+
+Le deuxième chapitre
+\layout MiniTOC
+
+\layout Standard
+
+Test du deuxième chapitre\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La première section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La deuxième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La troisième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Part
+
+La deuxième partie
+\layout Chapter
+
+Le troisième chapitre
+\layout Standard
+
+Test du troisième chapitre\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La première section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La deuxième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La troisième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Chapter
+
+Le quatrième chapitre
+\layout Standard
+
+Test du quatrième chapitre\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La première section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La deuxième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La troisième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout SectionSpeciale
+
+Conclusion
+\layout Standard
+
+Test de la conclusion\SpecialChar \ldots{}
+
+\layout Annexes
+
+\layout Annex
+
+La première annexe
+\layout Standard
+
+Test de la première annexe\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La première section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La deuxième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La troisième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Annex
+
+La seconde annexe
+\layout Standard
+
+Test de la seconde annexe\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La première section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La deuxième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout Section
+\pagebreak_top 
+La troisième section
+\layout Standard
+
+Test de la section\SpecialChar \ldots{}
+
+\layout ResumeFrancais
+
+Résumé en français.
+ Résumé en français.
+ Résumé en français.
+ Résumé en français.
+ Résumé en français.
+ Résumé en français.
+\layout ResumeAnglais
+
+Abstract in English.
+ Abstract in English.
+ Abstract in English.
+ Abstract in English.
+ Abstract in English.
+ Abstract in English.
+\layout FinResumeAnglais
+
+\the_end

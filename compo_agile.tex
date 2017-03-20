@@ -1,0 +1,1001 @@
+% These - Composition agile de services
+% (c) 2009-2010 Pierre CHATEL
+
+% cheminement depuis une intégration des concepts précédents à l'intérieur d'un langage, avec illustration dans BPEL mais ils sont plus généraux que ça.
+
+\section{Introduction}
+
+\lettrine{A}{ l'issue} des présentations détaillées, mais séparées, de la composition \emph{active}\index{Composition de services!a@active}, puis \emph{utile}\index{Composition de services!b@utile} de services, le but de ce chapitre est d'aborder l'intégration de ces deux contributions au sein d'une approche unifiée, déployée pour l'orchestration de services lors de l'exécution d'un processus métier défini dans le langage BPEL. Cette dernière contribution porte alors le nom de \emph{composition agile de services}\index{Composition de services!c@agile}, qui traduit fidèlement la capacité d'une application répartie construite sur ses bases à s'adapter dynamiquement aux changements dans son environnement, par exemple en étant capable de prendre en considération l'évolution constante des services qui l'entourent (disparitions, déconnexions, variations dans la QoS, etc.), tout en tenant compte des contraintes non-fonctionnelles qui s'imposent à elle ainsi que des préférences des utilisateurs, exprimées à l'aide de LCP-nets.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=150mm]{figures/compo_agile_process_incendie.pdf}
+    \caption{Composition agile de service lors de la gestion d'un incendie.}
+    \label{fig:compo_agile_process_incendie}
+  \end{center}
+\end{figure} 
+
+Cette capacité, nous l'avons vue au chapitre~\ref{ch:cas_utilisation} au cours du cas d'utilisation sur lequel s'appuient nos travaux, peut s'avérer déterminante lors de situations de crise, en particulier lors de la gestion d'incendies. Elle va alors permettre de choisir les meilleurs éléments disponibles du point de vue de leur Qualité de Service (parmi les drones, personnels et camions prêts à se rendre sur le lieu du sinistre) au moment même du déclenchement de la crise et pendant tout son déroulement, tout en permettant des ajustements ``de dernière minute'' par le biais des préférences utilisateur rattachées aux processus métiers (cf. figure~\ref{fig:compo_agile_process_incendie}). Ces préférences (contextuelles par nature) vont alors diriger la sélection des services, de manière active pendant tout le déroulement du processus de gestion de crise, sur la base des différents critères de QoS connus que l'on peut superviser. Par exemple : \textit{``On souhaite, dans l'absolu, utiliser les drones disposant, pour la transmission des images, des meilleures valeurs en termes de sécurité, bande passante et résolution.''}, ou encore \textit{``On effectue un compromis entre l'optimisation de la bande passante et celle de la résolution''}.
+
+Le déroulement de ce chapitre est le suivant : dans un premier temps, à la section~\ref{sec:Intégration conjointe des compositions actives et utiles dans l'orchestration de services}, nous traiterons les considérations propres à l'intégration conjointe de la composition active et de la composition utile lors de l'orchestration de services. Au cours de cette section nous aborderons notamment le gain lié à la possibilité de factoriser les préférences LCP-nets dans les processus métiers. Dans un second temps, en section~\ref{sec:Représentation de plus haut niveau des LCP-nets}, nous détaillerons la syntaxe et la sémantique opérationnelle structurelle d'un langage de LCP-nets de plus haut niveau, à même de favoriser leur intégration au sein des processus métiers BPEL au format XML, sujet que nous aborderons à la section~\ref{sec:Intégration dans les processus métiers}. Finalement, la dernière section~\ref{sec:QoS globale des processus et liaison tardive des services} sera l'occasion d'évoquer la possibilité plus prospective d'intégrer la QoS globale des processus dans la liaison tardive des services.
+
+\section{Intégration conjointe des compositions actives et utiles dans l'orchestration de services}
+\label{sec:Intégration conjointe des compositions actives et utiles dans l'orchestration de services}
+%focus sur BPEL
+%besoin de 3 opération dédiées : latebindingInvoke, monitoring, latebindingConfigure
+%Jacques : parler brievement de l'interet d'un partage des lcp-nets entre plusieurs sites d'appels (les invokes) et donc de l'interet de la définition incrémentale
+Le mécanisme de composition active de services, présenté au chapitre~\ref{ch:Composition active de services}, a introduit de manière abstraite le concept primordial de \emph{liaison tardive de services} ainsi que les différentes étapes qui précèdent son déclenchement. Celui de composition utile, au chapitre~\ref{ch:Composition utile de services}, est lié au \emph{formalisme LCP-net} de préférences utilisateur. La finalité de cette section est alors d'aborder les problématiques plus concrètes de leur intégration \emph{conjointe}, dans un cadre non-fonctionnel, au sein de l'orchestration de services issus de l'exécution d'un processus métier au format BPEL. 
+
+\subsection{Définition d'une activité BPEL de liaison et invocation tardive de service}
+
+D'un point de vue technique, dans une architecture SOA, la définition d'un processus métier effectuée en suivant la spécification WS-BPEL 2.0  de base (c'est-à-dire sans exploiter le mécanisme d'extension du langage) ne permet pas la mise en place d'une liaison tardive de services : sa syntaxe implique qu'un et un seul service soit explicitement affecté à chaque site d'invocation de service lors de la définition du processus. Cette contrainte est illustrée par l'extrait de code BPEL~\ref{listing:hello_world_simple.bpel}, déjà rencontré, qui cherche à effectuer l'affichage de la chaîne de caractères \textit{``Hello World !''} en faisant appel à un service Web d'affichage dédié. Ce service doit être connu et indiqué au moment de la définition du processus car l'instruction d'invocation de service requière un unique \textit{partnerLink} nommé \textit{'printService'} qui est lié à une structure \textit{portType} d'un fichier WSDL \textit{'...tptp\_EnginePrinterPort.wsdl'} importé auparavant et dont on reproduit ici un extrait (cf. Extrait~\ref{listing:hello_world_simple.wsdl}). Or, chaque \textit{portType} correspond à la définition d'un service Web spécifique, accessible au travers d'un \textit{port} qui spécifie l'adresse concrète du service. Il n'est donc pas possible de choisir un service à un autre moment que celui de la définition, ni de spécifier une liste d'alternatives pour l'exécution. Cette remarque est valable \emph{ceteris paribus}, que l'offre de service Web soit au format WSDL 1.1 ou 2.0.
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Extrait d'un processus métier basique au format BPEL., label=listing:hello_world_simple.bpel]{sources/hello_world_simple.bpel}
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Extrait d'une offre basique de service Web d'affichage., label=listing:hello_world_simple.wsdl]{sources/hello_world_simple.wsdl}
+
+\textit{A contrario}, dans notre cadre SSOA, au cours de l'orchestration des services effectuée à partir de processus métiers abstraits, les calculs modélisés dans les processus doivent se retrouver concrétisés sous la forme de flots de contrôle structurés où les besoins abstraits sont transformés en appels aux services effectivement disponibles dans l'environnement d'exécution des processus, et pas uniquement dans celui de leur définition. Cependant, si la spécification WS-BPEL 2.0 prévoit effectivement un mécanisme d'extension des opérations de base du langage, voire de définition d'opérations totalement nouvelles, aucune extension relative à un mécanisme d'invocation tardive des services n'est prédéfinie.
+
+Telles que nous les avons déjà abordées (cf. section~\ref{sec:Une approche pour la liaison tardive de services}), les étapes successives de \emph{filtrage des services}, d'\emph{initialisation de leur supervision} et finalement de \emph{liaison tardive} sont indispensables à la pleine réalisation de la composition active des services. Le choix de la répartition temporelle des deux premières étapes par rapport au cycle de vie des processus métier découle d'une logique d'optimisation du temps de réponse de ces derniers. A titre d'exemple, le calcul des modèles d'adaptation de données ne pourrait être réalisé de manière pleinement satisfaisante s'il était effectué au cours de l'orchestration des services : l'impact de ses algorithmes d'appariement étant alors beaucoup trop important par rapport aux caractéristiques d'agilité que l'on est en droit d'attendre de systèmes répartis, en particulier déployés pour de la gestion de crise. 
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=150mm]{figures/compo_agile_repartition_temporelle.pdf}
+    \caption{Répartition temporelle des étapes clés de la coordination active de services.}
+    \label{fig:compo_agile_repartition_temporelle}
+  \end{center}
+\end{figure} 
+
+La répartition que nous établissons est alors illustrée par la figure~\ref{fig:compo_agile_repartition_temporelle} : les étapes de filtrage et d'initialisation de la supervision étant alors effectuées au chargement du processus, cela implique que la liste des services valides filtrés (les pompiers sur cet exemple) et les valeurs de QoS courantes de ces services (résistance au feu, fatigue physique, fréquence radio évoluant à l'intérieur de bornes contractuelles), obtenues au travers des sondes du canevas de supervision, seront disponibles lors de la liaison tardive des services pendant l'exécution du processus. Cette répartition signifie aussi que seule la liaison tardive des services, et leur invocation subséquente, reste effectivement à traiter au cours de l'orchestration. Dans l'implantation de référence du projet SemEUsE, filtrage et supervision sont effectivement pris en charge par des composants externes à l'orchestration et la liaison tardive des services : par un mécanisme de composition dynamique proche des travaux que nous avons étudiés dans l'état de l'art pour le premier, et par le canevas mis au point par Le Duc~\textit{et al.} pour le second~\cite{BaoLeDuc2009}.
+
+Nous définissons alors une ``activité étendue'' BPEL dont les détails d'implantation seront abordés au chapitre~\ref{ch:implantation}. La syntaxe de cette activité, nommée \textit{lateBindingInvoke}, est donnée par le fragment de code~\ref{listing:compo_agile_lbInvoke} au format XML :
+
+\vspace*{.5cm}
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount, language=XML}
+\begin{lstlisting}[label=listing:compo_agile_lbInvoke, caption=Activité BPEL \emph{lateBingingInvoke} au format XML]
+<lateBindingInvoke inputVariable="invoke_in" outputVariable="invoke_out" preference="preferences.lcpnet">
+	<candidateServices>
+		<service EPR="service1" portType="service1PortType" operation="getVideo" contract="negociated_wsag_1.xml"/>
+		<service EPR="service2" portType="service2PortType" operation="getVideo" contract="negociated_wsag_2.xml"/>
+		(...)
+	</candidateServices>
+</lateBindingInvoke>
+\end{lstlisting}
+
+\vspace*{.5cm}
+
+L'activité de liaison et d'invocation tardive de service dispose ainsi :
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item de deux arguments \textit{inputVariable} et \textit{outputVariable} qui pointent vers les variables BPEL utilisées pour le stockage des paramètres et de la valeur de retour du service qui sera appelé lors de l'exécution de cette activité BPEL,
+\item d'un argument \textit{preference} qui permet d'indiquer un fichier de préférence au format LCP-net à utiliser lors de la sélection du  service à invoquer,
+\item d'une \textit{liste de services valides} fonctionnellement (``ce sont bien des pompiers'') et non-fonctionnellement (``ils correspondent bien aux critères généraux de QoS exprimés sous forme de bornes dans les contrats'') parmi lesquels le service à invoquer sera déterminé au dernier moment (en liaison tardive) cette liste a été déterminée précédemment par l'étape de filtrage. Pour chaque service, on dispose des mêmes informations que dans un BPEL classique (référence au point d'accès \textit{EPR}, interface distante \textit{portType} et opération à appeler), ainsi que de son contrat de Qualité de Service.
+\end{itemize}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/compo_agile_utilisation_lbInvoke.pdf}
+    \caption{Activité \textit{lateBindingInvoke} dans le processus BPEL de gestion de incendie.}
+    \label{fig:compo_agile_utilisation_lbInvoke}
+  \end{center}
+\end{figure} 
+
+Sur la base de notre précédent exemple pour la gestion de crise, c'est cette instruction qui va être utilisée dans le processus métier BPEL au niveau des sites d'appels n°1, 2 et 3. Sans entrer dans les détails techniques, la figure~\ref{fig:compo_agile_utilisation_lbInvoke} illustre l'usage qui en est fait, tout en précisant la nature du processus BPEL : les trois activités \textit{lateBindingInvoke}, identifiées explicitement dans le processus comme activités étendues, sont incluses dans une activité de base du type \textit{sequence}, elle même comprise dans un élément \textit{process}.
+
+\subsection{Définition incrémentale des préférences utilisateur}
+\label{sec:Définition incrémentale des préférences utilisateur}
+
+Est apparu au cours de l'intégration conjointe de la liaison tardive et des LCP-nets, tel que présenté ci-dessus, l'intérêt manifeste de permettre la factorisation des modèles, de manière à éviter d'inutiles répétitions dans les préférences utilisateur. On rationaliserait ainsi l'utilisation des préférences en réduisant les répétitions, la conséquence directe étant une \emph{réduction des coûts de développement} en favorisant le principe de \emph{réutilisabilité} mis en avant par l'architecture SOA. 
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/compo_agile_pref_tempsdereponse.pdf}
+    \caption{LCP-net modélisant la préférence sur le temps de réponse de tous les services.}
+    \label{fig:compo_agile_pref_tempsdereponse}
+  \end{center}
+\end{figure} 
+
+En effet, lors de la définition de processus métiers, les programmeurs peuvent avoir des préférences générales qui s'appliquent à plusieurs sites d'appels de services (c'est-à-dire à plusieurs \textit{lateBindingInvoke}), avec éventuellement quelques modifications à leur apporter pour les adapter aux spécificités de chaque site. Par rapport à notre cas d'utilisation, il pourrait par exemple s'agir d'une propriété sur le temps de réponse des services, effectivement partagée par les drones, personnels et camions, et pour laquelle notre préférence est toujours de la forme \textit{``Je souhaite obtenir le temps de réponse le plus faible possible''}, quel que soit le type de service. Cette préférence correspond au LCP-net de la figure~\ref{fig:compo_agile_pref_tempsdereponse}, ici accompagné du partitionnement flou du domaine du \textit{temps de réponse} en \textit{ms}, préalablement normalisé sur $[0,1]$ qui donne les différentes fonctions d'appartenance des termes linguistiques $T_L$, $T_M$ et $T_H$ (respectivement\textit{ temps de réponse faible}, \textit{moyen} et \textit{élevé}).
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=155mm]{figures/compo_agile_repetition_prefs.pdf}
+    \caption{Dilution d'une préférence globale dans un processus métier.}
+    \label{fig:compo_agile_repetition_prefs}
+  \end{center}
+\end{figure} 
+
+Tel que défini actuellement, le langage des LCP-nets conduirait à la définition de trois modèles distincts de préférence (sur la base de ceux introduits dans la section~\ref{sec:Cas d'utilisation et LCP-nets}) au sein desquels la préférence globale sur le temps de réponse serait systématiquement reportée, telle que représentée par la figure~\ref{fig:compo_agile_repetition_prefs}. On cherche alors à changer cet état de fait par un mécanisme de définition incrémentale (ou ``différentielle'') des modèles de préférences : les \emph{fragments}.
+
+\subsection{Notion de fragment de préférences}
+\label{sec:Notion de fragment de préférences}
+
+Plutôt que de devoir répéter systématiquement, dans le LCP-net local à chaque site d'appel, une préférence applicable à un ensemble de sites (dans notre exemple, la préférence sur le temps de réponse des services), une alternative plausible serait de factoriser ces préférences communes dans un \emph{LCP-net partagé}, puis d'ajouter sur chaque site d'appel  les variations locales à lui appliquer pour obtenir le \emph{LCP-net effectif} à utiliser lors de la liaison tardive de services.
+
+Cette capacité à définir les préférences utilisateur de manière incrémentale, par des extensions ou modifications locales, a été ajoutée au formalisme LCP-nets par l'introduction de la notion de \emph{fragment} de préférences. Les fragments sont des entités, construites sur la base d'un LCP-net existant, qui décrivent de manière non ambiguë des \emph{ajouts}, \emph{suppressions}, ou \emph{modifications} de tout élément sur leur LCP-net de base.
+
+Pour que sa définition reste la plus simple possible, la forme générale d'un fragment suit le même modèle et la même représentation graphique qu'un LCP-net classique, tel qu'on peut le voir sur la figure~\ref{fig:compo_agile_imaging_service_fragment} :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item Pour chaque construction de base du formalisme LCP-net (le LCP-net lui-même, ses n\oe{}uds, arcs et tables), il existe un type de fragment dérivé : on dispose donc de fragments de LCP-nets, de n\oe{}uds, d'arcs et de tables. Sur la figure on distingue un fragment de LCP-net contenant lui-même deux fragments de n\oe{}ud et un fragment d'arc.
+
+\item Pour chaque fragment il faut indiquer l'\textit{élément cible}, situé dans un modèle LCP-net de base, auquel il s'applique. Dans notre exemple, ces liens ne sont pas retranscrits sur la figure, cependant, le fragment de LCP-net s'applique bien à notre précédent LCP-net d'imagerie, de même que les fragments de n\oe{}uds à leurs n\oe{}uds respectifs dans ce modèle cible, etc.
+
+\item Un fragment peut servir à modifier les propriétés de son élément de base ou à le supprimer (on parle alors d'anti-fragment). Dans notre exemple, on dispose d'un anti-fragment d'arc (de $B$ vers $R$) et d'un anti-fragment de n\oe{}ud (pour $R$); ce qui signifie que ces deux éléments cibles seront supprimés lors de l'application du LCP-net.
+
+\item Lors de la modification des propriétés d'un élément de base par un fragment, il est possible de décrire des ajouts. Ces ajouts sont exprimés sous la forme d'éléments d'un type de base du formalisme LCP-net, c'est-à-dire que pour ajouter un n\oe{}ud à un LCP-net il faut créer en premier lieu un fragment de LCP-net, et ajouter un \emph{véritable} n\oe{}ud à sa liste vierge de n\oe{}uds. C'est le cas sur la figure, où pour ajouter un nouveau n\oe{}ud $Z$ on crée un élément de type \textit{'n\oe{}ud'}, et non de type \textit{'fragment de n\oe{}ud'}.
+\end{itemize}
+
+Cette nouvelle fonctionnalité de factorisation va effectivement permettre la définition de préférences globales qui pourront être utilisées comme références de base dans un processus métier, suivies de leur raffinement par l'utilisation d'un fragment de préférence sur chaque site d'appel de service nécessitant des ajustements spécifiques : comme le fait d'accorder une plus grande importance à une dimension de QoS particulière ou, au contraire, d'en ignorer certaines. 
+
+S'ajoute alors aux bénéfices en termes de rationalisation des coûts de développement, un autre avantage, particulièrement pertinent dans notre contexte SSOA, qu'est celui de l'\emph{amélioration de la lisibilité} et de la compréhension des préférences, par la facilitation de la reconnaissance des préférences communes aux sites d'appels.
+
+\subsubsection{Première illustration du mécanisme de définition incrémentale}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/lcpnet_drones.pdf}
+    \caption{Préférence $\mathit{ImagingServicePreference}$ sous forme graphique.}
+    \label{fig:compo_agile_lcpnet_drones}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering \includegraphics[width=100mm]{figures/compo_agile_imaging_service_fragment.pdf}
+  \caption{Fragment $\mathit{ImagingServiceFragment}$ sous forme graphique.}
+  \label{fig:compo_agile_imaging_service_fragment}
+\end{figure}
+
+Pour illustrer ce mécanisme de définition incrémentale de manière plus exhaustive, on compose tout d'abord le LCP-net $\mathit{ImagingServicePreference}$ de préférence sur la sélection d'un drone d'imagerie aérienne qui avait déjà été introduit au chapitre~\ref{ch:Composition utile de services} (cf. figure~\ref{fig:compo_agile_lcpnet_drones}), avec le fragment $\mathit{ImagingServiceFragment}$ reproduit sous forme graphique par la figure~\ref{fig:compo_agile_imaging_service_fragment}, de manière à obtenir un nouveau LCP-net $\mathit{ImagingServicePreference_{new}}$ tel que :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item  la préférence sur la résolution $R$ est remplacée par une préférence sur une nouvelle propriété de zoom $Z$,
+\item  un nouveau lien de type \textit{i-arc} est introduit entre $B$ et $Z$,
+\item les valeurs d'utilité sur la CPT du n\oe{}ud $B$ sont changées.
+\end{itemize}
+
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Fragment $\mathit{ImagingServiceFragment}$ sérialisé sous forme XML., label=listing:imaging_service_fragment.fragments]{sources/imaging_service_fragment.fragments}
+
+Un extrait de la sérialisation au format XML de ce fragment $\mathit{ImagingServiceFragment}$ est donné par le code~\ref{listing:imaging_service_fragment.fragments}, il met en exergue :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item l'import initial du modèle LCP-net de base \textit{imaging\_service\_preference.lcpnet};
+\item la suppression du n\oe{}ud $R$ et de sa CPT associée, par la définition d'un anti-fragment $\mathit{R\_antifragment}$;
+\item l'introduction d'un nouveau n\oe{}ud $Z$ et de l'arc $BtoZ$;
+\item l'utilisation d'expressions XPath pour désigner tout élément défini au sein du fichier \textit{imaging\_service\_preference.lcpnet}.
+\end{itemize}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/compo_agile_imaging_service_combined.pdf}
+    \caption{LCP-net $\mathit{ImagingServicePreference_{new}}$ résultant\newline de l'application de $\mathit{ImagingServiceFragment}$.}
+    \label{fig:compo_agile_imaging_service_combined}
+  \end{center}
+\end{figure}
+
+Le nouveau LCP-net $\mathit{ImagingServicePreference_{new}}$, totalement indépendant, résultant de l'application du fragment $\mathit{ImagingServiceFragment}$, est représenté de manière graphique sur la figure~\ref{fig:compo_agile_imaging_service_combined}. Les éléments ajoutés ou modifiés sont indiqués en rouge.
+
+\subsubsection{Seconde illustration du mécanisme de définition incrémentale}
+
+On cherche maintenant à factoriser la préférence globale sur le temps de réponse dans le processus BPEL représenté par la figure~\ref{fig:compo_agile_repetition_prefs}. Pour ce faire :
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item on factorise la partie du modèle de préférences concernant le temps de réponse $T$ dans un LCP-net unique,
+\item les préférences locales à chaque site d'appels \emph{sont reformulées sous la forme de fragments},
+\item chaque fragment local va importer le LCP-net unique sur le temps de réponse et y ajouter ses propres spécificités.
+\end{itemize}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=150mm]{figures/compo_agile_factorisation_prefs.pdf}
+    \caption{Factorisation d'un préférence globale à un processus métier.}
+    \label{fig:compo_agile_factorisation_prefs}
+  \end{center}
+\end{figure} 
+
+Cette approche est illustrée par la figure~\ref{fig:compo_agile_factorisation_prefs} où les tables des préférences locales ont été volontairement omises de manière à ne pas nuire à sa lisibilité. Lors de l'évaluation de chaque site d'appel de services, la préférence effective considérée sera celle obtenue par application du fragment local à la préférence globale sur $T$.
+
+\section{Représentation de plus haut niveau des LCP-nets}
+\label{sec:Représentation de plus haut niveau des LCP-nets}
+
+Dans le cadre de la composition agile de services, on cherche à intégrer les préférences utilisateur au format LCP-net ainsi que leurs fragments au sein des orchestrations de services. Pour que cette intégration soit couronnée de succès, il faut minimiser les contraintes que devra subir un développeur de processus métier BPEL pour les y intégrer.
+
+Dans l'implantation actuelle du langage LCP-net, ainsi que celle du moteur de raisonnement sur préférences, la représentation XML des modèles correspond en fait à celle de leur sérialisation automatique, fondée sur le canevas EMF. Des exemples de cette sérialisation ont été précédemment donnés par les fragments de code~\ref{listing:imaging_service_preference.lcpnet} et~\ref{listing:imaging_service_fragment.fragments}.
+
+Bien que lisibles en l'état, ces représentations n'en restent pas moins difficiles d'accès pour le développeur de processus et ne pourraient être intégrées directement dans les processus BPEL, car cela signifierait que des modèles de préférences externes au processus, \emph{spécifiés à un niveau de langage inférieur}, devraient y être importés. Cette implantation, \emph{à elle seule}, ne permet donc pas une intégration convenable des LCP-nets et de leurs fragments dans les processus BPEL.
+
+La solution que nous avançons pour résoudre cette problématique consiste à mettre au point une représentation XML ``haut niveau'' des LCP-nets et fragments, de manière à homogénéiser le niveau d'abstraction du langage permettant d'exprimer les préférences avec celui de BPEL. On désigne alors les modèles de préférences et fragments décrits dans ce langage par \emph{HL}-LCP-nets (``High Level LCP-nets'') et \emph{HL}-LCP-frags (``High Level LCP-nets fragments'') respectivement. En conséquence de quoi, dans la suite de ce document, le terme ``LCP-net'' seul servira à designer en fonction du contexte, le concept abstrait de préférence utilisateur dans ce formalisme, ou bien les LCP-nets ``bas niveau'' telles qu'implantés par le canevas de modélisation et de décision sur LCP-nets (cf. section~\ref{sec:Canevas LCP-nets}).
+ 
+Cette syntaxe permet de se rendre indépendant du canevas sous-jacent de modélisation et décision sur préférences utilisateur, présenté au chapitre~\ref{ch:implantation} comme une machine virtuelle sur les LCP-nets de bas niveau, et dont l'ensemble des primitives est consultable à la section~\ref{sec:Primitives d'une machine virtuelle LCP-net}. Nous exploitons alors ces primitives pour définir la sémantique opérationnelle structurelle des \emph{HL}-LCP-nets et \emph{HL}-LCP-frags (cf. section~\ref{sec:Sémantique opérationnelle : règles de production}) \emph{via} un ensemble de règles de production qui établissent les correspondances entre leur représentation abstraite (cf. section~\ref{sec:Syntaxe abstraite}) et les primitives de cette machine virtuelle à appeler pour construire et exploiter les LCP-nets bas niveau correspondants. 
+
+\subsection{Syntaxe XML}
+\label{sec:Syntaxe XML}
+
+La mise au point d'une syntaxe XML de plus haut niveau pour les LCP-nets et leurs fragments va donc rendre possible leur intégration au c\oe{}ur même des processus métier BPEL. On l'illustre par les deux exemples suivants.
+
+La représentation XML du \emph{HL}-LCP-net correspondant au réseau de préférences nommé $\mathit{ImagingServicePreference}$, déjà rencontré, sur la sélection d'un service d'imagerie, est donnée ci-après par l'extrait de code~\ref{listing:hl_monitoring_preference}. Elle est structurée, comme pour tout autre \emph{HL}-LCP-net de la façon suivante :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item les premiers éléments \emph{utilityDomain} et \emph{valueDomains} du réseau de préférences donnent respectivement les partitionnements flous du domaine d'utilité des services utilisés dans les tables, et ceux de tous les domaines de valeurs de QoS considérés (ici la sécurité de la communication \emph{Security}, la bande passante \emph{Bandwidth} et la résolution d'image \emph{Resolution}),
+
+\item sous l'élément \emph{nodes} est défini l'ensemble des n\oe{}uds (\emph{node}) du réseau auxquels sont attachées les tables de préférences conditionnelles (\emph{table}). La correspondance entre la forme graphique du n\oe{}ud \emph{R} et sa syntaxe \emph{HL}-LCP-net est illustrée par la figure~\ref{fig:compo_agile_traduction_pref},
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=150mm]{figures/compo_agile_traduction_pref.pdf}
+    \caption{Correspondance entre la forme graphique du n\oe{}ud \emph{R} et sa syntaxe \emph{HL}-LCP-net.}
+    \label{fig:compo_agile_traduction_pref}
+  \end{center}
+\end{figure} 
+
+\item la définition des n\oe{}uds est suivie de celle des arcs, sous l'élément \emph{arcs}. Dans cet exemple figurent deux des types d'arcs disponibles : un \emph{arc} (élément ``BtoR'') et un \emph{i-arc} (élément ``BtoS''). Pour illustrer le type \emph{ci-arc} qui n'est pas instancié dans ce modèle, on se reportera à l'extrait de \emph{HL}-LCP-net donné par le code~\ref{listing:hl_ci-arc}.
+
+\end{itemize} 
+
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Syntaxe \emph{HL}-LCP-net de $\mathit{ImagingServicePreference}$., label=listing:hl_monitoring_preference]{sources/hl_monitoring_preference.xml}
+
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Syntaxe \emph{HL}-LCP-net d'un ci-arc., label=listing:hl_ci-arc]{sources/hl_ci-arc.xml}
+
+La syntaxe XML de haut-niveau pour un fragment de préférence $\mathit{ImagingServiceFragment}$ est quant à elle illustrée par l'extrait de code~\ref{listing:hl_monitoring_fragment}. Elle suit la même forme générale que celle d'un \emph{HL}-LCP-net, il faut cependant noter que :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item la distinction entre les éléments de base de type \emph{HL}-LCP-net  et ceux de fragments est effectuée sur leur nom : à chaque type de base \emph{x} correspond un type fragment \emph{xFragment},
+
+\item tout comme expliqué au chapitre~\ref{ch:Composition utile de services}, des éléments de type \emph{HL}-LCP-net peuvent apparaître au sein des fragments, ils servent à ajouter des nouveaux éléments dans le LCP-net effectif résultant de l'application du fragment : dans cet exemple, on ajoute un nouveau domaine de valeurs (type \emph{valueDomain}) appelé \emph{Zoom}, un nouveau n\oe{}ud \emph{zoom} avec sa table, ainsi qu'un nouvel i-arc de \emph{bandwidth} à \emph{zoom},
+
+\item pour chaque élément de type fragment où l'information est pertinente, le paramètre booléen \emph{antiFragment} permet d'indiquer s'il s'agit d'un anti-fragment de suppression (paramètre à \emph{true}), ou d'un simple fragment de modification (paramètre à \emph{false}),
+
+\item pour chaque élément de type fragment où l'information est nécessaire, il faut indiquer la base (paramètre \emph{base}) du fragment, c'est-à-dire l'élément du LCP-net de base qu'il modifie ou supprime.
+ 
+\end{itemize}
+
+%<!-- param 'name' optionnel sur tous les fragments car pas de composition de fragments -->
+%<!-- param 'base' optionnel car inutile pour certains fragments où la base peut être déduite  -->
+%<!-- param 'antiFragment' optionnel et à false par défaut -->
+%<!-- sur le frag de lcp-nets ci-dessous l'identifiant de la base peut être omis si on est en portée lexicale -->
+
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Syntaxe \emph{HL}-LCP-frag de $\mathit{ImagingServiceFragment}$., label=listing:hl_monitoring_fragment]{sources/hl_monitoring_fragment.xml}
+
+\subsection{Syntaxe abstraite de ce nouveau langage}
+\label{sec:Syntaxe abstraite}
+
+On définit, par la figure~\ref{fig:compo_agile_grammaire_hlcpnets}, la grammaire d'arbres d'une syntaxe abstraite équivalente à celle XML utilisée précédemment pour représenter les \emph{HL}-LCP-nets, mais moins verbeuse, de manière à en augmenter la lisibilité et faciliter son intégration dans les règles de production de la section~\ref{sec:Sémantique opérationnelle : règles de production}. Il s'agit, en définitive, de la syntaxe d'un nouveau langage pour la représentation des préférences LCP-nets.
+
+\begin{figure}[h!]
+{\large\sffamily
+\begin{tabular}{rcl}
+l	&	\string:\string:=	& \underline{lcpnet} ud vd$*$ n$*$ a$*$\\
+ud	& 	\string:\string:=	& \underline{utilityDomain} id lb ub s$*$\\
+s	&	\string:\string:=	& \underline{subset} id c$*$\\
+c	&	\string:\string:=	& \underline{coordinate} real real\\
+vd	&	\string:\string:=	& \underline{valueDomain} id lb ub s$*$\\
+n	&	\string:\string:=	& \underline{node} id id cpt\\
+cpt	&	\string:\string:=	& \underline{table} cpli$*$\\
+cpli	&	\string:\string:=	& \underline{line} id$*$ e$*$\\
+e	&	\string:\string:=	& \underline{entry} id id\\
+a	&	\string:\string:=	& ia | cia | na\\
+ia	&	\string:\string:=	& \underline{iarc} id id id\\
+cia	&	\string:\string:=	& \underline{ciarc} id cit\\
+na	&	\string:\string:=	& \underline{arc} id id id\\
+cit	&	\string:\string:=	& \underline{table} cil$*$\\
+cil	&	\string:\string:=	& \underline{line} id$*$ id id\\
+lb	&	\string:\string:=	& real\\
+up	&	\string:\string:=	& real\\
+\end{tabular}} 
+\caption{Grammaire d'arbre des \emph{HL}-LCP-nets.}
+\label{fig:compo_agile_grammaire_hlcpnets}
+\end{figure}
+
+Le même principe est appliqué aux fragments. La grammaire présentée dans la figure~\ref{fig:compo_agile_grammaire_hlcpfrags} couvre l'ensemble des expressions \emph{HL}-LCP-frag.
+
+\begin{figure}[h!]
+{\large\sffamily
+\begin{tabular}{rclcl}
+l$_{frag}$		&	\string:\string:=	&	&		& \underline{lcpnetFragment} [ud$_{frag}$] [vd$_{frag}*$] [n$_{frag}*$] [a$_{frag}*$]\\
+ud$_{frag}$	& 	\string:\string:=	& ud	&	|	& \underline{utilityDomainFragment} id isAntiFrag id [lb] [ub] [s$_{frag}*$]\\
+s$_{frag}$		&	\string:\string:=	& s	&	|	& \underline{subsetFragment} id isAntiFrag id [c$*$]\\
+vd$_{frag}$	&	\string:\string:=	& vd	&	|	& \underline{valueDomainFragment} id isAntiFrag id [lb] [ub] [s$_{frag}*$]\\
+n$_{frag}$	&	\string:\string:=	& n	&	|	& \underline{nodeFragment} id isAntiFrag id [id] [cpt$_{frag}$]\\
+cpt$_{frag}$	&	\string:\string:=	& cpt	&	|	&  \underline{tableFragment}  isAntiFrag [cpli$_{frag}*$]\\
+cpli$_{frag}$	&	\string:\string:=	& cpli	&	|	& \underline{lineFragment} isAntiFrag num [id$*$] [e$_{frag}*$]\\
+e$_{frag}$	&	\string:\string:=	& e	&	|	&  \underline{entryFragment} isAntiFrag [id] [id]\\
+a$_{frag}$	&	\string:\string:=	& a	&	|	& ia$_{frag}$ | cia$_{frag}$ | na$_{frag}$\\
+ia$_{frag}$	&	\string:\string:=	& ia	&	|	&  \underline{iarcFragment} id isAntiFrag id [id] [id]\\
+cia$_{frag}$	&	\string:\string:=	& cia	&	|	&  \underline{ciarcFragment} id isAntiFrag id [cit$_{frag}$]\\
+na$_{frag}$	&	\string:\string:=	& na	&	|	&  \underline{arcFragment} id isAntiFrag id [id] [id]\\
+cit$_{frag}$	&	\string:\string:=	& cit	&	|	& \underline{tableFragment} isAntiFrag [cil$_{frag}*$]\\
+cil$_{frag}$	&	\string:\string:=	& cil	&	|	& \underline{lineFragment} isAntiFrag num [id$*$] [id] [id]\\
+isAntiFrag		&	\string:\string:=	&	&		& boolean
+\end{tabular}} 
+\caption{Grammaire d'arbre des \emph{HL}-LCP-frags.}
+\label{fig:compo_agile_grammaire_hlcpfrags}
+\end{figure}
+
+%\subsection{Primitives d'une machine virtuelle LCP-net
+
+\subsection{Sémantique opérationnelle : règles de production}
+\label{sec:Sémantique opérationnelle : règles de production}
+
+Nous exploitons maintenant les primitives d'une machine virtuelle LCP-net basique (telle que définie ultérieurement dans la section~\ref{sec:Primitives d'une machine virtuelle LCP-net}) afin d'établir la sémantique opérationnelle structurelle des \emph{HL}-LCP-nets et de leurs fragments \emph{via} un ensemble de règles de production qui établissent les correspondances entre leur représentation abstraite (cf. grammaires de la section~\ref{sec:Syntaxe abstraite}) et les appels à ces primitives.
+
+Concrètement, ces règles de production permettent de traduire tout \emph{HL}-LCP-net  en LCP-net, en vue de son évaluation dans la machine virtuelle. Concernant les \emph{HL}-LCP-frags, les règles expriment la construction de leur fragments de plus bas niveau correspondant, ainsi que le contexte de leur application aux LCP-nets.
+
+Avant de donner le détail de ces règles, il est nécessaire de définir la variable $\rho$ qui correspond à l'environnement dans lequel ces règles sont évaluées. Plus précisément, $\rho: id \rightarrow V$ est une fonction \emph{partielle} des identifiants sur les valeurs. Etant partielle, l'opération $\rho[id_x \rightarrow V_y]$ permet de définir la fonction pour l'identifiant $id_x$ auquel on fait correspondre la valeur $V_y$.
+
+Par ailleurs, dans les règles de production, on manipule les listes d'arguments ($arg*$) à l'aide des opérateurs usuels sur liste \emph{cons}, \emph{car} et \emph{cdr}, représentés respectivement par les symboles $\oplus$, $\downarrow$ et $\dagger$. On étend aussi la définition de la fonction $\rho$ de manière à pouvoir traiter les listes d'identifiants de cette manière : $\rho: (id \rightarrow v) \cup (id* \rightarrow V*)$. 
+
+\subsubsection{Règles de production des \emph{HL}-LCP-nets}
+
+%pour avoir le bon nomage des tables
+\renewcommand*\tablename{Règle}
+
+%1
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, ud> $\rightarrow$ <$\rho_1$, UD> \\
+<$\rho_1$, vd*> $\rightarrow$ <$\rho_2$, VD*>  \\
+L = \textit{createLCPnet}(``anonymous'', UD, VD*)\\
+<$\rho_2$, L, n*> $\rightarrow$ $\rho_3$\\
+<$\rho_3$, L, a*> $\rightarrow$ $\rho_4$\\ \hline
+<$\rho$, \underline{lcpnet} ud vd* n* a*> $\rightarrow$ $\rho$[currentLCPnet $\rightarrow$ L]\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un LCP-net.}
+\label{regle:lcpnet_1}
+\end{table}
+
+\vspace*{.5cm}
+
+%2
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, L, $\downarrow$n*> $\rightarrow$ $\rho_1$~~~<$\rho_1$, L, $\dagger$n*> $\rightarrow$ $\rho_2$\\ \hline
+<$\rho$, L, n*> $\rightarrow$ $\rho_2$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de parcours récursif de la liste des n\oe{}uds.}
+\label{regle:lcpnet_2}
+\end{table}
+
+\vspace*{.5cm}
+
+%3
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+N = \textit{createLNode}(id$_1$, L, $\rho$(id$_2)$)~~~<$\rho$, N,cpt> $\rightarrow$ $\rho_1$\\ \hline
+<$\rho$, L, \underline{node}(id$_1$, id$_2$, cpt)> $\rightarrow$ $\rho_1$[id$_1$ $\rightarrow$ N $]$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un n\oe{}ud.}
+\label{regle:lcpnet_3}
+\end{table}
+
+\vspace*{.5cm}
+
+%4
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+T = \textit{createCLPT}(``table'', N)~~~<$\rho$, T, cpli*> $\rightarrow$ $\rho_1$\\ \hline
+<$\rho$, N, \underline{cptable} cpli*> $\rightarrow$ $\rho_1$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'une table de préférences.}
+\label{regle:lcpnet_4}
+\end{table}
+
+\vspace*{.5cm}
+
+%5
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, T, $\downarrow$cpli*> $\rightarrow$ $\rho_1$~~~<$\rho_1$, T, $\dagger$cpli*> $\rightarrow $ $\rho_2$\\ \hline
+<$\rho$, T, cpli*> $\rightarrow$ $\rho_2$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de parcours récursif de la liste des lignes d'une table.}
+\label{regle:lcpnet_5}
+\end{table}
+
+\vspace*{.5cm}
+
+%6
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+LI = \textit{createCLPTLine}(``line'', T, $\rho(id*)$)~~~<$\rho$, LI, e*> $\rightarrow$ $\rho_1$ \\ \hline
+<$\rho$, T, \underline{line} id* e*> $\rightarrow$ $\rho_1$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'une ligne de table de préférence.}
+\label{regle:lcpnet_6}
+\end{table}
+
+\vspace*{.5cm}
+
+%7
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, LI, $\downarrow$e*> $\rightarrow$ $\rho_1$~~~<$\rho_1$, LI, $\dagger$e*> $\rightarrow$ $\rho_2$\\ \hline
+<$\rho$, LI, e*> $\rightarrow$ $\rho_2$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de parcours récursif de la liste des entrées de la table.}
+\label{regle:lcpnet_7}
+\end{table}
+
+\vspace*{.5cm}
+
+%8
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+\textit{createEntry}(``entry'', LI, $\rho$(id$_1$), $\rho$(id$_2$))\\ \hline
+<$\rho$, LI, \underline{entry} id$_1$ id$_2$> $\rightarrow$ $\rho$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'une entrée de la table.}
+\label{regle:lcpnet_8}
+\end{table}
+
+\vspace*{.5cm}
+
+%9
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, L, $\downarrow$a*> $\rightarrow$ $\rho_1$~~~<$\rho_1$, L, $\dagger$a*> $\rightarrow$ $\rho_2$\\ \hline
+<$\rho$, L, a*> $\rightarrow$ $\rho_2$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de parcours récursif de la liste des arcs.}
+\label{regle:lcpnet_9}
+\end{table}
+
+\vspace*{.5cm}
+
+%10
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+\textit{createArc}(id$_1$, L, $\rho$(id$_2$), $\rho$(id$_3$))\\ \hline
+<$\rho$, L, \underline{arc} id$_1$ id$_2$ $id_3$> $\rightarrow$ $\rho$
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un arc.}
+\label{regle:lcpnet_10}
+\end{table}
+
+\vspace*{.5cm}
+
+%11
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+\textit{createIArc}(id$_1$, L, $\rho$(id$_2$), $\rho$(id$_3$))\\ \hline
+<$\rho$, L, \underline{iarc} id$_1$ id$_2$ $id_3$> $\rightarrow$ $\rho$
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un i-arc.}
+\label{regle:lcpnet_11}
+\end{table}
+
+\vspace*{.5cm}
+
+%12
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+CIA = \textit{createCIArc}($id$, L)~~~<$\rho$, CIA, cit>\\ \hline
+<$\rho$, L, \underline{ciarc} id cit> $\rightarrow$ $\rho$
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un ci-arc.}
+\label{regle:lcpnet_12}
+\end{table}
+
+\vspace*{.5cm}
+
+%13
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+CIT = \textit{createCIT}(``CIT'', CIA)~~~<$\rho$, CIT, cil*>\\ \hline
+<$\rho$, CIA, \underline{citable} cil*> $\rightarrow$ $\rho$
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'une table d'indépendance conditionnelle.}
+\label{regle:lcpnet_13}
+\end{table}
+
+\vspace*{.5cm}
+
+%14
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, CIT, $\downarrow$cil*> $\rightarrow$ $\rho_1$~~~<$\rho_1$, CIT, $\dagger$cil*> $\rightarrow$ $\rho_2$\\ \hline
+<$\rho$, CIT, cil*> $\rightarrow$ $\rho_2$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de parcours récursif des lignes d'une CIT.}
+\label{regle:lcpnet_14}
+\end{table}
+
+\vspace*{.5cm}
+
+%15
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+\textit{createCITLine}(``line'', CIT, $\rho(id*)$, id$_1$, id$_2$)\\ \hline
+<$\rho$, CIT, \underline{line} id* id$_1$ id$_2$> $\rightarrow$ $\rho$
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'une ligne de CIT.}
+\label{regle:lcpnet_15}
+\end{table}
+
+\vspace*{.5cm}
+
+%16
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+D = \textit{createLinguisticDomain}(id, lb, ub)~~~<$\rho$, D, s*> $\rightarrow$ $\rho_1$\\ \hline
+<$\rho$, \underline{utilityDomain} id lb  ub s*> $\rightarrow$ <$\rho_1$[id $\rightarrow$ D], D>
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un domaine d'utilité.}
+\label{regle:lcpnet_16}
+\end{table}
+
+\vspace*{.5cm}
+
+%17
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, D, $\downarrow$s*> $\rightarrow$ $\rho_1$~~~<$\rho_1$, D, $\dagger$s*> $\rightarrow$ $\rho_2$\\ \hline
+<$\rho$, D, s*> $\rightarrow$ $\rho_2$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de parcours récursif de la liste des sous-ensembles flous d'un domaine d'utilité.}
+\label{regle:lcpnet_17}
+\end{table}
+
+\vspace*{.5cm}
+
+%18
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+S = \textit{createLinguisticSubset}(id, D)~~~<$\rho$, S, c*> $\rightarrow$ $\rho_1$\\ \hline
+<$\rho$, D, \underline{subset} id c*> $\rightarrow$ $\rho_1$[id $\rightarrow$ S]\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un SEF.}
+\label{regle:lcpnet_18}
+\end{table}
+
+\vspace*{.5cm}
+
+%19
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, S, $\downarrow$c*> $\rightarrow$ $\rho_1$~~~<$\rho$, S, $\dagger$c*> $\rightarrow$ $\rho_2$\\ \hline
+<$\rho$, S, c*> $\rightarrow$ $\rho_2$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de parcours récursif de la liste des coordonnées d'un SEF.}
+\label{regle:lcpnet_19}
+\end{table}
+
+\vspace*{.5cm}
+
+%20
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+\textit{createCoordinate}(S, $real_1$, $real_2$)\\ \hline
+<$\rho$, S, \underline{coordinate} $real_1$ $real_2$> $\rightarrow$ $\rho$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'une coordonnée de SEF.}
+\label{regle:lcpnet_20}
+\end{table}
+
+\vspace*{.5cm}
+
+%21
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, $\downarrow$vd*> $\rightarrow$ <$\rho_1$, VD>~~~<$\rho_1$, $\dagger$vd*> $\rightarrow$ <$\rho_2$, VD$_{reste}$*>\\ \hline
+<$\rho$, vd*> $\rightarrow$ <$\rho_2$, VD $\oplus$ VD$_{reste}$*)>
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production de la liste de tous les domaines de valeur.}
+\label{regle:lcpnet_21}
+\end{table}
+
+\vspace*{.5cm}
+
+%22
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+D = \textit{createLinguisticDomain}(id, lb, ub)~~~<$\rho$, D, s*> $\rightarrow$ $\rho_1$\\ \hline
+<$\rho$, \underline{valueDomain} id lb  ub s*> $\rightarrow$ <$\rho_1$[id $\rightarrow$ D], D>\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un domaine de valeur spécifique.}
+\label{regle:lcpnet_22}
+\end{table}
+
+\vspace*{.5cm}
+
+
+\subsubsection{Règles de production des \emph{HL}-LCP-frags}
+
+Dans les règles de production ci-dessous, on effectue la distinction entre fragments et anti-fragments par le paramètre \emph{isAntiFrag} défini sur la grammaire des \emph{HL}-LCP-frags. En fonction de la valeur de ce booléen, la règle de production choisie n'est pas la même. On part aussi du principe que le LCP-net cible courant, auquel s'applique le fragment, est disponible dans son environnement $\rho$ d'évaluation sous la dénomination \emph{currentLCPnet}.
+
+Par ailleurs, cette liste de règles n'est pas exhaustive car leur grande majorité peut être construite de manière automatique, à partir des règles de production des \emph{HL}-LCP-nets. Le modèle à suivre consiste :
+
+\begin{itemize}
+
+\item à ajouter et traiter les paramètres spécifiques aux fragments : nom du fragment, booléen de distinction entre fragment et anti-fragment, référence à l'élément de base (ou élément cible) auquel le fragment doit s'appliquer,
+
+\item à remplacer les appels aux primitives de création d'éléments LCP-net de base, par des appels aux primitives spécifiques de création de fragments.
+
+\end{itemize}
+
+Ce modèle est illustré dans les règles de production suivantes :
+
+%23
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, ud$_{frag}$> $\rightarrow$ <$\rho_1$, UD$_{frag}$> \\
+<$\rho_1$, vd$_{frag}$*> $\rightarrow$ <$\rho_2$, VD$_{frag}$*>  \\
+F = \textit{createLCPnetFragment}(``anonymous'', $\rho$(\textbf{currentLCPnet}), UD$_{frag}$, VD$_{frag}$*)\\
+<$\rho_2$, F, n$_{frag}$*> $\rightarrow$ $\rho_3$\\
+<$\rho_3$, F, a$_{frag}$*> $\rightarrow$ $\rho_4$\\
+L = \textit{getCombinedLCPnet}(F)\\ \hline
+<$\rho$, \underline{lcpnetFragment} ud$_{frag}$ vd$_{frag}$* n$_{frag}$* a$_{frag}$*> $\rightarrow$ L\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production et application directe d'un fragment de LCP-net.}
+\label{regle:lcpnet_fragment_23}
+\end{table}
+
+\vspace*{.5cm}
+
+%24
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+$D_{frag}$ = \textit{createLinguisticDomainFragment}(id$_1$, \textit{false}, $\rho$(currentLCPnet).\textit{getLinguisticDomain}(id$_2$) , lb, ub)\\
+<$\rho$, D$_{frag}$, s$_{frag}$*> $\rightarrow$ $\rho_1$\\ \hline
+<$\rho$, \underline{utilityDomainFragment} id$_1$ \textit{false} id$_2$ lb  ub s$_{frag}$*> $\rightarrow$ <$\rho_1$[id$_1$ $\rightarrow$ D$_{frag}$], D$_{frag}$>
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un fragment de domaine d'utilité.}
+\label{regle:lcpnet_fragment_24}
+\end{table}
+
+\vspace*{.5cm}
+
+%25
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+D$_{frag}$ =  \textit{createLinguisticDomainFragment}(id$_1$, \textit{true}, $\rho$(currentLCPnet).\textit{getLinguisticDomain}(id$_2$))\\ \hline
+<$\rho$, \underline{utilityDomainFragment} id$_1$ \textit{true} id$_2$> $\rightarrow$ <$\rho$[id$_1$ $\rightarrow$ D$_{frag}$], D$_{frag}$>
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un \emph{anti-fragment} de domaine d'utilité.}
+\label{regle:lcpnet_fragment_25}
+\end{table}
+
+\vspace*{.5cm}
+
+%26
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, D$_{frag}$, $\downarrow$s$_{frag}$*> $\rightarrow$ $\rho_1$~~~<$\rho_1$, D$_{frag}$, $\dagger$s$_{frag}$*> $\rightarrow$ $\rho_2$\\ \hline
+<$\rho$, D$_{frag}$, s$_{frag}$*> $\rightarrow$ $\rho_2$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de parcours récursif de la liste des fragments de sous-ensemble flous}
+\label{regle:lcpnet_fragment_26}
+\end{table}
+
+\vspace*{.5cm}
+
+%27
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+S$_{frag}$ = \textit{createLinguisticSubsetFragment}(id$_1$, \textit{false}, D$_{frag}$.\emph{getBase}().\emph{getSubset}(id$_2$) , D$_{frag}$)\\
+<$\rho$, S$_{frag}$, c*>\\ \hline
+<$\rho$, D$_{frag}$, \underline{subsetFragment} id$_1$ \textit{false} id$_2$ c*> $\rightarrow$ $\rho$[id$_1$ $\rightarrow$ S$_{frag}$]\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un fragment de sous-ensemble flou.}
+\label{regle:lcpnet_fragment_27}
+\end{table}
+
+\vspace*{.5cm}
+
+%28
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+S$_{frag}$ = \textit{createLinguisticSubsetFragment}(id$_1$, \textit{true}, D$_{frag}$.\emph{getBase}().\emph{getSubset}(id$_2$) , D$_{frag}$)\\ \hline
+<$\rho$, D$_{frag}$, \underline{subsetFragment} id$_1$ \textit{true} id$_2$> $\rightarrow$ $\rho$[id$_1$ $\rightarrow$ S$_{frag}$]\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un \emph{anti-fragment} de sous-ensemble flou.}
+\label{regle:lcpnet_fragment_28}
+\end{table}
+
+\vspace*{.5cm}
+
+%29
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, F, $\downarrow n_{frag}*$> $\rightarrow$ $\rho_1$~~~<$\rho_1$, F, $\dagger n_{frag}*$> $\rightarrow$ $\rho_2$\\ \hline
+<$\rho$, F, $n_{frag}*$> $\rightarrow$ $\rho_2$\\\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de parcours récursif de la liste des fragments de n\oe{}uds.}
+\label{regle:lcpnet_fragment_29}
+\end{table}
+
+\vspace*{.5cm}
+
+%30
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+N$_{frag}$ = \textit{createLNodeFragment}(id$_1$, \emph{false}, $\rho$(currentLCPnet).\textit{getNode}(id$_2$), F, \\
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$\rho$(id$_3$)?$\rho$(id$_3$)\string:$\rho$(currentLCPnet).\textit{getValueDomain}(id$_3$))\\
+<$\rho$, N$_{frag}$, cpt$_{frag}$> $\rightarrow$ $\rho_1$\\ \hline
+<$\rho$, F, \underline{nodeFragment} id$_1$, \emph{false}, id$_2$, id$_3$, cpt$_{frag}$> $\rightarrow$ $\rho_1$[id$_1$ $\rightarrow$ N$_{frag}$$]$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un fragment de n\oe{}ud.}
+\label{regle:lcpnet_fragment_30}
+\end{table}
+
+
+%31
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+N$_{frag}$ = \textit{createLNodeFragment}(id$_1$, \emph{true}, $\rho$(currentLCPnet).\textit{getNode}(id$_2$), F)\\ \hline
+<$\rho$, F, \underline{nodeFragment} id$_1$, \emph{true}, id$_2$> $\rightarrow$ $\rho_1$[id$_1$ $\rightarrow$ N$_{frag}$$]$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un \emph{anti-fragment} de n\oe{}ud.}
+\label{regle:lcpnet_fragment_31}
+\end{table}
+
+\section{Intégration des \emph{HL}-LCP-nets et \emph{HL}-LCP-frags dans les processus métiers}
+\label{sec:Intégration dans les processus métiers}
+
+Dans la section~\ref{sec:Définition incrémentale des préférences utilisateur} nous avons étudié l'intérêt suscité par la possibilité de définir des réseaux de préférences utilisateur de manière incrémentale. Par la suite, nous avons défini la notion de fragment, introduit ses fondations au travers de la sémantique opérationnelle d'un langage LCP-net de haut niveau, et la syntaxe XML qui permet à un utilisateur d'exprimer de manière effective ses (fragments de) préférences.
+
+Le but de cette section est alors d'étudier les possibilités d'intégration aux processus métiers des \emph{HL}-LCP-nets et \emph{HL}-LCP-frags, représentés en XML à un niveau de langage similaire à celui des processus BPEL. A cette fin nous examinerons les options suivantes : une première approche pour la définition et l'utilisation de préférences anonymes en portée lexicale, et une seconde approche où la manipulation des LCP-nets se rapproche de celle d'entités de plein droit (ou entités de ``première classe''). Pour ces deux cas, nous proposerons une sémantique opérationnelle que nous limiterons volontairement aux activités d'intégration des \emph{HL}-LCP-nets et \emph{HL}-LCP-frags dans un processus BPEL. Une tentative de formalisation exhaustive de cette intégration nécessiterait la mise au point de règles de production pour l'ensemble des activités BPEL, ce qui sort du cadre de ce manuscrit.
+
+\subsection{Préférences anonymes en portée lexicale}
+
+Cette première option d'intégration permet, lors de l'évaluation d'une activité étendue \emph{lateBindingInvoke} d'un processus BPEL, de disposer (s'il existe dans l'environnement d'exécution) d'un LCP-net \emph{courant et anonyme}, auquel l'invocation de service est sujette et se réfère. Dans ce cas de figure, ce ``facteur de préférence'' est rattaché à une activité du processus métier dont la portée lexicale couvre, entre autres, cette activité d'invocation.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=150mm]{figures/compo_agile_portee_lexicale.pdf}
+    \caption{Activité \textit{lateBindingInvoke} dans le processus BPEL de gestion d'incendie.}
+    \label{fig:compo_agile_portee_lexicale}
+  \end{center}
+\end{figure} 
+
+Les différentes activités de contrôle du flot d'exécution BPEL, bien que limitées, sont des candidates naturelles pour le rattachement d'un LCP-net ``global''  : \emph{while}, \emph{scope}, \emph{sequence}, etc. On choisit, sur la figure~\ref{fig:compo_agile_portee_lexicale}, d'illustrer de manière graphique l'utilisation de la portée lexicale de l'activité \emph{sequence} (en pointillés sur cette figure) : les activités n°1, 2 et 3 d'invocation de service sont toutes soumises à la préférence sur le temps de réponse $T$ définie sur l'activité \emph{BPEL\string:sequence}, par ailleurs, elles complètent cette préférence courante via leurs propres fragments de préférence $\mathit{frag}_1$, $\mathit{frag}_2$ et $\mathit{frag}_3$.
+
+\subsubsection{Sémantique opérationnelle}
+
+De manière à faire le pont entre les notions d'intégration de LCP-nets \emph{via} la portée lexicale des activités BPEL, et la sémantique opérationnelle déjà établie de l'évaluation des \emph{HL}-LCP-nets et \emph{HL}-LCP-frags, on établit les règles de production suivantes :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item \textbf{Règle de production de la définition d'un \emph{HL}-LCP-net} (cf. règle~\ref{regle:lcpnet_seq_portee}) : évaluée dans un environnement $\rho$ similaire à celui des précédentes règles de production, complété par d'autres éléments de contexte liés à l'orchestration BPEL que l'on représentera par $\gamma$ et que l'on ne formalisera pas. Il s'agit ici d'une définition rattachée à l'activité BPEL de séquence mais, comme nous l'avons évoqué, il existe d'autres possibilités. Elle dispose d'une liste d'activités (\emph{activity *}), parmi lesquelles figurent les activités d'invocation en liaison tardive dont la règle de production est donnée ci-dessous. La règle~\ref{regle:lcpnet_seq_portee} fait donc appel à la règle~\ref{regle:lcpnet_1} de production d'un LCP-net. C'est dans l'environnement $\rho_1$ où le LCP-net a été produit (donc dans la portée lexicale de l'activité \emph{BPEL\string:sequence}), que les activités de la séquence sont ensuite évaluées.
+
+\item \textbf{Règle de production de l'invocation en liaison tardive} (cf. règle~\ref{regle:lcpnet_invoke_portee}) : l'environnement est défini avec $\rho$ et $\gamma$ selon le même principe que la règle~\ref{regle:lcpnet_seq_portee}. Cette règle signifie que l'invocation en liaison tardive de services avec un fragment de préférence \emph{équivaut} à effectuer une invocation tardive où ce fragment a été préalablement appliqué à la préférence courante (\emph{<$\rho$, fragment> $\rightarrow$ L}, en lien avec la règle~\ref{regle:lcpnet_fragment_23}).
+
+\end{itemize}
+
+%32
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, lcpnet> $\rightarrow$ $\rho_1$~~~~ <$\rho_1$, $\gamma$, activity*> $\rightarrow$ $\gamma_1$\\ \hline
+<$\rho$, $\gamma$, \underline{BPEL\string:sequence} lcpnet activity*>  $\rightarrow$ $\gamma_1$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production de la définition d'un \emph{HL}-LCP-net en portée lexicale.}
+\label{regle:lcpnet_seq_portee}
+\end{table}
+
+%33
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, fragment> $\rightarrow$ L~~~<$\gamma$, \underline{lateBindingInvoke} L service* param*> $\rightarrow$ $\gamma_1$\\ \hline
+<$\rho$, $\gamma$, \underline{lateBindingInvoke} fragment service* param*> $\rightarrow$ $\gamma_1$\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production de l'invocation en liaison tardive avec portée lexicale.}
+\label{regle:lcpnet_invoke_portee}
+\end{table}
+
+%De fait, l'intégration actuelle de cette fonctionnalité dans les processus BPEL du projet SemEUsE rattache les LCP-nets et leurs fragments à des \textit{activités} spécifiques des processus Web et exploite leur portée lexicale pour déterminer quelle liaison effectuer entre un fragment et son LCP-net de base. 
+
+\subsection{Vers des LCP-nets entités de plein droit}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/compo_agile_portee_lexicale_limitations.pdf}
+    \caption{Limitations de la portée lexicale.}
+    \label{fig:compo_agile_portee_lexicale_limitations}
+  \end{center}
+\end{figure} 
+
+Dans le cas précédent où la manipulation d'un LCP-net global repose sur une définition anonyme et sur la portée lexicale des activités BPEL de définition, il n'est possible de se référer, lors d'une invocation tardive de service,  qu'à un unique LCP-net courant : en effet, seule la préférence rattachée à l'activité de contrôle du flot englobante n'a cours et masque les autres définitions. Ce principe est illustré dans la figure~\ref{fig:compo_agile_portee_lexicale_limitations} : le LCP-net sur $T$ rattaché à la séquence \emph{main} est effectivement masqué par celui sur $X$ rattaché à la séquence \emph{internal\_sequence}, les activités n°1, 2 et 3 ne peuvent donc se référer qu'à ce dernier.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/compo_agile_entities.pdf}
+    \caption{LCP-nets comme entités de plein droit dans les processus BPEL.}
+    \label{fig:compo_agile_entities}
+  \end{center}
+\end{figure} 
+
+Pour remédier à cette limitation, une première étape est de nommer explicitement les HL-LCP-nets et HL-LCP-frags lors de leur définition dans les processus BPEL. A ce titre, ils disposent d'un nom auquel il est possible de faire référence lors de l'invocation de service, tel qu'illustré par la figure~\ref{fig:compo_agile_entities}.
+
+\subsubsection{Sémantique opérationnelle}
+
+Pour implanter ce nouveau paradigme d'utilisation, des modifications doivent cependant être appliquées aux règles de production des LCP-nets et de leurs fragments. En effet, elles reposent sur l'utilisation d'une entité \emph{currentLCPnet}, disponible dans l'environnement $\rho$, de manière à pouvoir se référer au LCP-net courant anonyme à tout moment. Le nom propre des LCP-nets doit donc être maintenant considéré, et ces derniers stockés dans $\rho$ sous leur désignation. On propose les nouvelles règles~\ref{regle:lcpnet_34} et~\ref{regle:lcpnet_fragment_35}.
+
+%34 (1-bis)
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, ud> $\rightarrow$ <$\rho_1$, UD> \\
+<$\rho_1$, vd*> $\rightarrow$ <$\rho_2$, VD*>  \\
+L = \textit{createLCPnet}(\textbf{id}, UD, VD*)\\
+<$\rho_2$, L, n*> $\rightarrow$ $\rho_3$\\
+<$\rho_3$, L, a*> $\rightarrow$ $\rho_4$\\ \hline
+<$\rho$, \underline{lcpnet} \textbf{id} ud vd* n* a*> $\rightarrow$ $\rho$[\textbf{id} $\rightarrow$ L]\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production d'un LCP-net nommé.}
+\label{regle:lcpnet_34}
+\end{table}
+
+%35 (23-bis)
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c}
+<$\rho$, ud$_{frag}$> $\rightarrow$ <$\rho_1$, UD$_{frag}$> \\
+<$\rho_1$, vd$_{frag}$*> $\rightarrow$ <$\rho_2$, VD$_{frag}$*>  \\
+F = \textit{createLCPnetFragment}(\textbf{id$_1$}, $\rho$(\textbf{id$_2$}), UD$_{frag}$, VD$_{frag}$*)\\
+<$\rho_2$, F, n$_{frag}$*> $\rightarrow$ $\rho_3$\\
+<$\rho_3$, F, a$_{frag}$*> $\rightarrow$ $\rho_4$\\
+L = \textit{getCombinedLCPnet}(F)\\ \hline
+<$\rho$, \underline{lcpnetFragment} \textbf{id$_1$} \textbf{id$_2$} ud$_{frag}$ vd$_{frag}$* n$_{frag}$* a$_{frag}$*> $\rightarrow$ <$\rho$[\textbf{id$_1$} $\rightarrow$ L], L>\\
+\end{tabular}
+\end{center}
+\vspace*{-.5cm}
+\caption{Règle de production et application directe d'un fragment de LCP-net nommé.}
+\label{regle:lcpnet_fragment_35}
+\end{table}
+
+On remarque alors que l'introduction d'un identifiant $name$ pour désigner les fragments permet dorénavant de se référer au LCP-net résultant de son application sous le même identifiant $name$ dans $\rho$. Cette extension ouvre donc la porte à des possibilités accrues de manipulation des entités dans les processus BPEL, telle qu'enchaîner les fragments ``les uns derrières les autres'' : par exemple un fragment ($\mathit{frag}_2$) de fragment ($\mathit{frag}_1$) de LCP-net ($lcpnet_{base}$). A ce titre, les préférences et leurs fragments se rapprochent d'entités de plein droit dans BPEL. Cependant, on peut s'interroger sur l'applicabilité d'une telle approche dans la pratique car il devient particulièrement difficile, au moment de l'écriture de $\mathit{frag}_2$, de savoir quels éléments du réseau $lcpnet_{base}$ sont encore désignables : ils auraient en effet très bien pu être supprimés préalablement par $\mathit{frag}_1$. Néanmoins, dans la mesure où les fragments se limitent à des ajouts d'éléments, cette problématique ne se pose alors plus, et les fragments conservent une très grande partie de leur intérêt.  
+
+Par ailleurs, une seconde étape vers la spécification des LCP-nets comme entités de plein droit au sein des processus serait de considérer les définitions de \emph{HL}-LCP-nets comme des définitions de classes dont la visibilité ne serait plus limitée à la portée lexicale de l'activité BPEL de définition, mais à tout le processus.
+
+\renewcommand*\tablename{Table}
+
+
+\section{QoS globale des processus et liaison tardive des services}
+\label{sec:QoS globale des processus et liaison tardive des services}
+
+Par rapport aux précédentes sections, les considérations que nous introduisons ici sont plus prospectives et procèdent d'une incarnation particulière au monde des SSOA de la notion de \emph{``self monitoring''}~\cite{gelenbe2004self, boloni1997qos}. Nous proposons en effet un moyen pour prendre en compte l'état courant des processus, au sein de leur propre exécution lors de la composition agile de services. Le but est d'être capable d'intégrer des informations sur la Qualité de Service globale courante des processus dans la décision de liaison tardive de services.
+
+Le moyen que nous proposons pour réaliser cet objectif consiste à \emph{exposer ces informations de QoS au travers des variables usuelles des LCP-nets}. En effet, le modèle de préférences est suffisamment souple pour permettre l'adjonction de ce type d'information sans modification préalable : du point de vue du modèle de préférences, une propriété sur la QoS globale du processus en cours d'exécution est de la même teneur que la QoS courante des services dont nous avons montré l'intégration précédemment (cf. chapitre~\ref{ch:Composition utile de services}). Les deux types d'information peuvent donc cohabiter dans le même modèle de préférences, et la QoS globale des processus influer la sélection de service, au même titre qu'une autre propriété, \emph{en fonction des desiderata des utilisateurs}.
+
+Des exemples typiques de propriétés globales de QoS auxquelles on souhaiterait pouvoir accéder sont le \emph{temps écoulé} depuis le début de l'exécution du processus, la \emph{bande passante disponible}, le \emph{coût total} des services déjà liés, etc. On cherche donc le plus souvent à déterminer, de manière indirecte, les \emph{ressources allouées au processus encore disponibles} et influer les futures sélections de service en conséquence. Un exemple de préférence utilisateur, au niveau d'un site d'appel de service, intégrant une propriété de ce type pourrait être :
+
+\emph{``Si mon temps écoulé est encore faible, je préfère un service plus précis mais plus lent; dans le cas contraire, je préfère un service moins précis mais qui impactera moins l'exécution du processus''.
+}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=120mm]{figures/compo_agile_QoS_globales_drones.pdf}
+    \caption{LCP-net intégrant une dimension de QoS globale du processus métier.}
+    \label{fig:compo_agile_QoS_globales_drones}
+  \end{center}
+\end{figure} 
+
+Il est possible d'intégrer cette préférence sur la base de notre exemple de sélection d'un drone d'imagerie, où la résolution de l'image (donc la ``\emph{précision}'') entre déjà en ligne de compte. Cette intégration est illustrée par la figure~\ref{fig:compo_agile_QoS_globales_drones} : elle se traduit par une relation entre $B$ et $R$ de type \emph{ci-arc} qui inverse la préférence relative entre ces deux dimensions en fonction de la valeur d'une variable $T$ qui représente le temps écoulé depuis le début de l'exécution du processus.
+
+Ces dimensions impliquent toutes, à différents degrés, la mise au point d'un canevas de supervision dédié ou d'une extension d'un canevas existant. A l'heure actuelle, le bus de services Petals intégré dans le projet SemEUsE est en mesure d'effectuer une supervision au niveau de l'intergiciel SSOA et donc de fournir des mesures très basiques et bas niveau (le plus souvent techniques) sur l'état courant de l'orchestration. A terme, ces informations devraient être intégrées dans le canevas M4ABP~\cite{BaoLeDuc2009} utilisé actuellement pour la supervision des services, de manière à, là aussi, rendre complètement transparente leur intégration dans le processus décisionnel de liaison actuel. Une piste sérieuse pour le calcul des propriétés courantes de QoS globale consisterait à le faire reposer sur les mêmes formules mathématiques que celles utilisées dans les travaux déjà existants sur la composition dynamique de services~\cite{canfora2005qos, cardoso2002quality, Sch07}, tels que vus dans l'état de l'art (cf. chapitre~\ref{ch:etat_art}).
+
+
+\section{Conclusion}
+
+Dans ce chapitre, nous avons établi les abstractions de programmation nécessaires à l'utilisation conjointe de la composition \emph{active} et \emph{utile} de services. Cette approche donne naissance à la composition \emph{agile}, qui présente ses propres subtilités. 
+
+On introduit ainsi la possibilité de définir ses préférences de manière incrémentale \emph{via} la notion de \emph{fragment} de préférence.
+
+Il nous est aussi apparu utile de proposer une ingration plus poussée des préférences dans les processus métiers BPEL; l'idée étant de tendre vers des LCP-nets considérés comme des entités de plein droit au c\oe{}ur de ces processus. Cette constatation est à l'origine de l'introduction d'une représentation de plus haut niveau des LCP-nets et de leurs fragments : les \emph{HL}-LCP-nets et \emph{HL}-LCP-frags, dont une syntaxe XML permet une parfaite cohabitation avec les processus BPEL 2.0.
+
+Grâce à la généricité de ce formalisme, il nous a été aussi possible d'intégrer des propriétés de \emph{QoS globale} des processus dans les préférences, et donc, par la coordination agile, dans la décision de liaison elle-même. A plus long terme, des \emph{données contextuelles} (telles que l'ampleur de l'incendie, sécheresse, etc.) ou des \emph{QoS technique d'infrastructure} (fournies par le canevas SSOA) pourraient être intégrées tout aussi simplement, en suivant une méthodologie identique.

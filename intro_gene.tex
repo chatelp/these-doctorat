@@ -1,0 +1,143 @@
+% These - Intro générale
+% (c) 2009-2010 Pierre CHATEL
+
+\lettrine{L}{es systèmes informatiques}, en particulier répartis\index{Architecture!répartie|textbf}, sont en constante évolution. Or, leur complexification va souvent de pair avec cette évolution. De ce fait, la pérennité d'une infrastructure logicielle, en entreprise comme sur le Web, est directement liée à sa capacité à intégrer de multiples altérations de contexte afin d'accompagner ces mutations.
+
+Les architectures déployées doivent donc faire preuve de flexibilité, et ce dans un contexte de rationalisation des développements. Cette thèse a ainsi pour vocation de lever et résoudre certains verrous scientifiques et techniques à la mise en \oe{}uvre d'une réelle agilité des systèmes répartis dits complexes, condition \textit{sine qua non} de leur pérennité, tout en s'attachant à préserver, ou même améliorer, leurs performances.
+
+Par ailleurs, tel que nous le verrons dans la section suivante, un certain nombre de paradigmes de programmation ont successivement posé le terreau conceptuel et technologique permettant à nos travaux de germer. Travaux qui, tout en s'inscrivant dans l'héritage de ces paradigmes, ont alors pour objet d'apporter une réponse inédite aux nouveaux défis posés par ces architectures réparties complexes, et plus particulièrement à la composition dynamique de services sous contraintes non-fonctionnelles\index{Non-fonctionnel}.
+
+
+\section{De l'approche à objets au paradigme de service}
+
+Un des premiers paradigmes à s'être révélé pertinent pour répondre à ces nouveaux défis est la Programmation Par Objet (``Object Oriented Programming'')~\cite{jacobson1991object}\index{Paradigme!d'objet}, dont on peut retracer les origines jusqu'au début des années 1960. Ce paradigme consiste en la définition et l'assemblage de briques logicielles appelées objets ; un objet représentant le plus souvent un concept, une idée ou une entité physique. La force de l'approche à objets réside donc dans sa capacité à réconcilier les plans logiciel et utilisateur par la modélisation objet, et par là même de simplifier la mise au point de systèmes informatiques complexes. Son adoption massive n'a cependant commencé qu'au début des années 1990, poussée ensuite par la visibilité accrue des Processus Unifiés~\cite{jacobson1999unified}, ces méthodologies de développement logiciel dont le ``Rational Unified Process'' (RUP) d'IBM, est l'une des plus célèbres incarnations.
+
+Par la suite, le paradigme de composant\index{Paradigme!de composant}~\cite{szyperski1999component}, implanté notamment par les technologies CORBA ou JEE, s'est construit autour des principaux concepts objets, tels l'encapsulation des fonctionnalités et des données, auxquels s'ajoute notamment la contractualisation des interactions, la composition par des tiers et la répartition des composants. Un composant possède ainsi des interfaces bien spécifiées et peut être déployé indépendamment du reste de l'application. La Programmation Orientée Composant (POC) n'est d'ailleurs pas sans similitudes avec l'approche à objets, puisqu'elle revient à utiliser une approche comparable, non pas directement au sein du code, mais au niveau de l'architecture générale du logiciel : elle a ainsi permis le regroupement cohérent et réutilisable des objets.
+
+Favorisé notamment par l'irrésistible montée en puissance d'Internet, le monde de la programmation répartie est, aujourd'hui encore, en cours de mutation avec l'adoption progressive du paradigme de service\index{Paradigme!de service} et la mise en \oe{}uvre des architectures fondées sur ces services (``Service Oriented Architectures'', ou SOA\index{Architecture!Orientée Services})\index{SOA})~\cite{Papazoglou2003}.
+
+Les SOA mettent en avant un couplage théoriquement lâche entre client et fournisseur de service. Elles découplent ainsi une application répartie en deux couches. Une couche d'offre de services spécifiés par leurs interfaces et éventuellement des informations de nature sémantique dans un annuaire de services. La seconde couche est la réalisation physique des services sur des machines connectées à Internet et accessibles \textit{via} des protocoles standards.
+
+La programmation d'une application est alors vue comme la description de la combinaison d'un ensemble de services, d'une granularité équivalente à celle des composants, dont la composition lors de l'exécution permet de réaliser le calcul voulu par l'application. Cette composition, le plus souvent appelée ``orchestration''\index{Orchestration}, va alors s'effectuer sur la base d'informations portées par un processus métier dont l'exécution va d'abord demander de lier les appels abstraits de service à des réalisations de services compatibles, fournies par un annuaire. Il s'agit donc de faire le lien entre une spécification abstraite des fonctionnalités requises dans le processus afin de constituer l'application, et les fonctionnalités disponibles sur le réseau \textit{via} leur implantation concrète sous forme de services.
+
+D'un point de vue technologique, une autre caractéristique importante des SOA tient dans le fait qu'elles reposent sur des protocoles et des représentations de données standards, le plus souvent utilisant des langages fondés sur XML, facilitant l'interopérabilité. C'est dans ce cadre qu'est concrétisé le concept de service Web (``Web service''), tel que défini par l'organisme de standardisation W3C\footnote{\textit{World Wide Web Consortium}}, et la cohorte de technologies et langages associés, dont SOAP et WSDL sont les plus célèbres représentants. L'un constituant un protocole d'échange de messages vers les services Web, l'autre un langage de description d'interfaces ou offres de services.
+
+Un système informatique fondé sur une architecture SOA est ainsi disponible sous la forme de services réutilisables qu'il est possible de découvrir et composer dynamiquement avec un couplage lâche. Il se distingue dès lors des solutions totalement intégrées plus traditionnelles, de type boîte noire, que sont ERP ou autres progiciels. Cette architecture veut ainsi répondre aux besoins de flexibilité, réutilisabilité, et d'adaptabilité rapide mis en avant dans les grands systèmes logiciels actuels et souhaités par les entreprises. C'est pour ces raisons et l'adoption de plus en plus importante de ces technologies dans les entreprises, que nous fonderons notre approche sur le paradigme de service.
+
+
+\section{Genèse d'une problématique}
+\label{sec:Genèse d'une problématique}
+
+Plongé dans un contexte industriel, ce travail de thèse trouve écho dans un vaste cadre d'applications s'étendant des Systèmes de Systèmes (``Systems of Systems'', SoS) classiques, aux applications de type C2 ("Command and Control", Commande et Contrôle) déployées dans le cadre d'opérations tactiques militaires ou de gestion de crise, ainsi qu'à l'informatique omniprésente (``Pervasive Computing'').
+
+Dans tous ces domaines, on est amené à gérer la composition dynamique de services avec une forte contrainte de qualité et un minimum de garanties. Les aspects non-fonctionnels qui influent sur le niveau de service rendu ou perçu, tels les délais de réaction des applications, ou plus généralement la Qualité de Service\index{Qualité de Service (QoS)} (``Quality of Service'', QoS) technique ou métier offerte par ces applications, prennent une alors importance cruciale. Les architectures fondées sur les services doivent donc être appareillées pour répondre à ces différentes exigences. D'autres caractéristiques sont aussi essentielles dans ces applications :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item La mobilité, qui rend l'apparition et la disparition de services très fréquente ;
+\item La redondance, qui fait en sorte qu'un même service peut à tout instant être rendu par de nombreuses réalisations physiques mais qui ont toutes une certaine probabilité d'être détruites (cette probabilité varie également fortement selon le type et la phase opérationnelle dans laquelle se retrouve le dispositif, engagé ou non) ;
+\item L'hétérogénéité, un même service peut être rendu par de nombreux dispositifs très différents. Par exemple, une imagerie numérique peut être rendue par la caméra à basse résolution intégrée dans le casque d'un fantassin ou encore la caméra à haute résolution d'un char de reconnaissance.
+\end{itemize}
+
+\textbf{De ces diverses caractéristiques émerge la problématique générale de la mise en \oe{}uvre d'une composition de services{Composition de services} agile, qui, pour être utile, doit prendre en compte l'hétérogénéité du contexte ainsi que les multiples contraintes non-fonctionnelles qui s'y rapportent.}
+
+
+\section{Objectifs de recherche et approche poursuivie}
+\label{sec:Objectifs de recherche}
+
+Plusieurs obstacles viennent jalonner le cheminement vers une composition agile de service. Ainsi, les nombreuses propriétés non-fonctionnelles\index{Non-fonctionnel|textbf} à traiter peuvent s'étendre des caractéristiques techniques d'un service (comme sa disponibilité ou bande passante offerte), à des propriétés non-fonctionnelles de plus haut niveau qui ne sont pas définies sur un ensemble fini, connu à l'avance, de dimensions de QoS. Ces dernières sont intimement liées au domaine de compétence (ou domaine``métier'') du service. De surcroît, dans la vaste majorité des systèmes répartis à base de processus métiers, le lien avec les producteurs de services nécessaires est fixé, pour des raisons techniques ou humaines, de manière statique, \textit{via} l'indication de l'emplacement physique des services sur le réseau, ou rigide, \textit{via} la syntaxe. Dans les deux cas de figure, ceci nécessite la connaissance préalable des services disponibles au moment de l'écriture du processus.
+
+C'est pourquoi, afin notamment de palier à ce manque de souplesse et s'aligner sur les besoins réels des systèmes répartis\index{Architecture!répartie} modernes en termes d'agilité, tels que mis en avant par la problématique de ce manuscrit, nous poursuivons les objectifs suivants dans le cadre de cette thèse :
+
+\subsection*{Premier objectif : favoriser la réactivité des systèmes répartis complexes}
+
+Les SOA Sémantiques\index{Architecture!Orientée Services Sémantiques} (``Semantic SOA'', ou SSOA\index{SSOA})~\cite{vitvar2007semantic}, évolution récente des architectures SOA se situant à la croisée du Web Sémantique~\cite{T.Berners-Lee2001} et de la technologie des services Web~\cite{papazoglou2008web}, proposent des outils à même de faciliter la description de propriétés métiers, fonctionnelles ou non, des services. Le premier d'entre eux consiste à permettre la définition et la réutilisation de concepts de haut-niveau au sein d'ontologies métiers, établies spécifiquement pour chaque domaine considéré. A partir de ces concepts, il est possible d'annoter sémantiquement les offres et requêtes de services, et d'en relever ainsi le niveau d'abstraction~\cite{Peer2002, Eberhart2004, K.Sivashanmugam2003, A.Patil2003}. 
+
+On propose alors ici l'utilisation de ces nouvelles architectures SSOA car elles mettent en avant, par le détachement du niveau syntaxique et technique des services qu'elles proposent, un niveau élevé de découplage entre clients et fournisseurs de service. Par voie de conséquence, elles vont permettre la publication et la cohabitation d'une grande quantité de services répandant, pour certains d'entre eux, à un même besoin fonctionnel, mais exhibant le plus certainement des caractéristiques non-fonctionnelles (de Qualité de Service) bien distinctes.
+
+%Ce concept abstrait de \emph{réactivité} se traduit dans notre contexte SSOA par la définition d'un canevas conceptuel et logiciel capable d'effectuer une composition \emph{réellement dynamique} (on parle alors de composition \emph{active}) des services en présence lors de l'exécution d'un processus métier, afin d'obtenir notamment une grande robustesse intrinsèque par rapport aux pannes et aux déconnexions. 
+
+\textbf{Afin de tirer au mieux parti de la propriété de couplage faible offerte par les SSOA, et pour atteindre ce premier objectif en termes de réactivité des systèmes répartis complexes, nous proposons la mise en place d'un mécanisme de \emph{liaison tardive de services}\index{Liaison tardive de services} lors de l'exécution d'un processus métier, sur la base des valeurs courantes de QoS\index{Qualité de Service (QoS)! courante} des services}. 
+
+D'un point de vue technique, on se fonde alors sur une architecture logicielle à deux niveaux abstraits :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item Un niveau de filtrage des services puis d'exécution du processus métier. Le filtrage étant l'étape statique par laquelle des services disponibles sont associés, ou non, au processus à exécuter en fonction de leur pertinence par rapport aux stricts besoins fonctionnels et non-fonctionnels qui y sont exprimés.
+\item Et un niveau de contrôle du niveau d'exécution et de prise de décision de liaison en fonction de la disponibilité effective des services précédemment filtrés au moment de l'appel ainsi que de leurs \emph{valeurs courantes de QoS} obtenues par un canevas externe de supervision\index{Supervision}. C'est ce niveau qui aura la charge de prendre les meilleures décisions de liaison entre les services disponibles et le processus en cours d'exécution, en fonction de critères définis par l'utilisateur.
+\end{itemize}
+
+Nous suivons en cela l'approche des langages réflexifs, qui découpent une telle architecture en un niveau de base (exécution) et un niveau \textit{méta} de contrôle du niveau de base. Dans le cadre de cette thèse, on s'attachera ainsi tout particulièrement à la gestion des \emph{moments tardifs de liaison} entre processus et services lors de leur composition, de manière à pouvoir notamment obtenir les valeurs effectives de QoS des services les plus ``fraîches''.
+
+\subsection*{Second objectif : améliorer la performance des systèmes répartis complexes}
+
+Si le mécanisme de liaison tardive de services mise en \oe{}uvre par le premier volet de notre approche permet effectivement d'effectuer une décision éclairée lors du choix d'un service pour le lier à un processus, il reste encore à définir les critères qui là guideront, sur la base des valeurs courantes de QoS, cette décision vers une d'optimisation locale de l'exécution de ce processus. 
+
+Cependant, et à plus forte raison encore dans les SSOA, la notion de \textit{performance} possède par nature de multiples facettes et reste dépendante du domaine métier de l'application : elle ne peut donc uniquement reposer sur un ensemble fixe et pré-établi des règles absolues. Par conséquent il sera nécessaire d'offrir à l'utilisateur les moyens de caractériser indirectement, pour son métier, cette notion de performance de manière à pouvoir ensuite l'intégrer au c\oe{}ur du processus décisionnel de liaison.
+
+\textbf{Le deuxième volet de notre approche consiste alors à mettre en place un modèle qualitatif\index{Approche qualitative} de préférences utilisateur employé pour maximiser l'utilité des liaisons entre producteurs et consommateurs de services.}
+
+On propose ainsi un formalisme qui va permettre au programmeur d'un processus métier d'exprimer ses ``politiques de décision'' dans la liaison et l'utilisation des services physiques en fonction des valeurs courantes de Qualité de Service. Ces \emph{préférences utilisateur}, vont ainsi permettre de qualifier une relation d'implication entre les valeurs effectives des propriétés non-fonctionnelles d'un service et son degré transitoire d'utilité, par rapport à ses pairs, dans la liaison au processus métier.
+
+La notion de performance, en tant qu'objectif à atteindre lors de la composition de services, s'exprime alors au travers de celle, moins subjective et plus facilement manipulable, d'\emph{utilité des services} dans la composition; et par extension de l'utilité d'un processus métier dans son ensemble, comme somme de toutes ses utilités locales. La bonne marche d'un système réparti, telle que souhaitée par l'utilisateur lors de la définition de ses préférences sur les services, se retrouve ainsi conditionnée à la capacité du processus d'orchestration de diriger ses choix de liaison en fonction des subtilités propres à son domaine d'exécution.
+
+\subsection*{Troisième objectif : s'assurer de la simplicité et généricité de l'approche proposée}
+
+Le dernier défi de cette thèse, et non des moindres, sera de faire en sorte que les formalismes et réalisations techniques issues de la mise en \oe{}uvre de notre approche, restent simples d'utilisation et suffisamment génériques, afin d'être aisément adaptables à chaque domaine d'application métier et d'être en mesure d'accompagner leurs évolutions.
+
+De fait, en l'absence dans notre contexte d'experts de l'élicitation de préférences, et dans l'optique de répondre à cet objectif de simplicité, ces dernières présenteront la double caractéristique d'être d'une part \emph{qualitatives}\index{Approche qualitative}, afin de gérer au mieux les imprécisions et incertitudes inhérentes à la modélisation de ce type de préférences, et d'autre part de permettre l'expression d'éventuelles mais potentielles contradictions entre plusieurs propriétés non-fonctionnelles offertes par un même service (par exemple, et très schématiquement, le \emph{prix} vs. la \emph{qualité}).
+
+\section{Contributions scientifiques}
+\label{sec:intro_gene:Approche poursuivie}
+
+Les contributions scientifiques de cette thèse s'organisent tout naturellement autour des objectifs de recherche précédemment définis et vont ainsi venir se cristalliser sous trois dénominations distinctes : on va alors parler de composition \emph{active}, \emph{utile} et finalement \emph{agile} des services dans le contexte SSOA qui est le notre.
+
+% Objectif #1 -->
+
+En effet, la pleine réalisation du premier objectif en termes de réactivité des systèmes répartis complexes demande d'adapter l'approche proposée au cas singulier des SSOA et d'y intégrer des notions de décision qui ont peu été étudiées à ce jour. Par conséquent, \textbf{une première contribution apportée au domaine de la composition de services consistera à mettre en place une approche \textit{active}}, en plusieurs étapes, capable à différents moments (statiques et dynamiques) de filtrer puis sélectionner des services en se fondant sur leurs caractéristiques non-fonctionnelles. Cette contribution sera détaillée dans le chapitre~\ref{ch:Composition active de services} du manuscrit.
+
+% Objectif #2 -->
+
+En réponse aux problématiques de performance précédemment évoquées, \textbf{une seconde contribution scientifique résidera dans la mise en \oe{}uvre d'une composition \textit{utile} de services}, dans la mesure où elle cherche à maximiser l'utilité des liaisons processus/service en exploitant les particularités de ce nouveau formalisme de préférences utilisateur. Cette contribution sera détaillée, quant à elle, dans le chapitre~\ref{ch:Composition utile de services} du manuscrit.
+
+Finalement, \textbf{ces deux approches actives et utiles vont venir se combiner au sein d'une seule et même contribution en termes de composition \textit{agile} de services}. Présentée dans le chapitre~\ref{ch:Composition agile de services}, elle consiste notamment à exploiter conjointement, au sein d'une orchestration de services fondée sur le langage BPEL, la liaison tardive des services et notre nouveau modèle qualitatif de préférences utilisateur; ainsi que d'introduire des notions plus avancées telle la gestion de la Qualité de Service globale des processus métier lors des décisions tardives de liaison. 
+
+\section{Organisation du document}
+
+Ce manuscrit s'articule autour de deux parties : dans un premier temps (cf. partie~\ref{part:Contexte et Etat de l'Art}) on effectue un \emph{contexte et état de l'art} de manière à pouvoir positionner nos travaux par rapport à l'existant et identifier les éventuelles lacunes technologiques ou conceptuelles nécessitant d'être comblées. Cette première partie est accompagnée de la présentation du \emph{cas d'utilisation} (cf. chapitre~\ref{ch:cas_utilisation}) dans lequel nos travaux vont être illustrés. Puis, en partie~\ref{part:Contributions}, on aborde successivement \emph{nos contributions} en terme de composition active, utile et agile de services (cf. chapitre~\ref{ch:Composition active de services}, ~\ref{ch:Composition utile de services} et ~\ref{ch:Composition agile de services}), tout en indiquant les correspondances possibles avec le cas d'utilisation, mais sans s'y limiter . Ces première contributions sont suivies d'une \emph{formalisation} du modèle de préférences LCP-net (cf. chapitre~\ref{ch:formalisation}) que nous avons introduit pour la composition utile, ainsi que de leur \emph{mise en \oe{}uvre} technique (cf. chapitre~\ref{ch:implantation}). La présentation de notre \emph{conclusion ainsi que des perspectives de nos travaux} closent finalement ce manuscrit.
+
+% Jacques, Isis 15/10/09 : a supprimer, éventuellement à mettre dans une feuille volante à part à destination du Jury 
+%\section{Publications liées à cette thèse}
+
+%\subsection*{Conférences internationales avec comité de lecture}
+
+%\begin{enumerate}
+%\setlength{\itemsep}{3mm}
+%\item Pierre Châtel, Isis Truck, Jacques Malenfant, \textit{LCP-Nets:
+%    A linguistic approach for non-functional preferences in a semantic
+%    SOA environment}. Journal of Universal Computer Sciences (JUCS),
+%  2009(Special Issue on Information Fusion and Logic-based Reasoning
+%  Approaches for Decision Making Under Uncertainty).
+%\item Pierre Châtel, Isis Truck, Jacques Malenfant. \textit{A
+%    linguistic approach for non-functional constraints in a semantic
+%    SOA environment}. in FLINS'08. 2008. Madrid, España.
+%\item Pierre Châtel. \textit{Toward a Semantic Web service discovery
+%    and dynamic orchestration based on the formal specification of
+%    functional domain knowledge}. in ICSSEA 2007 : 20th International
+%  Conference on Software \& Systems Engineering and their
+%  Applications. 2007. Paris, France.
+%\item Pierre Châtel. \textit{Une architecture pour la découverte et
+%    l'orchestration de services Web sémantiques}. in JFO 2007 - Les
+%  Ontologies : mythes,réalités et perspectives. 2007. Sousse, Tunisia.
+%\end{enumerate}
+
+%\subsection*{Ateliers internationaux avec comité de lecture et
+%  publication des actes}
+
+%\begin{enumerate}
+%\setlength{\itemsep}{3mm}
+%\item Bao Le Duc, Pierre Châtel, Nicolas Rivierre, Jacques Malenfant,
+%  Philippe Collet, Isis Truck. \textit{Non-functional Data Collection for
+%  Adaptive Business Process and Decision Making}. in MW4SOC'09
+%  workshop. 2009: Vienna, Austria.
+%\end{enumerate}

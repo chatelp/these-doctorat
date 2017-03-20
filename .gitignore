@@ -1,0 +1,51 @@
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Latex #
+######################
+*.aux
+*.glo
+*.idx
+*.log
+*.toc
+*.ist
+*.acn
+*.acr
+*.alg
+*.bbl
+*.blg
+*.dvi
+*.glg
+*.gls
+*.ilg
+*.ind
+*.lof
+*.lot
+*.maf
+*.mtc
+*.mtc1
+*.mtc2
+*.mtc3
+*.mtc4
+*.mtc5
+*.mtc6
+*.mtc7
+*.mtc8
+*.mtc9
+*.mtc10
+*.out
+*.synctex.gz
+
+autres
+mes articles connexes
+modalités administratives
+Documents sources
+these_pierreCHATEL_jury.pdf
+these_pierreCHATEL_soutenance.pdf

@@ -1,0 +1,412 @@
+% These - Cas d'utilisation
+% (c) 2009-2010 Pierre CHATEL
+
+\lettrine{C}{e cas d'utilisation} porte sur une facette particulière de la gestion de crise environnementale : la lutte anti-incendie dans un contexte civil, sur des feux de grande envergure en milieux naturels (forêt, pinède, etc.). De par ses caractéristiques intrinsèques, nous verrons qu'elle constitue un support idéal à la présentation des contributions scientifiques identifiées dans ce manuscrit, à savoir : la composition active (cf. chapitre~\ref{ch:Composition active de services}), utile (cf. chapitre~\ref{ch:Composition utile de services}) et agile de services (cf. chapitre~\ref{ch:Composition agile de services}).
+
+Qui plus est, force est de constater que des feux de ce type surviennent de plus en plus fréquemment sous nos latitudes, conséquences directes de la combinaison de multiples facteurs climatiques et humains. Pour pouvoir lutter efficacement, ils imposent le déploiement d'importants moyens et, plus que tout, une composition performante et ``intelligente'' des ressources terrestres et aériennes présentes sur le théâtre des opérations.
+
+\section{Introduction}
+
+La préservation des ressources naturelles constitue depuis quelques décennies un nouveau défi mondial. C'est en sa qualité écologique et même économique que l'on cherche alors à sauvegarder ``l'or vert'' : les espaces naturels comme les forêts sont des réservoirs innés de $CO_2$ dont on cherche dorénavant à limiter la libération massive dans l'atmosphère lors de leur combustion; ils constituent par ailleurs de nouveaux pôles touristiques inégalements répartis entre les pays. Ainsi, sur le ``vieux continent'', les feux de grande ampleur en milieu naturel, induisent la mise en place rapide et efficace de moyens divers et variés afin de constituer une réponse appropriée pour la sauvegarde du milieu ainsi que la défense des biens et des personnes : en France, on ne lutte plus contre les incendies comme au siècle passé, de nombreuses ressources sont, sauf cas exceptionnels, mises à disposition par les secours. Le réel défi est donc d'implanter des approches innovantes pour la composition de ces ressources afin d'en tirer \emph{au mieux} parti. 
+
+%Composition agile -->
+Dans ce contexte, et par rapport aux approches usuelles de gestion des crises environnementales, nous avançons qu'une amélioration du traitement de la situation peut être obtenue par l'utilisation en partie automatique et dynamique des différents moyens disponibles pour l'intervention. Le but de nos travaux n'étant pas de se substituer à la chaîne de ``commande et contrôle'' classique qui nécessite l'intervention humaine, mais plutôt de compléter cette action par l'automatisation de certaines procédures ciblées. Il existe en effet dans ces métiers, de nombreux processus d'intervention, ou protocoles, fruits de nombreuses années de pratique sur le terrain, qu'il est raisonnable de suivre scrupuleusement. Cette ``formalisation'' des processus s'est d'ailleurs accentuée ces dernières années sous l'impulsion de nombreuses initiatives de standardisation européennes. A l'aune de cette automatisation croissante, il faut cependant considérer que la disponibilité effective des moyens, de par leurs affectations simultanées sur différents théâtres d'opération du territoire, n'est souvent connue que lorsque la crise survient, ce qui à pour conséquence de déjouer toutes tentatives de ``provisionnement''. A cette disponibilité \emph{initiale} au lancement d'un processus, qui conditionne la mobilisation des ressources, s'ajoute celle de leur disponibilité \emph{au cours de son exécution}. En effet, ce cas d'utilisation présente une caractéristique supplémentaire de dynamicité du fait que certain des services correspondant à des ressources physiques engagées sur le terrain ``s'usent'' avec le temps : la disponibilité doit alors être vue comme une caractéristique de Qualité de Service évoluant au cours du temps, et doit être intégrée comme telle dans le processus décisionnel. Par conséquent, un haut niveau d'agilité est nécessaire, au cours de la crise, pour assurer une mobilisation pleine et entière des moyens effectivement disponibles à tout instant.
+
+%Composition utile -->
+On voit aussi apparaitre, dans ce contexte, un besoin de gestion des priorités d'intervention, et cela à différents niveaux. Par exemple, une hiérarchisation doit être effectuée entre une défense renforcée des biens, des personnes ou du milieu naturel : dans le cas d'un feu de forêt, éloigné des villes et des habitations, il paraitra logique de favoriser une défense accrue du milieu, au vue des risques minimes ou inexistants encourus pour les personnes ou les biens. Ce choix ne pourra être effectué qu'à partir du moment du déploiement des effectifs, en fonction des caractéristiques de la crise, et n'est pas ``pré-câblé'' dans les protocoles d'intervention. Il peut alors être assimilé à des \emph{préférences non-fonctionnelles des utilisateurs}; l'utilisateur étant, en l'occurrence, un responsable d'un centre de commande. On met ainsi en exergue un rapprochement direct entre cette notion de priorité et celle d'\emph{utilité} des ressources mobilisées : les ressources les plus utiles à la résolution de la crise, selon la sémantique de l'utilité propre aux préférences déployées, seront traitées comme prioritaires lors de la composition des services.
+
+On cherche ainsi tout particulièrement à illustrer, \textit{via} ce cas d'utilisation, l'importance de :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item La composition des différents intervenants, qui doit se traduire par l'utilisation dynamique des moyens mis à disposition.
+\item La séparation entre deux moments principaux d'intervention. En premier lieu, la spécification \emph{avant la crise} de processus métiers correspondants à des protocoles usuels, ainsi que celle, sous forme de services, des ressources (ou intervenants) que l'on pourra interroger et commander à distance. Vient ensuite, \emph{lors de la crise}, l'exécution de ces processus métiers en fonction des divers services effectivement disponibles lors de leur lancement, découverts dynamiquement puis sélectionnés lors de l'exécution des processus sur la base de leurs propriétés non-fonctionnelles courantes.
+\item La prise en compte de cette QoS courante des services lors de leur orchestration, sous le prisme des préférences utilisateur, de manière maximiser l'utilité (et donc l'efficacité) globale des processus.
+\end{itemize}
+
+\subsection{Contexte d'intervention}
+
+Suite à un incendie de grande envergure en zone forestière, montagneuse de surcroît, les soldats du feu et leur matériel sont amenés à se déployer pour mener à bien des opérations de prise de contrôle de la situation. Une des clé de la résolution correcte de cette crise réside alors dans la composition active et utile des diverses ressources mises à disposition, effectuée notamment sur la base d'informations obtenues à partir de moyens de reconnaissance aériens commandés à distance.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/casutilisation_localisation.jpg}
+    \caption{Localisation de la zone sinistrée.}
+    \label{fig:casutilisation_localisation}
+  \end{center}
+\end{figure}
+
+Plus précisément, nous situons ce scénario, en région Provence - Alpes - Côte d'Azur (cf. figure~\ref{fig:casutilisation_localisation}, connue pour ces incendies forestiers saisonniers et son relief difficile qui induit le plus souvent l'utilisation de matériel spécifique, tel des drones, pour effectuer des missions de reconnaissance.
+
+\subsection{Phases principales en gestion de crise}
+
+A partir de la liste donnée ci-dessous des principales phases de traitement communément admises dans le milieu de la gestion de crise, on précise que ce cas d'utilisation intervient dans les première et troisième phases : c'est en effet pendant la phase de \textit{supervision} (hors crise) que sont établis ou raffinés les processus de gestion d'incendies, et lors de la \textit{réponse} qu'ils sont mis en \oe{}uvre.
+
+\begin{enumerate}
+\setlength{\itemsep}{3mm}
+\item $\Rightarrow$ \textbf{Supervision} : veille en continue à partir de systèmes de mesure déjà en place.
+\item \textbf{Alerte} : un incendie est détecté par les systèmes de supervision, une réponse doit être engagée.
+\item $\Rightarrow$ \textbf{Réponse} : Les différents intervenants doivent être déployés sur site. Une composition doit être mise en place, afin de répondre à la crise.
+\item \textbf{Post-Crise} : une fois la crise traitée, retour à la normale en phase de supervision. Une évaluation des dommages peut être effectuée à partir des données récoltées pendant la phase de réponse, ainsi qu'une remise en état des ressources engagées, ce qui peut avoir un impact sur la réponse suivante si elle doit être engagée rapidement après celle venant de se terminer.
+\end{enumerate}
+
+\section{Des liens étroits avec les SOA Sémantiques et nos travaux}
+
+En tout premier lieu, une particularité de l'approche mise en \oe{}uvre dans ce cas d'utilisation est d'effectuer un rapprochement entre la notion de ``moyen'' ou ``ressource'' et celle de service, au sens SOA du terme. En effet, à chaque ressource considérée (par exemple drone, camion, pompier, etc.) est associée une représentation sous forme de service sur le réseau interne du système d'intervention. Les interfaces de chacun de ces services permettent de leur envoyer des ordres, et leurs offres de service publiées dans un registre à disposition de tous, exposent aussi bien leurs caractéristiques statiques fonctionnelles que non-fonctionnelles. A cette utilisation des services pour représenter les moyens, s'ajoute celle de processus métier pour spécifier les protocoles de lutte anti-incendie qui exploiteront, à l'exécution, ces services.
+
+Les principales caractéristiques des SOA Sémantiques apportent également des éléments de réponse pour faire face aux problématiques courantes d'interopérabilité et de composition de services dans un contexte de gestion de crise. Ces éléments de réponse se fondent sur :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item La formalisation des connaissances propres à chaque corps de
+  métier sous forme de bases de connaissances (par exemple ontologies). On obtient ainsi un modèle
+  sémantique de chaque domaine, voire un modèle de connaissances commun à tous les acteurs.
+\item L'utilisation de ces connaissances de haut niveau lors de la spécification des offres de services et de leurs demandes dans les processus métiers, sous forme de méta-données.
+\item L'exploitation de ces méta-données à l'exécution, ce qui permet d'élargir considérablement le champs et la pertinence de la recherche de services lorsque la crise survient : la jonction entre un producteur et un consommateur de besoin est alors effectuée dynamiquement sur la base de critères sémantiques plus souples que les critères syntaxiques.
+\end{itemize}
+
+Cependant, si l'approche SSOA par elle-même amène effectivement un niveau certain d'agilité lors de la réponse à la crise, elle n'est pas sans contraintes et doit être consolidée pour être réellement exploitable sur le terrain. Plus spécifiquement, il ne suffit pas d'exploiter les informations sémantiques une fois pour toute lors du filtrage statique des services disponibles dans un annuaire, il faut au contraire exploiter l'élasticité du lien entre producteurs et consommateurs de service pour y ajouter de la dynamicité. En réponse à ces limitations, nous proposons alors :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item l'implantation d'une architecture pour l'orchestration véritablement dynamique des services, car ces derniers peuvent apparaître et disparaître à tout moment lors de l'exécution (nouveaux arrivants, destructions de matériel, etc.);
+\item la prise en compte des informations courantes de Qualité de Service lors de l'exécution des processus métiers, et la mise au point d'outils pour discriminer efficacement entre les services disponibles sur la base de ces informations. Cette approche permet alors, \textit{via} la satisfaction des préférences spécifiées par les utilisateurs, une optimisation des délais d'intervention et de la répartition des ressources.
+\end{itemize}
+
+\section{Déroulement du cas d'utilisation en lutte anti-incendie}
+
+On segmente ce cas d'utilisation en plusieurs sous-parties, ou \textit{scenarii}. Les premiers correspondent aux actions qui ont dû être effectuées en amont de la phase de réponse : il s'agit de la définition statique des offres de services avant l'exécution (cf.~\ref{sec:Scénario 1}), et de celle d'un processus métier qui sera exploité ultérieurement (cf.~\ref{sec:Scénario 2}). Les \textit{scenarii}~\ref{sec:Scénario 3} et~\ref{sec:Scénario 4} correspondent quant à eux respectivement à l'élicitation des préférences de l'utilisateur en fonction des caractéristiques immédiates de l'incendie puis, à l'orchestration dynamique des services lors de la crise.
+
+Il est important de noter les deux premiers \textit{scenarii} s'inscrivent dans une démarche SSOA usuelle et ne mettent pas en avant, à proprement parler, les contributions scientifiques de cette thèse. Cependant, ils sont nécessaires dans la mesure où ils mettent en place le substrat dans lequel nos travaux peuvent évoluer, à savoir : un couplage lâche entre offres et demandes de services et la possibilité d'arbitrer entre de nombreux services équivalents fonctionnellement. Par ailleurs, le but de ce chapitre étant d'articuler les concepts implantés par nos travaux autour d'un cas d'utilisation simple mais concret, nous y limiterons, autant que possible, la présence des détails technologiques et techniques afférents.
+
+\subsection{Scénario 1 : définition des offres services}
+\label{sec:Scénario 1}
+
+Lors de l'adoption d'une architecture SSOA dans ce contexte de commande et de contrôle, une des premières tâches à effectuer consiste à assurer la présence effective, sous forme de services, des personnels et matériels à interroger, commander ou contrôler à distance. Dans le cadre de ce scénario et des suivants, on se limite à la distinction entre quatres types de services : les camions citerne d'intervention anti-incendies, les drones de surveillance du théâtre des opérations, et pour finir, les pompiers et gendarmes dont les équipements de nouvelle génération permettent la transmission efficace d'information et la remontée de valeurs et provenance de capteurs environnementaux et physiques.
+
+Une fois réglées les contraintes techniques liées au déploiement de cette nouvelle technologie, l'étape la plus importante consistera alors à spécifier les caractéristiques publiques, ou offres, des services. La description d'une offre de service, telle que visible dans un annuaire de service, comprendra trois facettes :
+
+\begin{enumerate}
+\setlength{\itemsep}{3mm}
+\item La spécification des \textit{caractéristiques techniques} du service sous forme syntaxique. Il s'agit des protocoles, méthodes, entrées/sorties... en l'occurrence tout ce que l'on retrouve habituellement dans une offre de service. Ces caractéristiques se matérialiseront dans le cas présent sous la forme d'offres au format WSDL, ce dernier constituant un standard de fait dans les SOAs.
+%Pierre 14/12/09 : Vérifier que SAWSDL à bien été introduit préalablement (dans le contexte technologique par exemple).
+\item La spécification des \textit{caractéristiques fonctionnelles} du service, sous forme d'annotations sémantiques apposées sur l'offre de service WSDL grâce à une extension récente de la spécification nommée SAWSDL.
+\item La spécification des\textit{ caractéristiques non-fonctionnelles} du service. Pour cette spécification dite ``statique'', car effectuée avant l'exécution du système, il s'agit de poser des garanties sur des bornes minimales et maximales de QoS que le service s'engage à fournir.
+\end{enumerate}
+
+Pour chacun des quatre types de service retenus dans ce cas d'utilisation, on définit individuellement dans ce scénario une offre ``générique'' que chaque service effectif du type concerné sera tenu de respecter. L'enregistrement dans un annuaire d'offres identiques pour tous les services d'un même type découle d'une contrainte de concision du cas d'utilisation, il ne correspond pas à une limitation technique. Cependant, il est possible d'y trouver une certaine vraisemblance dans un contexte réel de déploiement si l'on considère que tous les matériels utilisés partagent des ``caractéristiques constructeurs'' similaires, et donc des offres  générales, et génériques, identiques. Par ailleurs, à chaque service disponible lors de l'exécution du système sera systématiquement associée une unique offre de service et, inversement, à chaque offre de service sera associé un seul et unique service. 
+
+Ainsi, pour illustrer ce scénario par une démarche toujours concise, on s'intéresse ici aux deux dernières facettes des offres de service, c'est-à-dire à la spécification de leurs caractéristiques fonctionnelles et non-fonctionnelles, où interviennent plus directement nos travaux.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/casutilisation_semantic_annotation.pdf}
+    \caption{Exemple d'annotation sémantique d'une offre spécifique de service.}
+    \label{fig:casutilisation_semantic_annotation}
+  \end{center}
+\end{figure}
+
+\subsubsection{Camions citerne d'intervention anti-incendies}
+
+Pour une offre de service représentant un camion citerne d'intervention, on l'annote au niveau global par le concept fonctionnel \textit{Camion\_Citerne\_Anti\_Incendies} extrait d'une ontologie métier disponible par ailleurs, grâce à l'attribut \textit{sawsdl:modelReference} (cf. figure~\ref{fig:casutilisation_semantic_annotation}). On l'annote aussi au niveau des ses méthodes par le même procédé : l'offre expose ainsi une méthode permettant de communiquer une destination à atteindre et une seconde pour indiquer un emplacement à arroser, toutes deux annotées grâce à d'autres concepts ontologiques disponibles (\textit{aller\_a} et \textit{arroser}) et connues des producteurs et consommateurs de services. Il est à noter que si ces annotations se limitent dans cet exemple à la granularité de la méthode, il est tout a fait envisageable, voire souhaitable, d'en annoter aussi les différents paramètres et types de données. Le tableau suivant donne l'équivalence entre la représentation sous forme de pseudo-code de ces méthodes et leur concrétisation SAWSDL.
+
+\smallskip 
+
+\begin{tabular}{| p{6cm} | p{9cm}  |}
+	\hline
+	\textbf{Pseudo-code} &\textbf{ Méthode SAWSDL annotée}
+	\\\hline
+	\textit{aller\_a(emplacement) : status} 
+	& 
+	\begin{verbatim}
+	<wsdl:operation name="aller_a" 
+	  sawsdl:modelReference=
+	  "./ontologies/gestion_crise.owl#aller_a">
+  		<wsdl:input element="emplacement"/>
+  		<wsdl:output element="status"/>
+	</wsdl:operation>
+	\end{verbatim}
+ 	\\\hline
+	\textit{arroser(position, quantité) : status } 
+	& 
+	\begin{verbatim}
+	<wsdl:operation name="arroser" 
+	  sawsdl:modelReference=
+	  "./ontologies/gestion_crise.owl#arroser">
+ 		 <wsdl:input element="position"/>
+		 <wsdl:input element="quantité"/>
+  		<wsdl:output element="status"/>
+	</wsdl:operation>
+	\end{verbatim}
+ 	\\\hline
+\end{tabular}
+
+\smallskip 
+
+Le second volet de cette offre publique de service, qui va accompagner le fichier SAWSDL, concerne la description des propriétés non-fonctionnelles statiques du service, dont l'ensemble constitue alors un \textit{contrat (de qualité) de service}. Dans le contexte du projet SemEUsE, ces informations sont couchées dans un document WS-Agreement offert par le service et stocké, avec le fichier SAWSDL, au sein d'un annuaire. La tableau suivant fait la liste exhaustive de ces propriétés.
+
+\smallskip 
+
+\begin{tabular}{| p{8cm} | p{7cm} |}
+	\hline
+	\textbf{Propriété non-fonctionnelle} &\textbf{Contrat de Qualité de Service}
+	\\\hline
+	``Le camion sera capable de maintenir une vitesse comprise entre 150 et 200 Km/h'' &
+	150 $\leq$ vitesse (Km/h) $\leq$ 200
+	\\\hline
+	``Le camion disposera d'une réserve maximale en carburant de 500 Litres'' &
+	0 $\leq$ carburant (Litres) $\leq$ 500
+	\\\hline
+	``Le camion citerne aura une contenance maximale de 4000 Litres d'eau et une contenance minimale de 1000 Litres'' &
+	1000 $\leq$ contenance (Litres) $\leq$ 4000 
+	\\\hline
+	``Le service camion sera capable de maintenir un temps de réponse strictement inféreur à 20 ms'' &
+	temps\_de\_reponse (ms) < 20
+	\\\hline
+	``Le temps de traitement pour la commande \textit{arroser} ne sera pas supérieur à 10 ms'' &
+	arroser.temps\_de\_traitement (ms) $\leq$ 10
+	\\\hline
+\end{tabular}
+
+\subsubsection{Drones de surveillance}
+
+Un second type de services présents à l'exécution sera celui des drones de surveillance mis à disposition par les différents services incendie, ainsi que par les militaires qui seront ici amenés à effectuer des opération conjointes avec les pompiers lors de la crise. On va considérer, lors ce cas d'utilisation, les offres statiques de services publiées par ces deux partenaires comme étant similaires fonctionnellement (\textit{i.e.} mêmes interfaces) et très proches non-fonctionnellement. Les drones proposent alors de deux méthodes distinctes, l'une pour indiquer une zone à survoler, l'autre pour obtenir une image à partir de la caméra embarquée.
+
+\smallskip 
+
+\begin{tabular}{| p{6cm} | p{9cm}  |}
+	\hline
+	\textbf{Pseudo-code} &\textbf{ Méthode SAWSDL annotée}
+	\\\hline
+	\textit{survoler\_zone(emplacement) : status} 
+	& 
+	\begin{verbatim}
+	<wsdl:operation name="survoler_zone" 
+	  sawsdl:modelReference=
+	  "./ontologies/gestion_crise.owl#
+	 survoler_zone">
+  		<wsdl:input element="emplacement"/>
+  		<wsdl:output element="status"/>
+	</wsdl:operation>
+	\end{verbatim}
+ 	\\\hline
+	\textit{obtenir\_image() : image } 
+	& 
+	\begin{verbatim}
+	<wsdl:operation name="obtenir_image" 
+	  sawsdl:modelReference=
+	  "./ontologies/gestion_crise.owl#
+	  obtenir_image">
+  		<wsdl:output element="image"/>
+	</wsdl:operation>
+	\end{verbatim}
+ 	\\\hline
+\end{tabular}
+
+\smallskip 
+
+On retrouve ensuite de nouveau le second volet non-fonctionnel des offres de service par la description de leurs propriétés statiques de Qualité de Service : elles portent en tout premier lieu sur la \textit{sécurité} du canal de transmission de données avec le drone, la \textit{bande-passante} offerte par le service et la \textit{résolution} d'image disponible \textit{via} la caméra embarquée. La correspondance non-fonctionnelle des multiples offres statiques de service publiées par les pompiers et les militaires sur ces trois critères peut s'expliquer facilement par le fait que les drones dont ils disposent sont d'un modèle équivalent et proviennent du même fournisseur, il est donc logique qu'ils disposent de caractéristiques générales similaires. Cependant, comme il est d'usage entre les matériels civils et militaires, les bandes de fréquence utilisées pour leurs communications ne sont pas les mêmes. Le quatrième critère non-fonctionnel de \textit{fréquence radio} sera donc différenciateur entre les drones des pompier et ceux des militaires, tel qu'indiqué ci-dessous. Néanmoins, une différenciation plus fine entre les services ne pourra s'effectuer que sur la base de leur QoS effective à l'exécution.
+
+\smallskip
+
+\begin{tabular}{| p{8cm} | p{7cm} |}
+	\hline
+	\textbf{Propriété non-fonctionnelle} &\textbf{Contrat de Qualité de Service}
+	\\\hline
+	``Le niveau de sécurité de communication (sur une échelle de 10) est compris entre 0 et 7'' &
+	0 $\leq$ sécurité $\leq$ 7 
+	\\\hline
+	``La bande passante disponible sera maintenue à 50 Ko/s \textit{a minima}'' &
+	bande passante (Ko/s) $\geq$ 50
+	\\\hline
+	``La résolution d'image sera comprise entre 6 et 10 Mpix '' &
+	6 $\leq$ résolution (Mpix) $\leq$ 10
+	\\\hline
+	\textbf{Drone pompier : }
+	``La fréquence radio utilisée pour la communication sera comprise entre 2 et 2.5 Ghz '' &
+	2 $\leq$ fréquence radio (Ghz) $\leq$ 2.5
+	\\\hline
+	\textbf{Drone militaire : }
+	``La fréquence radio utilisée pour la communication sera comprise entre 5 et 7 Ghz '' &
+	5 $\leq$ fréquence radio (Ghz) $\leq$ 7
+	\\\hline
+\end{tabular}
+
+\subsubsection{Equipes au sol : pompiers et gendarmes}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/casutilisation_ontology.pdf}
+    \caption{Extrait d'ontologie couvrant les domaines Pompiers et Gendarmes.}
+    \label{fig:casutilisation_ontology}
+  \end{center}
+\end{figure}
+
+Pour le dernier type de service en présence, on regroupe sous la notion de \textit{Personnel}, concept unificateur défini dans une ontologie commune aux deux corps de métier (cf. figure~\ref{fig:casutilisation_ontology}), les pompiers et les gendarmes. Ils assureront en effet, dans le cadre précis de ce cas d'utilisation, le même type de service métier : le déploiement au sol pour encercler la zone de l'incendie, à partir des informations précédemment obtenues grâce aux drones de surveillance. De ce fait, le concept fonctionnel \textit{Personnel} permettra de désigner de manière unifiée et indirecte les pompiers et gendarmes dans les demandes de services. Ces demandes pourront ensuite être liées dynamiquement à des offres effectives de service annotées directement par le concept \textit{Personnel}, ou par l'un de ses sous-concepts, lors de l'exécution des processus métiers.
+
+Tout comme pour les drones que nous avons précédemment décrits, on considère en effet les offres en termes de services des pompiers et des gendarmes comme étant similaires sur le plan fonctionnel : elles sont respectivement annotées au niveau de leur interface SAWSDL par les sous-concepts \textit{pompier} ou \textit{gendarme} grâce à l'attribut \textit{sawsdl:modelReference} et décrivent toutes la même méthode \textit{encercler\_zone(emplacement, image)} ayant pour effet de communiquer un ordre de déploiement au personnel concerné, en lui fournissant l'emplacement de la zone ainsi que le relevé d'imagerie aérienne disponible.
+
+\smallskip 
+
+\begin{tabular}{| p{6cm} | p{9cm}  |}
+	\hline
+	\textbf{Pseudo-code} &\textbf{ Méthode SAWSDL annotée}
+	\\\hline
+	\textit{encercler\_zone(emplacement, image) : status} 
+	& 
+	\begin{verbatim}
+	<wsdl:operation name="encercler_zone" 
+	  sawsdl:modelReference=
+	  "./ontologies/gestion_crise.owl
+	  	#encercler_zone">
+      <wsdl:input element="emplacement"/>
+      <wsdl:input element="image"/>
+      <wsdl:output element="status"/>
+	</wsdl:operation>
+	\end{verbatim}
+ 	\\\hline
+\end{tabular}
+
+\smallskip 
+
+En ce qui concerne la facette non-fonctionnelle des offres de service publiées dans le système, trois critères de QoS ont été retenus : il s'agit de la \textit{résistance au feu}, de la \textit{fatigue physique} et de la \textit{fréquence radio} utilisée pour leurs communications qui, tout comme pour les drones, diffère entre civils (les pompiers) et militaires (les gendarmes). Les tableaux suivants représentent respectivement l'offre non-fonctionnelle de service générique utilisée par les pompiers et les gendarmes.
+
+\smallskip
+
+\begin{tabular}{| p{8cm} | p{7cm} |}
+	\hline
+	\textbf{Propriété non-fonctionnelle pompier} &\textbf{Contrat de Qualité de Service}
+	\\\hline
+	``La résistance au feu de l'équipement sera limitée à 120°C, mais il sera capable de supporter 50°C au minimum'' &
+	50 $\leq$ résistance au feu (°C) $\leq$ 120
+	\\\hline
+	``Le pompier sera capable de maintenir sa fatigue physique à 70 ou moins (sur une échelle de 100)'' &
+	fatigue physique $\leq$ 70
+	\\\hline
+	``La fréquence radio utilisée pour la communication sera comprise entre 2 et 2.5 Ghz '' &
+	2 $\leq$ fréquence radio (Ghz) $\leq$ 2.5
+	\\\hline
+\end{tabular}
+
+\smallskip
+
+\begin{tabular}{| p{8cm} | p{7cm} |}
+	\hline
+	\textbf{Propriété non-fonctionnelle gendarme} &\textbf{Contrat de Qualité de Service}
+	\\\hline
+	``La résistance au feu de l'équipement sera limitée à 60°C, mais il sera capable de supporter 30°C au minimum'' &
+	30 $\leq$ résistance au feu (°C) $\leq$ 60
+	\\\hline
+	``Le gendarme sera capable de maintenir sa fatigue physique à 70 ou moins (sur une échelle de 100)'' &
+	fatigue physique $\leq$ 70
+	\\\hline
+	``La fréquence radio utilisée pour la communication sera comprise entre 5 et 7 Ghz '' &
+	5 $\leq$ fréquence radio (Ghz) $\leq$ 7
+	\\\hline
+\end{tabular}
+
+\smallskip
+
+Une précision doit être apportée sur le mode de calcul de la \textit{fatigue physique} telle que présentée dans les deux offres de service précédentes. En effet, cette dernière est en l'occurrence inférée à partir du \textit{rythme cardiaque} et de la \textit{respiration} des personnels qui, tout comme leur \textit{résistance au feu}, peuvent être mesurées grâce à des capteurs présents sur leurs équipement. La formule utilisée pour son calcul est la suivante : $fatigue\ physique = a*rythme\ cardiaque + b*respiration$, où $a$ et $b$ sont deux variables d'ajustement qui permettent, en l'occurrence, d'obtenir une valeur finale comprise en 0 et 100. 
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/casutilisation_ontologie_metrique.pdf}
+    \caption{Calcul de la fatigue physique à partir du rythme cardiaque et de la respiration.}
+    \label{fig:casutilisation_ontologie_metrique}
+  \end{center}
+\end{figure}
+
+Une solution possible pour le stockage de cette information consiste à décrire la \textit{fatigue physique} et les autres critères non-fonctionnels comme des concepts ontologiques, au sein même de l'ontologie partagée par les pompiers et les gendarmes, et annoter les offres non-fonctionnelles de service en conséquence. La fatigue va alors être liée aux deux autres concepts de \textit{rythme cardiaque} et de \textit{respiration},  ainsi que fournir la formule mathématique nécessaire à son propre calcul (cf. figure~\ref{fig:casutilisation_ontologie_metrique}).
+
+\bigskip 
+
+Qu'il s'agisse des offres génériques de services de camion citerne d'intervention, de drone de surveillance, de pompier ou de gendarme que nous venons d'aborder, de nombreux services se conformant à ces offres devront être publiés pour qu'un besoin d'orchestration et sélection dynamique apparaisse à l'exécution. De par l'ampleur de la crise traitée par ce cas d'utilisation, il s'agit bien du contexte en présence.
+
+\subsection{Scénario 2 : définition d'un processus abstrait de gestion d'incendie}
+\label{sec:Scénario 2}
+
+Ce scénario consiste à établir statiquement, en amont de la survenue des incendies, un processus métier de résolution de crise sous une forme qui pourra être interprétée de manière automatique au moment opportun. En effet, même si l'on ne connaît pas au moment de l'écriture du processus les services qui seront seulement disponibles à l'exécution (mais qui restent pour autant nécessaires à son accomplissement), on est cependant déjà capable d'exprimer sans ambiguïtés ses besoins. Ainsi, grâce à l'utilisation ciblée d'ontologies métiers, et donc de sémantique, il est possible de diminuer significativement le fort couplage syntaxique entre le processus et les offres de service elles-mêmes
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=160mm]{figures/casutilisation_processus.pdf}
+    \caption{Processus métier de gestion d'incendies.}
+    \label{fig:casutilisation_processus}
+  \end{center}
+\end{figure}
+
+La figure~\ref{fig:casutilisation_processus} présente un processus abstrait de gestion d'incendie qui pourra être déployé, sous la forme technique d'une description BPEL, dans le contexte d'intervention que nous avons précédemment introduit. Il décrit les actions de haut niveau suivantes à exécuter en séquence : \textit{obtenir un visuel du sinistre}, \textit{encercler la zone} et finalement, \textit{empêcher la propagation du feu et le circonscrire}. A chacune de ces actions est associé un ensemble de besoins fonctionnels et non-fonctionnels établi statiquement, qu'il faudra faire correspondre, lors de l'orchestration de service, aux différentes offres disponibles.
+
+Si l'on s'attarde sur la première action d'obtention d'images du théâtre des opérations, il faut noter que le type du service requis ainsi que ses méthodes sont indiqués sous la forme des besoins fonctionnels de l'action. Ils sont complétés par les besoins non-fonctionnels qui, sous l'apparence d'un document WS-Agreement requis lié au processus BPEL, fixent sous forme de bornes numériques les exigences \emph{nécessaires et suffisantes} au processus, et ceci sans connaissance préalable des offres de services qui seront disponibles lors de l'intervention. On remarque notamment une indifférence sur la bande de fréquence utilisée par les drones pour communiquer (\textit{2 $\leq$ fréquence radio (Ghz) $\leq$ 7}), ce qui signifie que l'on est capable d'utiliser sans distinction les services de types civils ou militaires.
+
+Dans le cas de la seconde action, on constate que, d'un point de vue strictement fonctionnel, tous les pompiers et gendarmes disponibles seront requis pour l'intervention : cela se traduit par l'utilisation du concept ontologique général \textit{Personnel} pour désigner les deux types de services au lieu de leurs concepts métiers spécifiques. Par ailleurs, les besoins non-fonctionnels sont suffisamment lâches pour que tous les services respectant le modèle générique d'offres statiques de service introduit dans la sous-section précédente soient considérés comme conformes. Cependant, si la stricte conformité fonctionnelle et non-fonctionnelle des services orchestrés est considérée comme un préalable indispensable à leur utilisation, une information supplémentaire sera alors forcément nécessaire au niveau du processus BPEL si l'on souhaite être capable de discriminer, à l'exécution, entre ces services conformes dans le but d'en prélever le ou les plus utiles à la résolution de la crise.
+
+En ce qui concerne la troisième action, on remarque que seuls les camions anti-incendies sont sollicités pour empêcher la propagation du feu et le circonscrire, et non les personnels au sol, cet état de fait est du au type d'incendie visé : ce processus a été établi pour traiter des feux à fort dispersement géographique qui induisent de multiples déplacements sur de grandes distances nécessitant l'utilisation de véhicules adaptés. Les besoins non-fonctionnels pour réaliser cette action sont à l'avenant : une forte contenance en eau ($\geq$ 1000 Litres) et une vitesse élevée ($\geq$ 100 Km/h).
+
+\subsection{Scénario 3 : élicitation de préférences utilisateur spécifiques à la crise}
+\label{sec:Scénario 3}
+
+Le processus métier que nous venons de détailler a été défini avant que la crise bien spécifique, qui nous intéresse dans ce cas d'utilisation, soit avérée. De fait, chaque incendie est unique et il peut être nécessaire, dans les instants qui précèdent le déploiement du processus, de compléter les besoins non-fonctionnels établis statiquement par des préférences utilisateur spécifiquement conçues pour les besoins propres à ce type d'incendie de particulièrement grande ampleur. Les services en présence lors de l'exécution pourront par la suite être départagés sur la base de leur adhésion à ces préférences (et donc de leurs \textit{utilités} respectives).
+
+Le formalisme dédié à la modélisation de préférences utilisateur que nous avons défini dans le cadre de cette thèse sera présenté en détails au chapitre~\ref{ch:Composition utile de services}, il permet la modélisation de déclarations qualitatives et l'utilisation de termes linguistique\index{Approche linguistique} au sein d'un modèle graphique. Nous nous contenterons donc ici d'une élicitation abstraite de ces préférences.
+
+En ce qui concerne la première action d'obtention d'un visuel du sinistre grâce aux drones, les préférences suivantes sont établies :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item \textit{``On souhaite, dans l'absolu, utiliser les drones disposant, pour la transmission des images, des meilleures valeurs en termes de sécurité, bande passante et résolution.''}
+\item \textit{``On préfère cependant optimiser la bande passante au détriment de la sécurité ou de la résolution''}, qui sont des critères de moindre importance dans ce contexte non militaire.
+\item \textit{``On effectue par ailleurs un compromis entre l'optimisation de la bande passante et celle de la résolution : si la bande passante est faible, alors on favorisera les services disposants d'une faible résolution d'image, et inversement.''} L'objectif étant dans ce contexte d'obtenir les images le plus vite possible en minimisant la latence.
+\end{itemize}
+
+A la deuxième action mettant à l' \oe{}uvre les personnels présents au sol pour encercler la zone de l'incendie, sont associées les préférences suivantes :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item \textit{``On souhaite, dans l'absolu, utiliser les personnels disposant de la meilleure résistance au feu et d'une fatigue physique minimale.''}
+\item \textit{``De par l'intensité de l'incendie, on favorise la résistance au feu au détriment de la fatigue physique''}, de plus, ce sont les camions qui vont effectuer l'essentiel des déplacements au sol, l'intervention n'en sera donc que moins exigeante sur l'état physique des personnels.
+\end{itemize}
+
+Pour finir, concernant la troisième et dernière action utilisant les services de camion citerne pour empêcher la propagation du feu et le circonscrire, les préférences portent tout particulièrement sur leurs caractéristiques métiers de \textit{contenance} et de \textit{vitesse} :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item \textit{``On souhaite obtenir les meilleurs valeurs de vitesse et de réserve de carburant.''}
+\item \textit{``De par l'étendue de l'incendie, on favorise la vitesse de déplacement et la réserve en carburant effective des camions au détriment de leur contenance en eau''}, et ceci de manière à ce qu'ils puissent se déplacer le plus rapidement possible et avec la plus grande autonomie.
+\item Toujours dans le même soucis de rapidité de déplacement pour maximiser la couverture de l'incendie, \textit{``on préfère une contenance moyenne (plutôt qu'élevée) des camions en eau, de manière à les alléger. Cependant, pour qu'ils restent utiles, on écarte autant que possible ceux qui n'auraient qu'une faible contenance''}.
+\end{itemize}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=160mm]{figures/casutilisation_processus_avecprefs.pdf}
+    \caption{Processus métier de gestion d'incendies spécialisé par l'utilisation de préférences.}
+    \label{fig:casutilisation_processus_avecprefs}
+  \end{center}
+\end{figure}
+
+Ces préférences s'inscrivent \emph{à l'intérieur} des bornes de QoS précédemment définies. Il s'agit donc bien de départager, à l'exécution, des services concurrents, mais \emph{conformes} fonctionnellement et non-fonctionnellement aux besoins du processus métier. Suite à leur élicitation, ces préférences sont accolées aux différents sites d'appels de services du processus (cf. figure~\ref{fig:casutilisation_processus_avecprefs}).
+
+\subsection{Scénario 4 : composition agile de services pendant la crise}
+\label{sec:Scénario 4}
+
+Suite au déclenchement des alertes, des actions doivent être entreprises immédiatement, et ce à tous les niveaux. Le CODIS\footnote{Les CODIS sont les Centres Opérationnels Départementaux d'Incendie et de Secours.} des Alpes Maritimes a alors pour mission d'assurer la composition de l'intervention au niveau départemental.  
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=160mm]{figures/casutilisation_theatre_ops.pdf}
+    \caption{Cas d'utilisation : sphère opérationnelle}
+    \label{fig:casutilisation_theatre_ops}
+  \end{center}
+\end{figure}
+
+En se rapprochant du théâtre des opérations, cette composition va se décliner à des niveaux de détail de plus en plus fins. On se focalise alors dans ce scénario sur le déclenchement du processus métier que nous avons défini précédemment, dans le cadre d'une sphère opérationnelle faisant notamment intervenir plusieurs drones avec caméras embarquées et équipes au sol (cf. figure~\ref{fig:casutilisation_theatre_ops}).
+
+Le déploiement rapide des équipes ainsi que la présence diversifiée de matériel va nécessiter en tout premier lieu la mise en place d'une composition active des services disponibles, par un mécanisme de \emph{liaison tardive}\index{Liaison tardive de services}. Cette approche, rendue possible par le couplage lâche implanté entre les offres et demandes de service que nous avons decrites dans les \textit{scenarii} 1 et 2, est détaillée au chapitre~\ref{ch:Composition active de services}.
+
+Par ailleurs, pour maximiser la pertinence et la performance du processus métier de gestion d'incendies dans ce contexte spécifique, la Qualité de Service courante des drones, des personnels au sol et des camions sera intégrée, au c\oe{}ur de la composition de services, par une approche \emph{utile} exploitant les préférences définies par l'utilisateur. Ce second aspect de la composition sera détaillé dans le chapitre~\ref{ch:Composition utile de services} en prenant notamment pour exemple la sélection d'un drone d'imagerie à partir des préférences définies dans le troisième scénario.
+
+\section{Conclusion}
+
+Dans ce chapitre, nous avons posé les bases d'un cas d'utilisation simplifié en gestion de crise environnementale, dans le cadre des feux de forêt de grande envergure. Il permet, décliné en quatre \textit{scenarii} distincts, d'illustrer les différentes facettes de nos contributions scientifiques sur la composition de services, mais donne aussi des détails sur les phases préalables à la composition : la définition d'offres de services et processus métiers en couplage lâche, ainsi que celle de préférences utilisateur qui seront exploitées à l'exécution du système. Ce cas d'utilisation montre qu'il est ainsi possible de tisser des liens étroits entre les problématiques usuelles de la gestion de crise et nos travaux sur les architectures SSOA. Le contexte métier qui a été ici défini sera repris, au besoin, dans le reste de ce manuscrit pour illustrer nos propos.
+ 

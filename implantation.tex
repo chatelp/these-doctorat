@@ -1,0 +1,637 @@
+% These - Implantation
+% (c) 2009-2010 Pierre CHATEL
+
+\section{Introduction}
+
+\lettrine{C}{e chapitre} présente la mise en \oe{}uvre de nos contributions en termes de \emph{composition active} et \emph{utile} de services~\cite{Chatel2010b}, dont le déploiement conjoint constitue les fondations techniques d'une véritable \emph{composition agile} de services. Elle est effectuée au travers de l'implantation Java d'un canevas de modélisation et décision sur LCP-nets (cf. section~\ref{sec:Canevas LCP-nets}), ainsi que de l'intégration de la notion de liaison tardive au sein d'un moteur d'orchestration spécifique de services Web (cf. section~\ref{sec:Canevas liaison tardive}).
+ 
+Plusieurs choix ont dû être effectués pour mener à bien notre travail de mise en \oe{}uvre; ils seront détaillés au cours du chapitre, ainsi que l'ensemble des informations techniques nécessaires à leur bonne compréhension.
+
+
+\section{Canevas de modélisation et décision sur LCP-nets}
+\label{sec:Canevas LCP-nets}
+
+Dans cette section nous effectuons un panorama des considérations techniques liées à la mise en \oe{}uvre d'un canevas de modélisation et décision sur LCP-nets, mais aussi et surtout des choix qu'il a été nécessaire d'effectuer pour le réaliser, en fonction des contraintes liées au contexte.
+
+De manière à traiter d'emblée les plus générales de ces considérations, il apparaît utile de préciser que l'implantation du canevas a été réalisée dans sa totalité en Java. Le choix de ce langage s'est effectué naturellement de par le contexte SSOA des travaux de cette thèse où il prédomine, mais aussi pour des raisons de facilité d'intégration dans le cadre plus général du projet SemEUsE. Ce choix est également justifié par l'utilisation, au sein même du canevas, de composants Java : en particulier le moteur d'inférence floue retenu, qui offre une API entièrement Java.
+
+Par ailleurs, les développements ont été effectués sur la plate-forme Eclipse : nous avons mis à profit son éditeur graphique (``IDE''), mais surtout certaines des bibliothèques gravitant autour du projet Eclipse, telles qu'EMF, qui a grandement facilité la mise au point de notre propre éditeur graphique pour les préférences LCP-nets.
+
+Enfin, l'ensemble du code et des modèles relatifs à l'implantation du canevas est accessible publiquement sur \url{http://code.google.com/p/lcp-nets} sous licence GPLv3 : l'éditeur graphique ainsi que le moteur d'inférence sur LCP-nets y sont tout deux disponibles au téléchargement.
+
+Dans les sous-sections suivantes nous abordons successivement le modèle de données des préférences (cf.~\ref{sec:implem_model_donnees}), l'outillage des LCP-nets (cf.~\ref{sec:implem_outillage}), qui permet notamment leur création incrémentale \emph{via} les primitives d'une machine virtuelle, les principes régissant l'implantation du calcul et de la décision sur LCP-nets (cf.~\ref{sec:implem_calculs}) ainsi que l'application des fragments (cf.~\ref{sec:implem_appplication_fragments}), avant de procéder, pour conclure, à un bref rappel des différents choix d'implantation (cf.~\ref{sec:implem_lcpnets_choix}).
+
+\subsection{Modèle de données structuré des préférences et des fragments}
+\label{sec:implem_model_donnees}
+
+L'ensemble des éléments constitutifs d'un LCP-net ou d'un fragment, tels qu'ils ont été présentés jusqu'à présent dans ce manuscrit, ont été modélisés grâce au \emph{canevas EMF}~\cite{budinsky2003eclipse}. Constitué d'une bibliothèque et d'un outil de modélisation et génération de code, il est intimement lié à Eclipse, sa principale particularité étant de proposer un méta-modèle dont le niveau d'abstraction est à mi-chemin entre un diagramme de classe UML classique et le code Java. Il présente en ce sens une alternative de modélisation simple mais puissante, à forte visée implantatoire, tout en permettant aussi l'import et la conversion de modèles UML classiques, lorsque justifié par l'ampleur du projet. Dans le cadre de notre implantation, \emph{nous avons choisi d'utiliser directement le méta-modèle EMF} dont l'expressivité offerte s'est révélée suffisante pour nos besoins.
+
+Cette modélisation EMF a été établie de manière à englober non-seulement la notion de LCP-net que nous introduisons dans ce manuscrit, mais aussi celle de CP-net\index{CP-net}\index{Modélisation de préférences!CP-net} ``générique'' telle que définie par Boutilier \emph{et al.}~\cite{Bou04}, d'UCP-net~\cite{Bou01} et de TCP-net~\cite{Bra02}. Ce choix a été effectué, plutôt que de se focaliser uniquement sur les LCP-nets, de manière à \emph{faciliter les extensions au canevas que nous mettons au point}. Il nous a par ailleurs permis de réaliser, en sus de celle des LCP-nets, une implantation fonctionnelle de la modélisation et de la décision sur UCP-nets. Cette modélisation globale est par ailleurs une bonne illustration de la proche parenté de ces formalismes.
+
+\subsubsection{Modèle \emph{ecore} des données}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=120mm]{figures/implem_ecore_arbo_all.pdf}
+    \caption{Représentation arborescente partielle du modèle de données LCP-net.}
+    \label{fig:implem_ecore_arbo_all}
+  \end{center}
+\end{figure} 
+
+Un modèle de données des LCP-nets a donc été établi sous la forme d'un fichier \emph{ecore}, propre à EMF, et sérialisé selon le standard XMI de l'OMG. De par son ampleur, nous choisissons d'en présenter ici une vue partielle, tout d'abord sous la même forme arborescente que celle accessible à travers l'IDE Eclipse à la figure~\ref{fig:implem_ecore_arbo_all}. On remarque que les éléments constitutifs du modèle, ou \emph{EClass} selon la terminologie Eclipse, ont été répartis, en fonction de leur appartenance, sous trois paquets (``packages'') distincts et imbriqués, de manière à atteindre une saine séparation des concepts : sous \emph{`models'} l'ensemble des concepts généraux aux quatre formalismes (notion de réseau de préférences, de n\oe{}ud, etc.), sous \emph{`models/LCPnet'} ceux plus spécifiques aux LCP-nets (Domaine linguistique, table linguistique de préférences, etc.) et sous \emph{`models/LCPnet/fragments'} les éléments constitutifs des fragments de LCP-nets. 
+
+Lors de la modélisation, nous avons utilisé la \emph{relation d'héritage entre éléments EClass}, similaire à la relation d'héritage Java, pour pratiquer une factorisation du modèle et favoriser sa souplesse d'utilisation. Cette relation est illustrée dans la précédente figure par une flèche ``->'' indiquée sur les \emph{EClass} : par exemple, \emph{LCPnet} hérite de \emph{PreferenceNetwork}, ainsi que de toutes ses propriétés qui ne figurent pas sur ce diagramme.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=150mm]{figures/implem_ecore_arbo_lcpnet.pdf}
+    \caption{Représentation arborescente de l'élément \emph{LCPnet}.}
+    \label{fig:implem_ecore_arbo_lcpnet}
+  \end{center}
+\end{figure} 
+
+On étend justement l'élément \emph{LCPnet} de la précédente représentation arborescente sur la figure~\ref{fig:implem_ecore_arbo_lcpnet}, de manière à exposer :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item \textbf{ses propriétés :} le partitionnement flou d'un domaine pour les valeurs d'utilité \emph{utilityDomain} utilisé dans les tables, l'ensemble \emph{valueDomains} des domaines de valeurs des n\oe{}uds du réseau de préférences; auxquelles s'ajoutent les propriétés héritées de \emph{PreferenceNetwork} et qui ne sont donc pas visibles : en particulier la liste des n\oe{}uds et celle des arcs du réseau;
+
+\item \textbf{ses méthodes ``métiers'' et leurs arguments :} \emph{isAcyclic()}, \emph{getUtility(EString, EDouble)} et \emph{getLinguisticUtility(EString, LTwoTuple)}. Nous choisissons en effet, selon une certaine vision de la conception objet, de \emph{rattacher directement aux classes du modèle les méthodes de calcul et de décision sur leurs instances} (des méthodes d'instance métiers). Le détail de ces méthodes sera abordé dans la section~\ref{sec:implem_outillage}. Par ailleurs, leur présence au sein même du modèle de données des LCP-nets témoigne bien du niveau d'abstraction intermédiaire d'un modèle EMF, par rapport à une vision UML et au code.
+
+\end{itemize}
+
+Il est à noter que des propriétés et méthodes idoines sont aussi définies sur les autres éléments du modèle EMF.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/implem_ecore_graph_prefs.pdf}
+    \caption{Représentation graphique partielle du modèle de données LCP-net :\\\emph{concepts généraux}}
+    \label{fig:implem_ecore_graph_prefs}
+  \end{center}
+\end{figure}  
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=150mm]{figures/implem_ecore_graph_lcpnets.pdf}
+    \caption{Représentation graphique partielle du modèle de données LCP-net :\\\emph{concepts spécifiques}}
+    \label{fig:implem_ecore_graph_lcpnets}
+  \end{center}
+\end{figure} 
+
+Cette vue arborescente est complétée par les figures~\ref{fig:implem_ecore_graph_prefs} et~\ref{fig:implem_ecore_graph_lcpnets}, qui décrivent respectivement le graphe des relations entre concepts généraux et entre concepts spécifiques aux LCP-nets. Il est possible d'y voir qu'un réseau de préférences \emph{PreferenceNetwork} est notamment composé d'arcs et de n\oe{}uds et que tous ses éléments héritent de l'\emph{Eclass} \emph{Namable}, ce qui signifie qu'il définissent tous une propriété permettant d'identifier leurs instances.  Ces deux figures n'illustrent cependant pas la relation d'héritage qui existe \emph{entre} les deux domaines conceptuels.
+
+\subsubsection{D'un modèle \emph{ecore} vers une représentation Java}
+% ecore -> classes java
+
+A partir de cette description \emph{ecore} et des outils EMF à disposition, un \emph{modèle objet} basique a pu être aisément obtenu :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item à chaque \emph{Eclass} du modèle est associé une interface Java du même nom, cette interface définit l'ensemble des accesseurs et modificateurs des propriétés spécifiées dans le modèle, en suivant le patron de conception d'encapsulation des données;
+
+\item à chaque interface $Int_x$ ainsi générée est associée, dans un sous-paquet \emph{impl}, une classe \emph{$Int_x$Impl} qui définit les propriétés propres à cet élément ainsi que leur typage extrait des informations contenues dans le modèle;
+
+\item chacune de ces classes est en fait un squelette, dont seule la partie relative aux propriétés est pré-complétée. Il reste bien évidemment à fournir l'ensemble des informations qui n'ont pu être inférées du modèle de données EMF : en particulier tout ce qui concerne les méthodes ``métier'' des éléments du modèle;
+
+\item pour chaque instance créée à partir de ces classes, le canevas EMF assure de manière automatique, après une configuration appropriée, leur sérialisation sous forme de fichiers XML. Des exemples de cette sérialisation ont été précédemment donnés par les fragments de code~\ref{listing:imaging_service_preference.lcpnet} et~\ref{listing:imaging_service_fragment.fragments}. Elles font notamment appel à des expressions XPath pour gérer la désignation des entités. 
+
+
+\end{itemize}
+
+Il faut noter que le code généré suit le \emph{patron de conception ``factory''} dans la mesure où il délègue les opérations de création d'instances à des classes dédiées qui les regroupent par domaine : à titre d'exemple, toutes les opérations d'instanciation des éléments propres aux LCP-net sont ainsi regroupées dans une classe \emph{(...).models.LCPnet.LCPnetFactory} par lequel l'utilisateur doit passer, et non \emph{via} les constructeurs propres aux classes.
+ 
+Par ailleurs, dans cette représentation sous forme de classes Java, \emph{la relation d'héritage est naturellement transposée}. Ainsi, en correspondance directe avec le modèle, à chaque type LCP-net de base correspond un type de fragment (et donc une classe) qui en hérite. Par exemple, un fragment de n\oe{}ud \emph{LNodeFragment} est avant tout un \emph{LNode} et dispose des mêmes propriétés, en sus de celles qui lui sont propres. \emph{Ce qui permet d'affirmer sans ambiguïté qu'un fragment de LCP-net est effectivement un LCP-net lui-même et que sa construction va suivre fidèlement celle de son archétyp}e. Par ailleurs, les opérations de création d'un fragment de LCP-net ne dévieront que très peu de celle des LCP-nets puisque, en suivant le principe d'héritage, un fragment peut être utilisé partout où un type LCP-net de base était attendu.
+
+
+\subsection{Outillage des LCP-nets}
+\label{sec:implem_outillage}
+
+Le canevas que nous avons mis au point assure deux fonctions essentielles : la modélisation de préférences LCP-net ainsi que la prise de décisions fondées sur ces modèles. Nous proposons un outillage spécifique pour l'accompagner. 
+
+Tout d'abord, pour permettre la création de modèles LCP-nets mais aussi de leur fragments, nous proposons un \emph{regroupement logique} d'opérations élémentaires portant sur le modèle objet de données précédemment décrit. Ces opérations ne se limitent pas à la création de modèles, elles sont complétées par une méthode \emph{getCombinedLCPnet()} permettant d'appliquer un fragment à un LCP-net, et surtout par une opération \emph{getUtility()} d'inférence de la valeur d'utilité globale d'une affectation de valeurs à tous les n\oe{}uds d'un réseau de préférences. On considère alors que ce regroupement logique constitue une machine virtuelle (\emph{``Virtual Machine''} ou \emph{VM}) sur LCP-nets, \emph{il s'agit du premier outil à la disposition des utilisateurs de ce canevas}. Il est présenté plus en détails ci-dessous.
+
+Ensuite, la modélisation de préférence est accessible, non seulement au travers des primitives de cette machine virtuelle, mais aussi de manière graphique grâce à un outil d'édition de LCP-nets que nous avons mis au point. Les principes régissant l'utilisation de cet outil, qui peut être distribué sous forme de plugin Eclipse, sont décrits ci-après.
+
+\subsubsection{Primitives d'une machine virtuelle LCP-net}
+\label{sec:Primitives d'une machine virtuelle LCP-net}
+
+%Cette section regroupe l'ensemble des opérations disponibles sur la machine virtuelle LCP-net, il s'agit en majeure partie d'opérations de création incrémentale de LCP-nets et fragments, complétées par une opération \emph{getCombinedLCPnet()} permettant d'effectuer la fusion d'un LCP-net  et d'un fragment s'y référant, et par une opération \emph{getUtility()} d'évaluation d'un réseau de préférences à partir d'une affectation de valeur à ses n\oe{}uds.
+
+Le squelette d'une API exhaustive de création et manipulation de LCP-nets a donc été obtenu, à partir de la modélisation EMF des préférences, et complété pour le rendre fonctionnel. De par le niveau d'abstraction initial relativement bas du modèle EMF, cette API comporte un certain nombre de détails techniques d'implantation qui sont de peu d'intérêt pour l'utilisateur final. 
+
+De manière à l'isoler de ces couches basses de l'implantation, simplifier l'utilisation de l'API, et la présenter \emph{comme un ``tout'' cohérent}, nous en détaillons ici un sous-ensemble qui inclut l'ensemble des primitives considérées comme nécessaires à la mise en \oe{}uvre d'une \emph{machine virtuelle LCP-net}. 
+
+Cette notion de machine virtuelle prend tout son sens lorsqu'elle est mise en relation avec le langage d'expression de préférences haut niveau \emph{HL}-LCP-nets et \emph{HL}-LCP-frags, dont la syntaxe XML a été introduit au chapitre~\ref{ch:Composition agile de services}. Une métaphore possible serait en effet de comparer \emph{HL}-LCP-nets et \emph{HL}-LCP-frags à des fichiers sources \emph{.java}, à mettre en opposition avec des fichiers compilés \emph{.class}, qui seraient ici équivalents aux sérialisations XML produites par notre canevas. Par ailleurs, certaines des autres fonctionnalités que l'on est en mesure d'attendre d'une ``véritable'' machine virtuelle, telles que la gestion automatique de la mémoire, sont ici sous-traitées par la machine virtuelle Java elle-même (en l'occurrence par la mise en place du ramasse-miettes ou ``Garbage Collector'').
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/implem_usecase_vm.pdf}
+    \caption{Cas d'utilisation de la machine virtuelle LCP-net}
+    \label{fig:implem_usecase_vm}
+  \end{center}
+\end{figure} 
+
+Ces opérations de base, ou primitives, permettent la construction progressive de LCP-nets, leur interrogation, la définition de fragments de LCP-nets (en suivant un modèle similaire à celle des LCP-nets) et la composition d'un fragment avec un LCP-net. La figure~\ref{fig:implem_usecase_vm} illustre le cas d'utilisation où les primitives de construction de la VM sont d'abord mises à contribution pour obtenir un LCP-net ``compilé'' à partir d'un \emph{HL}-LCP-net et \emph{HL}-LCP-frag, ensuite pour réaliser le calcul d'utilité d'un LCP-net en fonction des valeurs de ces n\oe{}uds. Il faut noter que l'``utilisateur'' qui y apparaît est défini au sens le plus large, c'est-à-dire qu'il pourrait tout aussi bien s'agir d'un programme informatique (par exemple l'éditeur graphique de préférences présenté ci-après) qu'un véritable utilisateur final humain. La VM est donc impliquée dans l'ensemble de ces activités de base.
+
+La majeure partie de ces primitives, dont la liste est donnée ci-dessous, est tout droit extraite de l'API de base, les autres correspondent à une simplification des paramètres des méthodes initiales et sont implantées par l'adjonction d'un simple code ``de colle'' entre elles et l'API.
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item \textbf{Primitives de partitionnement flou des domaines de valeurs :}
+{\ttfamily
+\begin{enumerate}
+
+\item LinguisticDomain \textit{createLinguisticDomain}(String name, Double lowerBound, Double upperBound);
+
+\item LinguisticSubset \textit{createLinguisticSubset}(String name, \\LinguisticDomain domain);
+
+\item Coordinate \textit{createCoordinate}(LinguisticSubset linguisticSubset, Double x, Double y);
+
+\end{enumerate}
+}
+
+\item \textbf{Primitives de construction des éléments LCP-nets de base :}
+{\ttfamily
+\begin{enumerate}
+
+\item LCPnet \textit{createLCPnet}(String name, LinguisticDomain utilityDomain,\\List<LinguisticDomain> valueDomains);
+
+\item LNode \textit{createLNode}(String name, LCPnet preferenceNetwork, LinguisticDomain valueDomain);
+
+\item CNodeValue \textit{createCNodeValue}(String name, LNode node, Double crispValue);
+
+\item Arc \textit{createArc}(String name, LCPnet preferenceNetwork, LNode startNode, \\LNode endNode);
+
+\item IArc \textit{createIArc}(String name, LCPnet preferenceNetwork, LNode startNode, LNode endNode);
+
+\item CIArc \textit{createCIArc}(String name, LCPnet preferenceNetwork);
+
+\end{enumerate}
+}
+
+\item \textbf{Primitives de construction des tables de préférences conditionnelles (\emph{CLPT} et \emph{CIT}) :}
+{\ttfamily
+\begin{enumerate}
+
+\item CLPT \textit{createCLPT}(String name, LNode node);
+
+\item CLPTLine \textit{createCLPTLine}(String name, CLPT table, List<LinguisticSubset> parentValues);
+
+\item void \textit{createEntry}(String name,  CLPTLine line, LinguisticSubset nodeValue, LinguisticSubset utility);
+
+\item CIT \textit{createCIT}(String name, CIArc arc);
+
+\item CITLine \textit{createCITLine}(String name, CIT table, List<LinguisticSubset>\\ selectorSetValues, LNode startNode, LNode, endNode);
+
+\end{enumerate}
+}
+
+\item \textbf{Primitives de construction des fragments de préférence :} 
+{\ttfamily
+\begin{enumerate}
+
+\item LCPnetFragment \textit{createLCPnetFragment}(String fragmentName, \\LCPnet baseLCPnet, LinguisticDomain utilityDomain, List<LinguisticDomain> valueDomains);
+
+\item LNodeFragment \textit{createLNodeFragment}(String fragmentName, \\Boolean antiFragment, LNode baseLNode, LCPnet preferenceNetwork, \\LinguisticDomain valueDomain);
+
+\item CLPTFragment \textit{createCLPTFragment}(String fragmentName, Boolean antiFragment, CLPT baseCLPT, LNode node);
+
+\item CLPTLineFragment \textit{createCLPTLineFragment}(String fragmentName, \\Boolean antiFragment, CLPTLine base CLPTLine, CLPT table, \\List<LinguisticSubset> parentValues);
+
+\item void \textit{createEntryFragment}(String fragmentName, Boolean antiFragment, \\CLPTLine line, LinguisticSubset nodeValue, LinguisticSubset utility);
+
+\item ArcFragment \textit{createArcFragment}(String fragmentName, Boolean antiFragment, Arc baseArc, LCPnet preferenceNetwork, LNode startNode, LNode endNode);
+
+\item CITFragment \textit{createCITFragment}(String fragmentName, Boolean antiFragment, CIT baseCIT, CIArc arc);
+
+\item CITLineFragment \textit{createCITLineFragment}(String fragmentName, \\Boolean antiFragment, CITLine baseCITLine, CIT table, List<LinguisticSubset> selectorSetValues, LNode startNode, LNode, endNode);
+
+\item LinguisticDomainFragment \textit{createLinguisticDomainFragment}(String fragmentName, Boolean antiFragment, LinguisticDomain baseLinguisticDomain, \\Double lowerBound, Double upperBound);
+
+\item LinguisticSubsetFragment \textit{createLinguisticSubsetFragment}(String fragmentName, Boolean antiFragment, LinguisticSubset baseLinguisticSubset, \\LinguisticDomain domain);
+
+\end{enumerate}
+}
+
+\item \textbf{Primitive de composition d'un LCP-net avec un fragment :}\\
+{\ttfamily
+LCPnet \textit{getCombinedLCPnet}(LCPnetFragment) throws LCPnetCombinationException;
+}\\
+\emph{Nb} : le LCP-net de base n'est pas indiqué dans les paramètres de la méthode car il est référencé directement par le fragment.
+
+
+\item \textbf{Primitive d'évaluation d'un LCP-net à partir des valeurs de ses n\oe{}uds :}\\
+{\ttfamily
+Double \textit{getUtility}(LCPnet preferenceNetwork, List nodeNames, List nodeValues) throws LCPnetEvaluationException;
+}
+
+\end{itemize}
+
+Il est important de noter qu'après création d'un modèle objet de préférence (type \emph{LCPnet} ou \emph{LCPnetFragment}), obtenu en valeur de sortie des primitives des créations relatives, il est possible d'accéder, \emph{a posteriori}, aux sous-éléments du modèle qui lui ont été ajoutés. Cet accès s'effectue indirectement par le biais \emph{d'accesseurs} sur cet objet, de manière à respecter les propriétés d'encapsulation des données. Ces accesseurs reprennent le nom des propriétés concernées : par exemple, \emph{LCPnet.getNode(String name)} pour obtenir un objet de type \emph{node} déjà construit, à partir de son nom (tous les éléments du modèle de préférences héritant de la classe \emph{Namable}, ils disposent tous d'un identifiant).
+
+
+\subsubsection{Editeur graphique de préférences et fragments}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/implem_editor_shoot_all.png}
+    \caption{Editeur de LCP-nets : vue complète.}
+    \label{fig:implem_editor_shoot_all}
+  \end{center}
+\end{figure}  
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/implem_editor_shoot_add_ciarc.png}
+    \caption{Editeur de LCP-nets : ajout d'un ci-arc.}
+    \label{fig:implem_editor_shoot_add_ciarc}
+  \end{center}
+\end{figure}  
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/implem_editor_shoot_properties.png}
+    \caption{Editeur de LCP-nets : modification des propriétés d'un ci-arc.}
+    \label{fig:implem_editor_shoot_properties}
+  \end{center}
+\end{figure}  
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/implem_editor_shoot_lnodes.png}
+    \caption{Editeur de LCP-nets : accès à la liste des n\oe{}uds disponibles.}
+    \label{fig:implem_editor_shoot_lnodes}
+  \end{center}
+\end{figure}  
+
+L'éditeur graphique mis au point dans ce canevas permet une définition plus aisée (et non programmatique) des préférences LCP-net et de leurs fragments, cette définition s'effectuant sous une forme arborescente. 
+
+Cet éditeur a été créé sur la base de l'API LCP-net sous-jacente, il permet donc d'obtenir une sérialisation des modèles sous une forme XML facilement échangeable, à plus forte raison dans le contexte SSOA de ces travaux, sans aucun effort supplémentaire de la part de l'utilisateur.
+
+Dans les copies d'écran suivantes, on illustre les différentes étapes menant à l'ajout et la modification d'un ci-arc au sein d'un LCP-net existant. Sur la figure~\ref{fig:implem_editor_shoot_all}, on a préalablement ouvert un fichier de fragment ``modificator.fragment'' sélectionné dans le panneau de gauche qui présente la liste des préférences accessibles sur le disque. L'éditeur de LCP-net est donc ouvert et présente de manière unifiée le fragment ainsi que son LCP-net cible.
+
+Sur la figure~\ref{fig:implem_editor_shoot_add_ciarc} on illustre l'ajout d'un ci-arc à ce LCP-net cible, directement modifiable par un menu contextuel.
+
+Ensuite, sur les figures~\ref{fig:implem_editor_shoot_properties} et~\ref{fig:implem_editor_shoot_lnodes}, on procède à la modification des propriétés de ce nouvel arc. Dans le premier cas on modifie son nom, dans le deuxième, l'outil nous propose automatiquement la liste des n\oe{}uds cibles à utiliser pour compléter la définition du ci-arc.
+
+Une évolution possible et souhaitée de cet éditeur va consister à bâtir, au dessus de l'existant grâce au canevas GMF (``Graphical Modeling Framework'') d'Eclipse, un éditeur dont la représentation des LCP-nets soit au plus proche de celle des modèles présentés précédemment dans ce manuscrit : c'est-à-dire de manière à disposer de n\oe{}uds sous forme de cercles, d'arcs sous forme de flèches, etc.
+
+\subsubsection{Procédure d'application des fragments}
+\label{sec:implem_appplication_fragments}
+
+Du point de vue de l'utilisateur de la machine virtuelle LCP-net, l'application d'un fragment sur un LCP-net consiste simplement à appeler la primitive \textit{getCombinedLCPnet(LCPnetFragment)}. Le lien entre le fragment et son LCP-net cible ayant été effectué lors de sa conception, c'est une information qu'il n'est plus nécessaire de préciser lors de l'application.
+
+Du point de vue de l'implantation du canevas, cet appel de primitive est en fait redirigé vers la méthode d'instance \emph{applyFragment(EObjet)} définie sur la classe \emph{Fragment} dont hérite \emph{LCPnetFragment}. Le \emph{patron de conception ``Chaîne de responsabilité''}  a été choisi pour son implantation : il peut être utilisé \emph{``dès lors qu'une information doit recevoir plusieurs traitements, ou juste être transmise entre différents objets''} et \emph{``permet à un nombre quelconque de classes d'essayer de répondre à une requête sans connaître les possibilités des autres classes sur cette requête. Cela permet de diminuer le couplage entre objets. Le seul lien commun entre ces objets étant cette requête qui passe d'un objet à l'autre jusqu'à ce que l'un des objets puisse répondre.'' (Wikipedia)} 
+
+Cette approche est rendue possible, car tous les fragments héritent de la classe \emph{Fragment} (cf. figure~\ref{fig:implem_ecore_arbo_all}), une implantation de cette méthode spécifique à chaque type de fragment a donc été réalisée. Par ailleurs, de manière à ce que chaque sous-élément puisse s'appliquer correctement, la méthode \emph{applyFragment(EObject)} dispose d'un argument correspondant au contexte d'application, qui va être transmis entre les différentes instances.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/implem_application_cascade.pdf}
+    \caption{Application d'un fragment de LCP-net en cascade.}
+    \label{fig:implem_application_cascade}
+  \end{center}
+\end{figure}  
+
+Ce principe est illustré par la figure~\ref{fig:implem_application_cascade} où il est possible de visualiser la \emph{propagation en cascade} d'un appel par la VM (initié par l'utilisateur) à \emph{applyFragment(null)} sur un fragment chargé en mémoire selon le modèle de données objet, vers chacun de ses sous-fragments de n\oe{}uds, puis vers les tables, les lignes de tables, etc. A chacune de ces étapes, le fragment en question a la responsabilité de s'appliquer correctement et de transmettre le message vers ses sous-éléments.
+
+En valeur de sortie de l'appel de méthode initial sur le fragment, le LCP-net résultant est obtenu. Il est totalement indépendant du LCP-net cible et du fragment.
+
+\subsection{Calculs et décisions sur LCP-nets}
+\label{sec:implem_calculs}
+
+Le processus d'évaluation des préférences, à partir duquel la valeur d'utilité globale d'une affectation de valeurs aux n\oe{}uds d'un LCP-net est obtenue, a déjà été détaillé à la section~\ref{sec:Evaluation des préférences} : il s'agit d'un problème de décision multi-critères, où chaque critère est une variable (donc un n\oe{}ud) du réseau de préférences. Le but de cette section est de s'arrêter sur les points d'intérêt propres à l'implantation de ce processus.
+
+Le point de départ du processus est incarné par un appel à la primitive \emph{getUtility(LCPnet target, List names, List values)} de la machine virtuelle. Cet appel correspond à celui d'une méthode d'instance éponyme sur le LCPnet \emph{target} qui va calculer l'utilité globale de l'affectation en suivant l'algorithme suivant :
+
+\vspace*{.5cm}
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount, language=Java}
+\begin{lstlisting}
+
+public double getUtility() throws LCPnetEvaluationException {
+	// initialisation de l'utilité à 0 avant le calcul
+	utility = 0;
+		
+	//1 - Conversion du réseau de préférences en graphe finalisé
+	LCPnet net = (LCPnet) this.getPreferenceNetwork();
+	Graph<LNode, Void> graph = net.getFinalizedGraph(this);
+	
+	//2 - Calcul des poids de chaque noeud en fonction de sa profondeur
+	DepthBasedWeights.run(graph);
+
+	//3 - Calcul de l'utilité globale à partir de chaque utilité locale
+	for(Iterator<Vertex<LNode, Void>> iv=graph.getVertices(); iv.hasNext();) {
+		Vertex<LNode, Void> vertex=iv.next();
+		
+		// 3.a - Calcul de l'utilité locale par un processus d'inférence floue
+		LNode lnode = vertex.getVertex();
+		double localUtility =  lnode.getUtility(this);
+		
+		// 3.b - Obtention du poids accordé au noeud
+		Double localWeight = (Double) vertex.getUserFeature(DepthBasedWeights.weightKey);
+		
+		// 3.c - Ajout de l'utilité locale pondérée de ce noeud à l'utilité globale
+		utility += (localUtility * localWeight);			
+	}
+	
+	return utility;
+}
+\end{lstlisting}
+
+\vspace*{.5cm}
+
+\emph{La première étape} de l'algorithme consiste à convertir le réseau de préférences en graphe finalisé (complètement orienté), le but étant de pouvoir calculer la profondeur de chaque n\oe{}ud. Ce processus va consister à fixer l'orientation de chaque ci-arc, qui n'est pas connu à l'avance, en fonction des valeurs des n\oe{}uds : en effet, il s'agit du seul type d'arc dont la direction n'est pas connue au moment de la définition du LCP-net, leur orientation conditionnelle étant déterminée par les tables CIT.
+
+Une fois le graphe finalisé, il est possible de calculer le poids respectif des n\oe{}uds lors de \emph{la seconde étape}. Il s'agit d'un algorithme à part entière dont nous retraçons seulement ici les principaux aspects : il est effectué en deux passes, la première va consister à effectuer un parcours en profondeur du graphe finalisé; la seconde va utiliser une fonction décroissante de distribution des poids $\mathit{f\string:profondeur} \rightarrow poids$ définie sur un domaine spécifique pour obtenir la pondération du n\oe{}ud (cf. notion de fonction ``BUM'' à la section~\ref{sec:Formalisme_LCP-net}). Les poids ainsi obtenu sont ensuite normalisés pour totaliser 1, afin d'être correctement intégrés dans le calcul de moyenne pondérée effectué par cet algorithme.
+
+\emph{La troisième et dernière étape} consiste à mettre à exécution la moyenne pondérée des valeurs d'utilité locale à chaque n\oe{}ud, de manière à obtenir l'utilité globale. On remarque que l'algorithme effectue un simple parcours de la liste des n\oe{}uds pour calculer chaque utilité locale ``crisp'' et l'ajouter à la valeur globale d'utilité en prenant en compte son poids relatif précédemment calculé. 
+
+\emph{Le calcul de l'utilité locale (étape 3.a)} est effectué par un processus d'inférence floue dont une représentation visuelle est donnée à la section~\ref{sec:Evaluation des préférences}. Du point de vue de l'implantation, l'appel à la méthode \emph{getUtility} d'un n\oe{}ud va déclencher sa traduction sous forme de Système d'Inférence Floue (``Fuzzy Inference System'' ou FIS)~\cite{jang1993anfis} décrit ici à l'aide du langage normatif FCL (``Fuzzy Control Language''), tel que défini par la spécification \emph{IEC 61131-7}~\cite{IEC01}. Cette étape de traduction est en majeure partie fondée sur le contenu de la table CPT rattachée à chaque n\oe{}ud considéré et \emph{permet d'obtenir un FIS par table, donc par n\oe{}ud} (cf. codes~\ref{listing:Rnode_FIS},~\ref{listing:Bnode_FIS} et~\ref{listing:Snode_FIS}).
+
+On utilise un \emph{patron de conception ``singleton''} pour optimiser l'évaluation des préférences : de cette manière on ne procède au calcul du FIS de chaque n\oe{}ud qu'une seule et unique fois au cours du cycle de vie d'un LCP-net. Le même LCP-net pourrait en effet être évalué à de multiples reprises, avec des valeurs de variables différentes, on évite ainsi de passer par cette étape de traduction à chaque reprise.
+
+Suite à la traduction du contenu d'une CPT sous forme de système d'inférence, ce dernier est injecté dans un \emph{moteur d'inférence floue}, avec les valeurs des variables du problème. Le choix d'un moteur adapté est discuté dans la sous-section suivante. Cependant, le fait de reposer sur le langage FCL nous rend indépendant, dans une certaine mesure, du moteur utilisé. Ce dernier pourrait être remplacé, en fonction des contraintes du contexte d'utilisation du canevas ou des futurs développements, par un autre moteur implantant la spécification \emph{IEC 61131-7}. 
+
+Par ailleurs, la valeur d'utilité globale que nous souhaitons obtenir étant précise, nous décidons de fixer à l'avance (comme nous le permet le langage FCL) certains paramètres de la défuzzification de l'utilité nécessairement effectuée en fin de raisonnement flou sur le FIS de chaque n\oe{}ud : 
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item La méthode d'accumulation (paramètre \emph{`ACCU'}), c'est-à-dire l'agrégation des résultats flous (sous forme de SEF) des différentes règles d'un même FIS, de manière à obtenir un SEF agrégé représentatif, est fixée au calcul du maximum (valeur \emph{`MAX'}) des SEFs. C'est une méthode simple, qui ne va pas forcément donner le résultat le plus représentatif des entrées, mais qui est particulièrement rapide, ce qui est important dans notre contexte SSOA où l'inférence est effectuée en cours d'orchestration d'un processus métier.
+
+\item La méthode de défuzzification (paramètre \emph{`METHOD'}) est fixée au calcul du centre de gravité (valeur \emph{`COG'}) du SEF d'utilité obtenu. De même que pour l'accumulation, le choix a été ici de prendre une méthode simple mais rapide.
+
+\end{itemize}
+
+\subsubsection{Choix d'un moteur d'inférence floue}
+
+Le processus d'inférence floue en lui-même repose sur l'utilisation d'un raisonneur logique externe (ou ``moteur d'inférence'') spécialisé dans la logique floue : \emph{jFuzzyLogic}\footnote{\href{http://jfuzzylogic.sourceforge.net}{http://jfuzzylogic.sourceforge.net}}. Plusieurs critères ont dirigé son choix comparativement à d'autres alternatives telles que \emph{mbFuzzit}\footnote{\href{http://mbfuzzit.sourceforge.net/en/mbfuzzit\_software.html}{http://mbfuzzit.sourceforge.net/en/mbfuzzit\_software.html}}, \emph{NRC FuzzyJ Toolkit}\footnote{\href{http://www.iit.nrc.ca/IR\_public/fuzzy/fuzzyJDocs/index.html}{http://www.iit.nrc.ca/IR\_public/fuzzy/fuzzyJDocs/index.html}} ou \emph{Free Fuzzy Logic Library}\footnote{\href{http://ffll.sourceforge.net/index.html}{http://ffll.sourceforge.net/index.html}} :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item Il présente tout d'abord, et c'est un pré-requis dans le contexte de nos travaux, une licence LGPL compatible avec le reste du projet SemEUsE.
+
+\item Il s'agit d'un projet relativement récent comparativement à certaines de ses alternatives.
+
+\item Il offre de nombreuses possibilités de paramétrage sur le déroulement du processus d'inférence, par exemple en termes de défuzzification, qui peut être effectuée à partir des méthodes usuelles, telles que vue dans la section~\ref{sec:Modélisation floue des concepts}, ou par la définition d'opérateurs de défuzzification personnalisés.
+
+\item Il implante le langage FCL, et l'utilise pour la représentation des FIS.
+
+\end{itemize}
+
+\subsubsection{Limitations de l'implantation actuelle}
+
+Cependant, l'utilisation de \emph{JFuzzyLogic} entraîne aussi des limitations au niveau plus général du canevas de décision. En particulier, cette bibliothèque nous oblige à traiter les potentielles entrées floues du processus d'inférence comme des valeurs précises (``crisp''), ce qui induit un processus de défuzzification préalable à leur injection dans le moteur d'inférence. En effet, dans son implantation actuelle, \emph{JFuzzyLogic} ne supporte que la définition de systèmes d'inférence floue disposant d'entrées et de sorties typées comme étant des réels, comme dans l'extrait de FIS au format FCL ci-dessous :
+
+\vspace*{.5cm}
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\begin{lstlisting}
+FUNCTION_BLOCK fbName
+
+VAR_INPUT
+	B : REAL;
+	R : REAL;
+END_VAR
+
+VAR_OUTPUT
+	Utility : REAL;
+END_VAR
+
+(...)
+\end{lstlisting}
+
+\vspace*{.5cm}
+
+% Jacques : Inserer perf dans ce paragraphe
+Dans l'exemple donné à la section~\ref{sec:Cas d'utilisation et LCP-nets} sur la sélection d'un drone d'imagerie, les variables d'entrée ($R$, $B$, $S$) et de sortie ($Utility$) des trois FIS obtenus à partir du modèle de préférences (cf. figure~\ref{fig:lcpnet_drones} et codes~\ref{listing:Rnode_FIS},~\ref{listing:Bnode_FIS} et~\ref{listing:Snode_FIS}) doivent donc être fixées comme étant de type réel. Si une valeur floue de résolution, de bande passante ou de sécurité est soumise lors de l'évaluation, elle devra donc être préalablement \textit{defuzzifiée}. A l'inverse, si la valeur d'utilité en sortie du processus d'inférence est souhaitée sous forme linguistique, il faudrait avoir recours à un processus inverse de fuzzification en rapport avec le partitionnement flou déjà existant du domaine de l'utilité.
+
+Ce type de limitations pourrait être en partie levé par la mise au point, à terme, de notre propre moteur d'inférence flou reposant, par exemple, sur l'utilisation des 2-tuples flous pour mener à bien ses calculs sans la perte d'information induite par les étapes de fuzzification/défuzzification successives~\cite{Her00a}.
+
+
+\subsection{Retour sur les principaux choix d'implantation}
+\label{sec:implem_lcpnets_choix}
+
+Cette section présente un bref rappel des différents choix technologiques et techniques effectués pour la réalisation du canevas de modélisation et décision sur LCP-nets, leurs motivations ont été distillées au cours des précédentes sections :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item Réalisation effectuée en totalité en Java sous Eclipse, avec la mise en \oe{}uvre de plusieurs patrons de conception usuels en Génie Logiciel, de manière à faciliter le développement ou optimiser le code : \emph{encapsulation des données}, \emph{singleton}, \emph{chaîne de responsabilité} etc. Ce dernier permet la réalisation de l'application d'un fragment par répartition de la charge d'application à tous ses sous-éléments.
+
+\item Utilisation du méta-modèle EMF et de son canevas pour la modélisation des LCP-nets et la génération de leur modèle de données. Un modèle générique de tous les *CP-nets a en fait été établi.
+
+\item Sérialisation des réseaux de préférences sous forme XML, traitée par les bibliothèques de support EMF.
+
+\item Réalisation du développement du canevas en totale indépendance du contexte SSOA et de SemEUsE, bien qu'il réponde aux contraintes que ces derniers imposent. C'est la garantie de la généricité du canevas et de son potentiel dans d'autres contextes de décision multi-critères.
+
+\item Intégration d'un moteur d'inférence en logique floue pré-existant, \emph{JFuzzyLogic}, en fixant à l'avance certains de ses paramètres pour le raisonnement. On reste cependant, à un certain degré, indépendant du moteur utilisé. Ce dernier pourrait être amené à changer en fonction des contraintes du contexte d'utilisation.
+
+\end{itemize}
+
+
+\section{Canevas de liaison tardive de services Web}
+\label{sec:Canevas liaison tardive}
+% Pb : rien a dire sur *l'invocation* tardive de services, vu qu'elle n'est pas implantée
+% Pb : pareil pour l'adaptation de données
+
+Nos efforts pour la mise en \oe{}uvre de ce canevas ont porté sur l'intégration du processus de décision sur LCP-nets (cf. section~\ref{sec:Canevas LCP-nets}), effectué ici sur la base des valeurs de QoS obtenues par la supervision de services \emph{Web}, lors de leur liaison tardive à un processus métier \emph{BPEL} (cf. section~\ref{sec:Une approche pour la liaison tardive de services}). Pour permettre cette intégration, en fonction des contraintes propres à SemEUsE et aux SSOA, différents choix techniques ont été effectués, ils seront présentés au cours de cette section.
+
+\subsection{Contexte technique et architectural}
+
+La liaison tardive est effectuée au cours de l'orchestration de services. Pour réaliser cette orchestration dans le cadre du projet SemEUsE, le moteur Orchestra a été choisi. Il a été brièvement présenté dans le contexte technique de ce manuscrit (cf. section~\ref{sec:Moteurs d'orchestration de services Web}). Sa particularité est de proposer une implantation de la spécification WS-BPEL 2.0 et de son concept d'extension d'activités.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=150mm]{figures/implem_lb_diag_general.pdf}
+    \caption{Positionnement du composant de liaison tardive dans l'architecture SemEUsE.}
+    \label{fig:implem_lb_diag_general}
+  \end{center}
+\end{figure}  
+
+Le canevas de liaison tardive est représenté sous la forme d'un composant dans l'architecture générale de SemEUsE, tel qu'illustré par la figure~\ref{fig:implem_lb_diag_general}. On remarque qu'il se trouve à la jonction de la composition et de la supervision de services. Sur cette figure, on met en correspondance les étapes logiques (déjà présentées à la figure~\ref{fig:late_binding_layers}) qui permettent d'arriver à la décision de liaison tardive d'un service (sur la droite de la figure), avec les composants de l'architecture générale (sur sa gauche).
+
+\subsection{Implantation de l'activité \emph{lateBindingInvoke} dans Orchestra}
+
+Dans le chapitre~\ref{ch:Composition agile de services} nous avons introduit l'activité \emph{lateBindingInvoke} de liaison tardive de services, nous précisions là les subtilités propres à son implantation dans Orchestra. 
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=120mm]{figures/implem_rep_temporelle}
+    \caption{Répartition temporelle du filtrage, de l'adaptation et de l'invocation de services dans l'implantation.}
+    \label{fig:implem_rep_temporelle}
+  \end{center}
+\end{figure}  
+
+Comme il a été discuté à la section~\ref{sec:repartition_temporelle}, plusieurs options s'offrent à nous quant à la répartition temporelle des tâches préalables à la liaison tardive, que sont le \emph{filtrage des services} et le \emph{calcul des modèles d'adaptation de données}. De manière à limiter leur impact sur le processus d'orchestration de services, nous préconisons l'approche illustrée par la figure~\ref{fig:implem_rep_temporelle} : 
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item \emph{Le filtrage des services} de l'annuaire est effectué au chargement du processus, lors de la composition. Dans le contexte SSOA, la recherche sur l'annuaire va être effectuée en fonction de la sémantique métier rattachée aux offres et demandes de services SAWSDL \emph{via} des concepts ontologiques. Ce raisonnement ontologique, d'une durée non-négligeable, doit effectivement être effectué avant l'orchestration.
+
+\item \emph{Le calcul des modèles d'adaptation de données}, doit être effectué dès les services connus, donc après le filtrage. Attendre le moment (plus tardif) de l'invocation d'un service pourrait, là aussi, avoir des répercussions importantes sur la réactivité globale de l'orchestration. En effet, calculer une adaptation entre deux types de données annotés sémantiquement est un problème non trivial.
+
+\end{itemize}
+
+Comme indiqué par la figure~\ref{fig:implem_lb_diag_general}, le filtrage est la responsabilité du composant de composition de services. En conséquence de quoi, \emph{l'activité de liaison tardive doit être en mesure d'intégrer le résultat de ce filtrage}.
+
+Par ailleurs, de manière à obtenir des valeurs de QoS courantes des services,  le composant de liaison tardive est client d'un canevas de supervision. \emph{Ce canevas doit être initialisé le plus tôt possible} avec la liste des services filtrés, pour chaque site d'appel de service d'un processus. Cette initialisation précoce permet de mettre en place la remontée des valeurs de QoS vers l'orchestration, de manière à pouvoir en disposer immédiatement au moment de la sélection d'un service.
+
+Nous décidons donc d'implanter la liaison tardive non pas sous la forme d'une seule activité étendue WS-BPEL 2.0 \emph{lateBindingInvoke}, mais de deux, aux responsabilités distinctes :
+
+\begin{enumerate}
+\setlength{\itemsep}{3mm}
+
+\item \textbf{une activité lateBindingConfigure :} placée au tout début du processus métier de manière à être évaluée avant le code métier. Elle reprend des éléments de la syntaxe initiale (cf. code~\ref{listing:compo_agile_lbInvoke}), notamment la liste des services filtrés \emph{<semeuse:candidateServices>...</semeuse:candidateServices>} fourni par la composition. Son implantation effectue l'initialisation du canevas de supervision grâce aux informations contenues dans sa représentation XML : les \emph{EPR} (``End-Point Reference'') des services Web, leur \emph{portType}, et informations connexes sur les dimensions de QoS à superviser obtenues dans les fichiers \emph{WS-Agreement} liés. Ces ``agreements'' sont obtenus à l'issue d'une phase de \emph{négociation des contrats non-fonctionnels} lors de la composition de services.\\\\
+Un exemple de la syntaxe XML de cette activité étendue dans un processus WS-BPEL 2.0 est donnée ci-dessous : 
+
+\vspace*{.5cm}
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount, language=XML}
+\begin{lstlisting}
+<extensionActivity>
+	<semeuse:lateBindingConfigure invocationID="invocation1" preference="tests/semeuse/activities/monitoring/monitoring_preferences.lcpnet">
+		<semeuse:candidateServices>
+			<semeuse:service EPR="service1" portType="service1PortType" operation="getVideo" contract="negociated_wsag_camera1.xml"/>
+			<semeuse:service EPR="service2" portType="service2PortType" operation="getVideo" contract="negociated_wsag_camera2.xml"/>
+			<semeuse:service EPR="service3" portType="service2PortType" operation="getVideo" contract="negociated_wsag_camera3.xml"/>
+			<semeuse:service EPR="service4" portType="service2PortType" operation="getVideo" contract="negociated_wsag_camera4.xml"/>
+		</semeuse:candidateServices>
+	</semeuse:lateBindingConfigure>
+</extensionActivity>
+\end{lstlisting}
+
+\item \textbf{une activité lateBindingInvoke} qui est liée à une activité \emph{lateBindingConfigure} jumelle, par le biais d'un identifiant unique \emph{invocationID} utilisé par les deux activités. Ces identifiants sont générés et positionnés automatiquement lors de la composition d'un processus métier abstrait où les services Web n'ont pas encore été filtrés, vers un processus BPEL disposant de ces activités étendues.\\\\
+Un exemple de la syntaxe XML de cette activité étendue dans BPEL est donné ci-dessous : 
+
+\vspace*{.5cm}
+
+\lstset{basicstyle=\scriptsize\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount, language=XML}
+\begin{lstlisting}
+<extensionActivity>
+	<semeuse:lateBindingInvoke invocationID="invocation1" inputVariable="invoke_in" outputVariable="invoke_out" preference="preferences.lcpnet"/>
+</extensionActivity>
+\end{lstlisting}
+
+Cette activité a la responsabilité d'effectuer la sélection effective d'un service, sur la base de sa QoS courante et des préférences LCP-net en vigueur, en vue de son invocation.
+
+\end{enumerate}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/implem_lb_diag_general_2.pdf}
+    \caption{\emph{lateBindingConfigure} et \emph{lateBindingInvoke} dans l'architecture SemEUsE.}
+    \label{fig:implem_lb_diag_general_2}
+  \end{center}
+\end{figure}  
+
+A la lumière de ces développements, on précise la topologie du canevas de liaison tardive dans SemEUsE, tel qu'il avait été décrit par la figure~\ref{fig:implem_lb_diag_general} : les interfaces avec les autres composants de l'architecture globale sont maintenant réparties entre les implantations distinctes des deux activités \emph{lateBindingConfigure} et \emph{lateBindingInvoke} (cf. figure~\ref{fig:implem_lb_diag_general_2}). La structure interne du composant de supervision a aussi été exposée et sera détaillée dans la section~\ref{sec:Configuration et intégration de la supervision de services}. On introduit, par ailleurs, une interface avec un composant de \emph{reconfiguration} : il s'agit ici de déclencher et de sous-traiter une recomposition du processus métier, si la liaison tardive n'est plus à même de se réaliser correctement, par exemple par manque de services disponibles. Ce type de reconfiguration est à rapprocher des travaux sur le \emph{``re-binding''} de services évoqués dans notre état de l'art.
+
+Ces deux activités sont mises en \oe{}uvre dans un processus BPEL d'exemple (cf. code~\ref{listing:implem_exemple.bpel}) dont la partie métier n'est constituée que d'une simple invocation tardive. On remarque qu'elles sont complétées par une activité propre au composant de supervision \emph{M4ABP} : pour déclencher la supervision en début de processus, dès sa configuration effectuée  (\emph{<semeuse:monitoring state="start" />}), puis pour l'arrêter à sa toute fin (\emph{<semeuse:monitoring state="stop" />}).
+
+\vspace*{.5cm}
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Exemple de processus BPEL avec liaison tardive., label=listing:implem_exemple.bpel]{sources/implem_exemple.bpel}
+\vspace*{.5cm}
+
+Les interfaces de la liaison tardive, notamment avec le composant de supervision, ayant été précisées, il est possible maintenant de s'intéresser à l'implantation dans Orchestra des deux activités :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item En tant qu'activités étendues, elles sont mises en \oe{}uvre sous formes de classes, héritant de \emph{org.ow2.orchestra.definition.activity.AutomaticActivity} (cf. figure~\ref{fig:implem_lb_activities_UML}).
+	
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/implem_lb_activities_UML.pdf}
+    \caption{Diagramme de classes UML des activités \emph{lateBindingConfigure} et \emph{lateBindingInvoke} dans Orchestra.}
+    \label{fig:implem_lb_activities_UML}
+  \end{center}
+\end{figure}  
+
+\item Dans chacune de ces classes, la logique métier est définie dans une méthode \emph{void executeBusinessLogic(BpelExecution execution)}. 
+
+\item Pour faire le pont avec la sémantique opérationnelle de l'intégration des \emph{HL}-LCP-nets et de leurs fragments dans les processus métiers (cf. section~\ref{sec:Intégration dans les processus métiers}), l'environnement d'exécution $\rho$ ainsi que les autres éléments de contexte $\gamma$ sont ici représentés par l'argument \emph{BpelExecution execution} de la précédente méthode.
+
+\end{itemize}
+
+Une vue simplifiée et commentée de l'implantation Java de l'activité \emph{lateBindingConfigure} dans Orchestra est donnée par le fragment de code~\ref{listing:implem_lateBindingConfigure.java}. On remarque que la liste des services obtenus par la composition, telle que visible dans le représentation XML de cette activité, est stockée dans un registre \emph{Registry} commun aux deux activités, de manière à ce que \emph{lateBindingInvoke} puisse y accéder \emph{a posteriori} (il s'agit là aussi d'un élément d'environnement couvert par $\rho$ et $\gamma$). Les paramètres propres à chaque service candidat de la liste XML \emph{<semeuse:candidateServices>...</semeuse:candidateServices>} sont fournis au canevas M4ABP pour sa configuration. Cette dernière se termine en fixant (uniquement dans le code à l'heure actuelle) la \emph{QoI} (\emph{``Quality of Information''}), c'est-à-dire les besoins en termes de qualité sur la supervision elle-même : il s'agit ici de garantir dans un premier temps un certain niveau de cohérence temporelle entre les mesures effectuées par \emph{M4ABP}.
+
+\vspace*{.5cm}
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Implantation de l'activité lateBindingConfigure., label=listing:implem_lateBindingConfigure.java]{sources/implem_lateBindingConfigure.java}
+\vspace*{.5cm}
+
+L'implantation de l'activité \emph{lateBindingInvoke} dans Orchestra est quant à elle donnée par le fragment de code~\ref{listing:implem_lateBindingInvoke.java}.  On remarque ici que l'essentiel du travail de sélection est effectué par une méthode \emph{selectOptimalServices(...)} dédiée, qui peut retourner une liste de services optimaux dans l'éventualité (peu probable) où plusieurs services exhiberaient une utilité globale strictement similaire : chacune des étapes clés du processus de sélection est commentée directement dans l'extrait de code. Parmi ces étapes, il est important de relever celle concernant l'accès à une abstraction de supervision \emph{View} qui constitue l'interface unifiée par laquelle les valeurs courantes de \emph{toutes} les propriétés de QoS de \emph{tous} les services supervisés \emph{pour cette invocation} (identifiant \emph{invocationID}) sont obtenues. 
+
+\vspace*{.5cm}
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Implantation de l'activité lateBindingInvoke., label=listing:implem_lateBindingInvoke.java]{sources/implem_lateBindingInvoke.java}
+\vspace*{.5cm}
+
+
+\subsection{Configuration et intégration de la supervision de services}
+\label{sec:Configuration et intégration de la supervision de services}
+
+Dans cette section, nous apportons plusieurs précisions sur le mécanisme de configuration du canevas de supervision ainsi que sur le mode d'intégration des valeurs de supervision lors de la sélection de services en liaison tardive.
+
+\subsubsection{Configuration de la supervision}
+
+La configuration du canevas de supervision par l'activité \emph{lateBindingConfigure} dépend, en majeure partie, des informations contenues dans le WS-agreement \emph{négocié} rattaché à chaque service de la liste des candidats. L'activité elle-même ne va pas interpréter ces données, mais les transmettre directement au canevas. Un WS-Agreement négocié d'exemple est présenté séparé en deux parties par les extraits de code~\ref{listing:exemple_negocie_part1.wsag} et~\ref{listing:exemple_negocie_part2.wsag}. Ils font apparaître :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item en première partie les propriétés \emph{<wsag:ServiceProperties ...>} requises (par le processus) et offertes (par le service considéré) de QoS (\emph{Resolution}, \emph{Bandwidth}, \emph{BandePassante}),
+
+\item suivies des garanties (contraintes) portant sur ces propriétés \emph{<wsag:GuaranteeTerm ...>}. Elles sont exprimées dans une extension du langage QML~\cite{frolund1998qml} mise au point dans le cadre de SemEUsE : \emph{WS-QML}; de manière à être intégrées dans WS-Agreement. En l'occurrence, il s'agit de bornes numériques à ne pas dépasser : pour qu'un service soit intégré lors de la composition dans la liste des candidats, ses garanties en termes de QoS doivent être identiques ou plus strictes que celles requises par le processus métier.
+
+\end{itemize}
+
+% WS-Agr négocié
+\vspace*{.5cm}
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Extrait de WS-Agreement négocié : description des QoS requises et offertes., label=listing:exemple_negocie_part1.wsag]{sources/exemple_negocie_part1.wsag}
+\vspace*{.5cm}
+
+\vspace*{.5cm}
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,frame=shadowbox, captionpos=b, abovecaptionskip=\bigskipamount}
+\lstinputlisting[float, caption=Extrait de WS-Agreement négocié : contraintes., label=listing:exemple_negocie_part2.wsag]{sources/exemple_negocie_part2.wsag}
+\vspace*{.5cm}
+
+% Lien entre les variables LCP-net et celles du WS-Agr négocié
+
+Dans l'implantation de l'activité \emph{lateBindingInvoke}, tout comme dans celle de \emph{lateBindingConfigure}, il est important de noter que les noms des propriétés de QoS utilisés, pour mener à bien les requêtes de supervision, sont ceux utilisés dans le modèle de préférences LCP-net. Il s'agit de la conséquence d'une contrainte de modélisation préalable, où les préférences sont censées, pour des raisons de cohérence, utiliser des noms identiques aux propriétés fixées dans le WS-agreement \emph{requis} par le processus métier. 
+
+% Correspondance sémantique dans le WS-Agr négocié
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/implem_wsag_negociation.pdf}
+    \caption{Correspondance ontologique entre requis et offert dans un WS-Agreement.}
+    \label{fig:implem_wsag_negociation}
+  \end{center}
+\end{figure}  
+
+La conséquence de cette approche est que chaque WS-agreement \emph{négocié} (utilisé pour la configuration de \emph{M4ABP}) entre un fournisseur et un consommateur de service, doit contenir les informations de correspondance entre la terminologie utilisée par les services pour décrire leurs propriétés et celle du processus, pas forcement identique. Cette correspondance et ensuite gérée de manière transparente, pour l'activité \emph{lateBindingInvoke} cliente, par le canevas de supervision. Un exemple de rétention de cette correspondance est clairement visible dans la première partie du WS-agreement négocié (cf. code~\ref{listing:exemple_negocie_part1.wsag}) : une dimension requise est nommée \emph{Bandwidth} alors qu'elle est offerte sous le nom de \emph{BandePassante}. Toutes deux sont cependant reliées au même concept ontologique \emph{http://www.nca.or.kr/2006/wsqdl/QualityFactor/EvalFactor/Bandwidth}. Ces notions sont résumées dans la figure~\ref{fig:implem_wsag_negociation}.
+
+\subsubsection{Intégrations des valeurs de supervision lors de la sélection de services}
+
+%contrainte : flexibilité
+En ce qui concerne les modalités d'échange avec le canevas M4ABP, il a déjà été établi au cours de ce manuscrit (cf. section~\ref{sec:Un ensemble de contraintes spécifiques}), que ce dernier doit répondre d'un certain nombre de contraintes. Certaines de ces contraintes se révèlent naturellement dans l'implantation actuelle : celle de \emph{flexibilité dans l'accès aux données} a été intégrée dans le canevas par la gestion de l'hétérogénéité des vocabulaires présentée ci-dessus.
+
+%contrainte : performance
+Par ailleurs, l'activité \emph{lateBindingInvoke} étant déclenchée au cours de l'orchestration de service, la \emph{performance dans l'accès au données} de QoS est primordiale pour permettre alors une sélection de service, effectuée sur la base de la QoS courante et des préférences utilisateur, dont l'impact sur le processus global d'orchestration est limité. M4ABP intègre cette contrainte en transmettant les données de QOS depuis son initialisation, en mode \emph{``push''}, vers les abstractions de \emph{vues} coté client, où elles sont ``bufferisées''. Lors d'un accès à la vue pour obtenir une valeur de QoS précise, la valeur courante stockée sera alors fournie sans le délai lié à la mesure et l'accès réseau.
+
+%contrainte : cohérence
+Pour assurer un certain niveau de \emph{cohérence entre les valeurs de QoS} recueillies par l'activité \emph{lateBindingInvoke} \emph{via} les \emph{vues}, les données collectées sur les services par le canevas de supervision sont horodatées avec une horloge globale (d'une précision suffisante) et sont filtrées en fonction des paramètres de QoI fixés préalablement par l'activité \emph{lateBindingConfigure} : seules les valeurs comprises dans une certaine fenêtre temporelle sont alors transmises par M4ABP au canevas de liaison tardive. Si l'implantation actuelle limite la QoI à cette notion de fenêtre temporelle, la possibilité de traiter conjointement la ``fraîcheur'' des données sera assurée à terme.
+
+\section{Conclusion}
+
+Dans ce chapitre, nous avons abordé la mise en \oe{}uvre du canevas de modélisation et décision sur LCP-nets, ainsi que celle de la liaison tardive de services Web, au travers des différents choix techniques qui ont dû être effectués pour respecter les contraintes propres au contexte SSOA et à SemEUsE. Cependant, un effort particulier a été effectué pour permettre de futures évolutions : si les choix effectués ici correspondent effectivement à un besoin précis et ponctuel, l'implantation de solutions trop \emph{ad hoc} a pu être évitée dans certains cas, et plus particulièrement en ce qui concerne le canevas des LCP-nets. En effet, ces derniers peuvent être par nature, et comme nous l'avons déjà vu, appliqués à d'autre cadres de décision multi-critères que celui de la sélection de services Web en fonction de leurs valeurs courantes de QoS.

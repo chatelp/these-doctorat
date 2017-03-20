@@ -1,0 +1,131 @@
+% These - Intro générale 
+% (c) 2009-2010 Pierre CHATEL
+
+\lettrine{A}{ l'issue} de ces trois années de thèse, il est maintenant possible de dresser un bilan du travail accompli. Effectuée sous convention CIFRE, cette thèse a eu pour point de départ les problématiques propres aux grands systèmes répartis d'aujourd'hui, tels que ceux manipulés couramment dans le service SC2 de mon entreprise d'accueil, Thales Communication France, et dont l'équipe MoVe du LIP6 possède une expertise reconnue. Le projet industriel et académique SemEUsE a ensuite permis de lui donner un cadre, le contexte SSOA, et un cas d'utilisation bien précis, la gestion de crise environnementale.
+
+Dans la suite de ce chapitre, on présente tout d'abord un récapitulatif des contributions avancées par cette thèse et du travail réalisé dans son ensemble, suivi des perspectives à court et à long terme que nous avons identifiées.
+
+
+\section*{Travail réalisé} % Contributions
+
+Les travaux présentés dans cette thèse ont été réalisés pour répondre à une problématique bien précise : comment mettre en \oe{}uvre une composition de services particulièrement dynamique, souple, et à même de prendre en compte de multiples contraintes non-fonctionnelles. Nous articulons alors notre démarche autour des concepts de composition \emph{active}, \emph{utile} et \emph{agile}.
+
+\vspace*{.5cm}
+
+\textbf{Active}, de manière à démarquer cette première contribution des approches déjà existantes en terme de composition \emph{dynamique} de services. En effet, nous proposons un mécanisme à même de compléter efficacement ces approches plus traditionnelles pour améliorer les capacités d'adaptation aux changements des systèmes répartis complexes (cf. chapitre~\ref{ch:Composition active de services}). Ce mécanisme repose sur une transposition du principe de liaison tardive, bien connu en programmation par objet, au contexte des SSOA. Il s'insère dans un canevas plus général, capable d'effectuer le filtrage des offres de services disponibles dans des annuaires ainsi que de mettre en place la supervision des services de manière à disposer de mesures de QoS.
+
+Ainsi, lors de l'exécution d'un processus métier utilisant les abstractions de programmation que nous avons mises au point, notre canevas de composition active est en mesure de lier tardivement et efficacement un site d'appel, consommateur de service, à un producteur effectif de service. Le fait de procéder tardivement aux décisions de liaison permet notamment de s'assurer que le service retenu pour répondre au besoin du processus est disponible et que ce sont ses valeurs \emph{courantes} de QoS qui ont été prises en compte lors de la décision. Il s'agit là d'une différence fondamentale par rapport aux approches de composition dynamique (cf. chapitre~\ref{ch:etat_art}) qui procèdent généralement à une première passe de composition \emph{statique} des services avant l'exécution du processus métier, sur la base de \emph{contraintes} non-fonctionnelles : une fois cette composition fixée, les nouveaux services disponibles ainsi que les variations de QoS des services déjà composés ne seront pris en considération que lors d'une erreur ``bloquante'' pour la bonne exécution du processus. Il s'agit en fait d'un mécanisme assimilable à une gestion d'exceptions.
+
+Par ailleurs, dans le cadre de cette thèse, la liaison tardive de service sous contraintes non-fonctionnelles a été appliquée au cas d'utilisation de la gestion de crise environnementale, et plus précisement à la lutte anti-incendie dans un contexte civil, sur des feux de grande envergure en milieux naturels (cf. chapitre~\ref{ch:cas_utilisation}). Il constitue en effet, de par ses caractéristiques intrinsèques, un excellent support à la présentation de cette contribution.
+
+\vspace*{.5cm}
+
+\textbf{Utile}, car la maximisation de l'\emph{utilité} de chaque liaison de service est d'importance et va conditionner la performance globale d'un processus métier lors de son exécution. La sémantique que nous accordons à cette notion d'utilité est celle qui a été mise en avant dans notre nouveau formalisme LCP-net pour l'expression de préférences utilisateur (cf. chapitre~\ref{ch:Composition utile de services}). Ces préférences vont alors rentrer en compte lors de décisions de liaison.
+
+En effet, afin de permettre la sélection des services dans le contexte multi-critères dans lequel nous nous trouvons, ce formalisme est appliqué à l'élicitation de préférences non-fonctionnelles, établies graphiquement \emph{entre} les propriétés de QoS des services et leurs valeurs (l'utilisateur manipule alors de simples n\oe{}uds, arcs et tables). Une fois élicitées, elles vont permettre d'obtenir un ordre total sur chaque ensemble de services candidats, fondé sur l'utilité proportionnelle de la liaison de chacun de ces services à son consommateur respectif.
+
+Bien qu'indépendants de tout domaine spécifique d'application, les LCP-nets s'avèrent particulièrement adaptés au contexte des SOA Sémantiques puisqu'ils permettent aux utilisateurs de partitionner efficacement les domaines continus des variables de Qualité de Service avec des termes linguistiques appropriés, ainsi que d'exprimer l'utilité des affectations d'une manière qualitative plutôt que numérique, cette dernière s'avérant souvent artificielle. Toutefois, le langage LCP-net et le canevas d'inférence que nous avons implanté sur ses bases (cf. chapitre~\ref{ch:implantation}) pourraient tout à fait être déployés et appliqués à d'autres contextes de décision multi-critères exhibant des contraintes similaires.
+
+Dans cette optique, nous avons consolidé ce langage \emph{via} la proposition d'une formalisation (cf. chapitre~\ref{ch:formalisation}). Elle a pour but d'en assurer la pérennité et la réutilisabilité et est effectuée à travers un ensemble de notations et règles de calculs. On montre ainsi que, mathématiquement, un LCP-net est un tuple constitué de variables linguistiques, de trois types d'arcs, de deux types de tables et d'un vecteur de poids.
+
+\vspace*{.5cm}
+
+\textbf{Agile}, car nos contributions sur la composition active et utile de services prennent tout leur sens lorsque déployées conjointement au sein d'une même approche. La contribution agile se présente donc comme la ``somme'' des deux précédentes (cf. chapitre~\ref{ch:Composition agile de services}) : s'il s'agit essentiellement de l'utilisation habile des préférences utilisateurs LCP-net précédemment introduites au moment de la liaison tardive des services, des problématiques bien spécifiques ont du être étudiées et résolues.
+
+Ainsi, c'est dans le cadre de cette mise en \oe{}uvre commune qu'est apparu le besoin de définition incrémentale des préférences. Cette constatation a conduit à la définition de la notion de \emph{fragment} de préférence et à l'introduction d'une représentation XML de plus haut niveau des LCP-nets : les \emph{HL}-LCP-nets et \emph{HL}-LCP-frags. Leur formalisation a permis de traiter finement les problèmes d'intégration de ces préférences dans un langage hôte, en l'occurrence BPEL.
+
+Dans le cadre de la composition agile, il nous est aussi apparu utile de proposer une intégration plus poussée des préférences dans les processus métiers BPEL; l'idée étant de tendre vers des LCP-nets considérés comme des entités de plein droit au c\oe{}ur de ces processus. Grâce à la généricité de ce formalisme, il nous a été aussi possible d'intégrer des propriétés de QoS globale des processus dans les préférences, et donc, par la coordination agile, dans la décision de liaison elle-même. Cette capacité complète de manière pertinente les travaux sur la composition dynamique en permettant de tenir compte à l'exécution de la réalité du déroulement du processus dans les choix à faire subséquemment : par exemple en permettant de choisir un service plus lent mais plus précis si par ailleurs les appels précédents se sont déroulés plus rapidement que prévu. La composition dynamique plus classique ne permet pas de réaliser ce genre de compromis, or il apparaît que les contraintes de QoS des consommateurs de services sont le plus souvent pessimistes en comparaison de la réalité de l'exécution.
+
+\section*{Perspectives à court terme}
+
+A court terme, différentes perspectives de travail, pour lesquelles des réflexions préliminaires ont été menées, s'offrent à nous : qu'il s'agisse d'étendre la validation expérimentale de nos contributions, de généraliser le concept de liaison tardive à d'autres cadres techniques, ou bien de poser les bases d'une construction valide de LCP-nets.
+
+\subsection*{Sur une validation expérimentale étendue}
+
+Dans le cadre de cette thèse, le principe de composition active de services que nous avons introduit a été appliqué au cas d'utilisation très spécifique de la gestion d'incendies de grande envergure. Afin d'en effectuer une validation extensive, un travail rigoureux d'étude du comportement du composant de liaison tardive de services Web lorsque confronté à un éventail plus large de caractéristiques réseau doit être entrepris. Cette étude est d'autant plus nécessaire qu'il s'agit le plus souvent des conditions usuelles, liées à la nature du réseau en général et du Web en particulier, auxquelles sont soumis les systèmes répartis. Ces conditions peuvent par exemple induire des délais importants de livraison des valeurs de QoS, issues du canevas de supervision, et indispensables à la prise de décision de liaison.
+
+Mener à bien cette validation qui, par nature ne saurait être exhaustive, nécessiterait de développer de nouveaux cas d'utilisation et applications de notre réalisation logicielle. Approche qui devrait être facilitée par la nature même du canevas : bien qu'il ait été mis au point dans un contexte précis, ses principes clés de liaison tardive et décision multi-critères sur préférences utilisateur ne sont pas liés à un cas d'utilisation spécifique.
+
+Au cours de ces expérimentations, le recueil de mesures de performances et l'observation des comportements effectifs des composants de liaison et décision devrait permettre d'étayer la validation de nos contributions.
+
+\subsection*{Sur la généralisation du concept de liaison tardive à d'autres cadres techniques}
+
+Cette perspective est d'une nature comparable à celle que nous venons d'évoquer :  il s'agit cependant ici, non plus de généraliser nos réalisations à d'autres cas d'utilisation, mais bien à d'autres cadres techniques et technologiques. En effet, nous nous sommes placés, tout au long de cette thèse, en grande partie pour des raisons industrielles, dans le cadre des SSOA. Ce travail, bien que long et fastidieux, serait alors très utile.
+
+Il serait alors raisonnable de généraliser la notion de service et d'appliquer la liaison tardive à d'autres catégories d'applications ou systèmes répartis, des plus basiques et centralisés (de type client/serveur), aux plus évolués et distribués (par exemple de type pair-à-pair); tout en explorant d'autres technologies, des objets répartis RMI aux composants répartis CORBA.
+
+Cependant, si nous avons des raisons de croire que ce concept de liaison tardive pourrait être effectivement transposé à d'autres contextes techniques, l'intérêt de cette transposition n'est que plus grand si elle est suivie de cas concrets d'utilisation et de déploiement.
+
+\subsection*{Sur la construction de LCP-nets valides}
+
+Les opérations proposées et implémentées par la VM (cf. section~\ref{sec:Primitives d'une machine virtuelle LCP-net}) ne garantissent pas l'obtention de LCP-nets \emph{valides} car cette dernière s'attache à construire le plus efficacement possible la représentation en mémoire des LCP-nets. Par exemple, l'ajout d'un fragment de LCP-net à un LCP-net existant, volontairement, ne manipule pas uniquement des LCP-nets valides. Vérifier a posteriori la validité des LCP-nets n'est pas chose facile. Une approche alternative consisterait à définir un nouvel ensemble d'opérateurs élémentaires qui, ne manipulant et retournant que des LCP-nets valides, garantiraient la construction de LCP-nets finaux toujours valides. Ainsi, un LCP-net \emph{atomique} valide serait constitué seulement d'un n\oe{}ud avec sa CPT associée. Puis, nous définirions les opérateurs élémentaires pour lesquels on préciserait des préconditions, postconditions et des invariants. Par conséquent, considérons :
+
+\begin{itemize}
+  \item $n$ un n\oe{}ud et $V$ sa variable linguistique~;
+  \item $SN$ l'ensemble des n\oe{}uds~;
+  \item $(s,t)$ un arc avec $s$ le n\oe{}ud origine et $t$ le n\oe{}ud destination. Dans le cas des \textsf{ci}-arcs, $s$ peut être échangé avec $t$~;
+  \item $SA$ l'ensemble des arcs (\textsf{cp}, \textsf{i} et \textsf{ci})~: $SA =$ \textsf{cp} $\cup$ \textsf{i} $\cup$ \textsf{ci}~;
+  \item $CPT$ l'ensemble des CPTs et $CIT$ l'ensemble des CITs. Pour un $cpt \in CPT$, dim$(cpt)=p$ signifie que $cpt$ a $p$ dimensions~;
+ % \item $ST$ l'ensemble des tables~: $ST = CPT \cup CIT$~;
+  \item $SL$ l'ensemble des LCP-nets.
+\end{itemize}
+
+Les invariants de ces opérateurs seraient :
+
+\begin{itemize}
+  \item Le nombre total d'arcs (\textsf{cp}, \textsf{i}, \textsf{ci}) ne dépasse pas le nombre de couples $(s,t)$ où
+  $(s,t) \in SN$ et $s\neq t$~;
+  \item Exclusion mutuelle des types d'arcs~:
+  \begin{itemize}
+    \item si $(s,t) \in$ \textsf{cp} alors $(s,t) \notin$ \textsf{i} et $(s,t) \notin$ \textsf{ci}~;
+    \item si $(s,t) \in$ \textsf{i} alors $(s,t) \notin$ \textsf{cp} et $(s,t) \notin$ \textsf{ci}~;
+    \item si $(s,t) \in$ \textsf{ci} alors $(s,t) \notin$ \textsf{i} et $(s,t) \notin$ \textsf{cp}.
+  \end{itemize}
+  \item Le nombre de dimensions de la CPT associée au n\oe{}ud $s$ est égal à 1 + le nombre de \textsf{cp}-arcs entrant dans $s$~;
+  \item La taille de chaque dimension d'une CPT est inférieure ou égale au nombre de valeurs du domaine de la variable linguistique associée~;
+  \item Il n'y a pas de cycles conditionnels dans le graphe~;
+  \item Il y a au moins un n\oe{}ud (donc au moins une CPT) et de 0 à $n$ arcs~;
+  \item Il y a au moins autant de tables que de n\oe{}uds, c'est-à-dire exactement $nb\_noeuds$ CPT et $nb\_ciarcs$ CIT.
+\end{itemize}
+
+Par exemple, mettre en \oe{}uvre l'opérateur élémentaire d'addition d'un n\oe{}ud reviendrait à ajouter un nouvel élément à prendre en compte dans le graphe de préférences, c'est-à-dire créer un n\oe{}ud, la CPT associée, ainsi qu'un ou plusieurs arcs (plus précisément de 1 à $k$, avec $k$ le nombre de n\oe{}uds liés).
+
+Ses préconditions seraient les suivantes~:
+\begin{itemize}
+  \item un nouveau n\oe{}ud $n$ à ajouter~: $n \notin SN$~;
+  \item il existe au moins un LCP-net~: $\exists \mathcal{L} \in SL$.
+\end{itemize}
+
+Ses postconditions seraient les suivantes~:
+\begin{itemize}
+  \item le n\oe{}ud est ajouté~: $n \in SN$~;
+  \item une nouvelle CPT est attachée au n\oe{}ud~: $\exists cpt \in CPT$ avec dim($cpt)=1$.
+  \item (au moins) un nouvel arc apparaît~: $\exists (s,t) \in SA$~;
+  \item le (les) LCP-net(s) est (sont) modifié(s)~: $\mathcal{L} \notin SL, \exists \mathcal{L}' \in SL$.
+\end{itemize}
+
+Ce travail pourrait nous amener, à plus long terme, à définir une sorte d'algèbre des LCP-nets.
+
+
+\section*{Perspectives à long terme}
+
+On présente ici des perspectives plus larges, qui s'inscrivent dans la prolongation de nos contributions, mais pour lesquelles une étude plus approfondie doit être menée. Elles ouvrent, nous l'espérons, de nouveaux angles de recherche.
+
+\subsection*{Sur un approfondissement du travail autour des LCP-nets}
+
+L'algèbre des LCP-nets évoquée ci-dessus permettrait de reprendre cette formalisation dans un cadre théorique plus large et complètement indépendant du cas d'utilisation de cette thèse. Typiquement, un tel travail nous amènerait à définir un groupe abélien $(SL,*)$ avec $*$ une loi de composition interne. Concrètement, la composition de deux (ou plus) LCP-nets serait pertinente dans le cas où l'on souhaite combiner deux (ou plus) réseaux de préférences concernant la même décision. Par exemple, deux utilisateurs doivent utiliser le même service à choisir parmi un ensemble, avec des préférences communes : il serait nécessaire, dans ce cas, de combiner les deux LCP-nets définis par les deux clients afin d'arriver à une décision conjointe.
+ 
+Par ailleurs, une amélioration intéressante serait de comparer la rapidité des calculs si l'on considère uniquement des 2-tuples au sein des LCP-nets, c'est-à-dire si l'on propose un traitement linguistique de bout en bout.
+En effet, lors de l'utilisation des 2-tuples (que ce soit le formalisme d'Herrera et Mart\'inez, de Wang et Hao ou de Truck et Akdag), on s'affranchit, en tous cas, dans les calculs, des sous-ensembles flous, tout en gardant une sémantique linguistique attachée aux objets manipulés. Il faudrait donc voir si ces calculs numériques sont moins lourds que ceux associés aux SEFs. Cela semble probable vu que seuls des calculs sur des indices, ou bien des implications de type $\min (1-x+y,1)$ sont réalisés, alors que le traitement avec manipulation de SEFs de bout en bout implique des calculs d'intersection de droites (si les SEFs sont trapézoïdaux), qui peuvent être considérés, dans l'absolu, comme plus longs.
+
+Cela impliquerait un travail conséquent sur la modélisation d'une inférence \emph{ad hoc} à ces formalismes 2-tuples, piste par ailleurs intéressante, indépendamment de nos LCP-nets.
+
+\subsection*{Sur une coordination des prises de décision de liaison par le partage d'agents de décision}
+
+Cette thèse a introduit des abstractions de programmation permettant d'effectuer, lors de la coordination agile de service, de multiples décisions \emph{locales} de liaison entre consommateurs et producteurs de services : cette prise de décision est actuellement effectuée \emph{ceteris paribus} à chaque site d'appel de service d'un processus métier, en fonction de ses préférences utilisateur locales et des valeurs courantes de QoS des services considérés; c'est-à-dire indépendamment des autres décisions passées ou à venir.
+
+La transition d'un ensemble de décisions locales \emph{indépendantes}, à une coordination de cet ensemble au niveau du processus, se justifie par la problématique d'une gestion efficace de sa \emph{QoS globale}. Une première étape vers la prise en compte de ces contraintes a été proposée dans cette thèse par l'utilisation des variables des LCP-nets comme moyen de réintroduction des valeurs courantes de QoS globale des processus dans les décisions de liaison (cf. section~\ref{sec:QoS globale des processus et liaison tardive des services}). Cependant, malgré cette réflexivité, ces décisions restent essentiellement locales.
+
+Il apparaît alors clairement qu'une \emph{décision globale et coordonnée} (sur le processus dans son ensemble) va nécessiter l'introduction d'abstractions de programmation spécifiques, car celle-ci ne doit pas se faire au détriment de l'agilité de la composition, comme c'est le cas dans les approches classiques (cf. section~\ref{sec:etat_art_compo}). Se pose alors la question du choix d'une abstraction adaptée, à laquelle le principe de factorisation de LCP-net d'un processus que nous avons déjà abordé (cf. section~\ref{sec:Définition incrémentale des préférences utilisateur}) apporte un élément de réponse. Il semble en effet judicieux d'accompagner cette factorisation des modèles de décision par une factorisation des \emph{agents de décision} eux-mêmes. Si l'implantation actuelle fait usage d'agents de décision locaux à chaque site d'appel de service, ils pourraient en être extraits et \emph{partagés entre les sites}.
+
+La possibilité d'utiliser conjointement ces agents de décision globaux, indépendants de la structure du programme, et une approche de décision séquentielle~\cite{littman1996algorithms} pourrait alors constituer un axe de développement de nos travaux sur le long terme.

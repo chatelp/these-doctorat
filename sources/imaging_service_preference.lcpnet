@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LCPnet:LCPnet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:LCPnet="http://www.thalesgroup.com/preferenceFramework/models/lcpnet" name="ImagingServicePreference">
+  <nodes xsi:type="LCPnet:LNode" name="security" inArcs="//@arcs.0" valueDomain="//@valueDomains.0">
+    <domain xsi:type="LCPnet:LNodeValue" name="Security_None" linguisticValue="//@valueDomains.0/@subsets.0"/>
+    <domain xsi:type="LCPnet:LNodeValue" name="Security_Full" linguisticValue="//@valueDomains.0/@subsets.1"/>
+    <domain xsi:type="LCPnet:CNodeValue" name="Security_measured_value" crispValue="0.4"/>
+    <linguisticTable name="security_clpt">
+      <lines>
+        <utility nodeValue="//@nodes.0/@domain.0" utility="//@utilityDomain/@subsets.0"/>
+        <utility nodeValue="//@nodes.0/@domain.1" utility="//@utilityDomain/@subsets.4"/>
+      </lines>
+    </linguisticTable>
+  </nodes>
+  <nodes xsi:type="LCPnet:LNode" name="bandwidth" outArcs="//@arcs.1 //@arcs.0" valueDomain="//@valueDomains.1">
+    <domain xsi:type="LCPnet:LNodeValue" name="Bandwidth_Low" linguisticValue="//@valueDomains.1/@subsets.0"/>
+    <domain xsi:type="LCPnet:LNodeValue" name="Bandwidth_Medium" linguisticValue="//@valueDomains.1/@subsets.1"/>
+    <domain xsi:type="LCPnet:LNodeValue" name="Bandwidth_High" linguisticValue="//@valueDomains.1/@subsets.2"/>
+    <domain xsi:type="LCPnet:CNodeValue" name="Bandwidth_measured_value" crispValue="1.0"/>
+    <linguisticTable name="bandwidth_clpt">
+      <lines name="bandwidth_clpt_line0">
+        <utility name="bandwidth_clpt_line0_lvu0" nodeValue="//@nodes.1/@domain.0" utility="//@utilityDomain/@subsets.0"/>
+        <utility name="bandwidth_clpt_line0_lvu1" nodeValue="//@nodes.1/@domain.1" utility="//@utilityDomain/@subsets.2"/>
+        <utility name="bandwidth_clpt_line0_lvu2" nodeValue="//@nodes.1/@domain.2" utility="//@utilityDomain/@subsets.4"/>
+      </lines>
+    </linguisticTable>
+  </nodes>
+  <nodes xsi:type="LCPnet:LNode" name="resolution" inArcs="//@arcs.1" valueDomain="//@valueDomains.2">
+    <domain xsi:type="LCPnet:LNodeValue" name="Resolution_Low" linguisticValue="//@valueDomains.2/@subsets.0"/>
+    <domain xsi:type="LCPnet:LNodeValue" name="Resolution_High" linguisticValue="//@valueDomains.2/@subsets.1"/>
+    <domain xsi:type="LCPnet:CNodeValue" name="Resolution_measured_value" crispValue="0.51"/>
+    <linguisticTable name="resolution_clpt">
+      <lines parentValues="//@nodes.1/@domain.0">
+        <utility nodeValue="//@nodes.2/@domain.0" utility="//@utilityDomain/@subsets.4"/>
+        <utility nodeValue="//@nodes.2/@domain.1" utility="//@utilityDomain/@subsets.0"/>
+      </lines>
+      <lines parentValues="//@nodes.1/@domain.1">
+        <utility nodeValue="//@nodes.2/@domain.0" utility="//@utilityDomain/@subsets.3"/>
+        <utility nodeValue="//@nodes.2/@domain.1" utility="//@utilityDomain/@subsets.1"/>
+      </lines>
+      <lines parentValues="//@nodes.1/@domain.2">
+        <utility nodeValue="//@nodes.2/@domain.0" utility="//@utilityDomain/@subsets.0"/>
+        <utility nodeValue="//@nodes.2/@domain.1" utility="//@utilityDomain/@subsets.4"/>
+      </lines>
+    </linguisticTable>
+  </nodes>
+  <arcs xsi:type="LCPnet:IArc" name="BtoS" startNode="//@nodes.1" endNode="//@nodes.0"/>
+  <arcs name="BtoR" startNode="//@nodes.1" endNode="//@nodes.2"/>
+  <outcomes xsi:type="LCPnet:COutcome" name="testOutcome" nodeValues="//@nodes.1/@domain.3 //@nodes.2/@domain.2 //@nodes.0/@domain.2"/>
+  <utilityDomain name="Utility">
+    <subsets name="Utility_VL">
+      <fuzzySubset y="1.0"/>
+      <fuzzySubset x="0.25"/>
+    </subsets>
+    <subsets name="Utility_L">
+      <fuzzySubset/>
+      <fuzzySubset x="0.25" y="1.0"/>
+      <fuzzySubset x="0.5"/>
+    </subsets>
+    <subsets name="Utility_M">
+      <fuzzySubset x="0.25"/>
+      <fuzzySubset x="0.5" y="1.0"/>
+      <fuzzySubset x="0.75"/>
+    </subsets>
+    <subsets name="Utility_H">
+      <fuzzySubset x="0.5"/>
+      <fuzzySubset x="0.75" y="1.0"/>
+      <fuzzySubset x="1.0"/>
+    </subsets>
+    <subsets name="Utility_VH">
+      <fuzzySubset x="0.75"/>
+      <fuzzySubset x="1.0" y="1.0"/>
+    </subsets>
+  </utilityDomain>
+  <valueDomains name="Security">
+    <subsets name="Security_None">
+      <fuzzySubset y="1.0"/>
+      <fuzzySubset x="1.0"/>
+    </subsets>
+    <subsets name="Security_Full">
+      <fuzzySubset/>
+      <fuzzySubset x="1.0" y="1.0"/>
+    </subsets>
+  </valueDomains>
+  (...)
+</LCPnet:LCPnet>

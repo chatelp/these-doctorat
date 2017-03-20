@@ -1,0 +1,36 @@
+
+<lcpnetFragment name="Security_Camera_Preference_Fragment" base="Security_Camera_Preference">
+	<valueDomains>
+		<valueDomain name="Zoom" lowerBound="0.0" upperBound="1.O">
+			(...)
+		</valueDomain>
+	</valueDomains>	
+	
+	<nodes>
+		<node name="zoom" valueDomain="Zoom">
+			<table>
+				<line>
+					<entry nodeValue="Zoom_L" utility="Utility_L"/>
+					<entry nodeValue="Zoom_M" utility="Utility_M"/>
+					<entry nodeValue="Zoom_H" utility="Utility_H"/>
+				</line>
+			</table>
+		</node>
+		
+		<nodeFragment name="resolution_antiFragment" antiFragment="true" base="resolution"/>
+		
+		<nodeFragment name="bandwidth_modifierFragment" antiFragment="false" base="bandwidth">
+			<tableFragment> 
+				<lineFragment base="0">
+					<entryFragment nodeValue="Bandwidth_L" utility="Utility_L"/>
+					<entryFragment nodeValue="Bandwidth_H" utility="Utility_H"/>
+				</lineFragment>
+			</tableFragment>
+		</nodeFragment>	
+	</nodes>
+	
+	<arcs>
+		<iarc name="BtoZ" startNode="bandwidth" endNode="zoom"/>
+		<arcFragment name="BtoR_antifragment" antiFragment="true" base="BtoR"/>
+	</arcs>
+</lcpnetFragment>

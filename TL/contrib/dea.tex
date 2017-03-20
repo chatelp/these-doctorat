@@ -1,0 +1,54 @@
+% Exemple de modification de thloria pour
+% realiser une premiere page d'un memoire de DEA.
+% Ce n'est qu'un *exemple*, pas du tout une incitation
+% a utiliser thloria!!
+%
+% D. Roegel, 1er juin 1998
+
+\documentclass{thloria} 
+%\documentclass[openany]{thloria} % ceci evite les pages blanches
+                                             % entre les chapitres.
+                                             % (mais pas avant et apres les
+                                             %  parties)
+
+\makeatletter
+%
+% les deux commandes suivantes sont entre \makeatletter
+% et \makeatother parce qu'elles utilisent des `@'.
+%
+\renewcommand{\@NancyIhe@d}{{\UseEntryFont{ThesisFirstPageHead}\noindent
+    \centerline{Universit\'e Henri Poincar\'e -- Nancy I}%
+    \par\nointerlineskip
+    \vskip1mm
+    \noindent\hrulefill%\\
+    %D\'epartement de Formation Doctorale en Informatique
+    %                             \hfill\'Ecole Doctorale IAE $+$ M\par
+    }}
+\newcommand\DeaNancyI{\renewcommand{\@ThesisFirstPageHead}{\@NancyIhe@d}%
+                         \ThesisDiploma{{\UseEntryFont{ThesisDiploma}%
+             DEA de l'Universit\'e Henri Poincar\'e -- Nancy I\\[3mm]
+            {\UseEntryFont{ThesisSpecialty}(Sp\'ecialit\'e Informatique)}}}}
+\makeatother
+
+
+\begin{document}
+
+\ThesisKind{M\'EMOIRE}
+\ThesisInOrderToGet{pour l'obtention du}
+\ThesisPresentedThe{soutenu le ...}
+\ThesisTitle{Le titre}
+\ThesisAuthor{Moi}
+\DeaNancyI
+
+% s'il y a d'autres categories dans le jury, voir dans le manuel de thloria
+% comment faire.
+\President    = {Le pr\'esident}
+\Rapporteurs  = {Le rapporteur 1\\
+                 Le rapporteur 2\\
+                 Le rapporteur 3}
+\Examinateurs = {L'examinateur 1\\
+                 L'examinateur 2}
+
+\MakeThesisTitlePage
+
+\end{document}

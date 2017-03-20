@@ -1,0 +1,621 @@
+% These - Etat de l'Art
+% (c) 2009-2010 Pierre CHATEL
+
+\lettrine{C}{e chapitre} introduit les travaux connexes aux contributions scientifiques développées dans cette thèse. Il s'agit de contributions majeures représentant l'état de l'art dans les domaines du \emph{raisonnement fondé sur une approche linguistique} (cf. section~\ref{sec:De l'approche linguistique pour raisonner}), de la \emph{modélisation compacte de préférence} (cf. section~\ref{sec:De la modélisation de préférences}) et de la \emph{composition dynamique de services} sous contraintes non-fonctionnelles (cf. section~\ref{sec:etat_art_compo}).
+
+
+\section{De l'approche linguistique pour raisonner\index{Approche linguistique|textbf}}
+\label{sec:De l'approche linguistique pour raisonner}
+
+Tel que nous l'avons précédemment évoqué dans l'introduction de ce manuscrit, un élément que nous avançons en réponse à la problématique de mise en \oe{}uvre d'une composition agile de services consiste à mettre au point un modèle qualitatif de préférences utilisateur. Ces préférences seront employées, lors d'un processus de \emph{décision multi-critères}\index{Décision multi-critères}, pour maximiser l'utilité des liaisons entre producteurs et consommateurs de services.
+
+Plusieurs approches sont envisageables pour effectuer cette décision~\cite{gonzales2005gai, Bou04, Bra02, herrera2009computing}, dont certaines qui utilisent conjointement des notions issues de la logique floue\index{Logique floue} et du calcul avec les mots (``Computing with Words'' ou CW), notions assez proches l'une de l'autre~\cite{zadeh1999fuzzy}.
+
+Etant donné que nous avons vocation à gérer l'\emph{imprécision des perceptions utilisateur} lors de l'élicitation des préférences qualitatives, il semble nécessaire d'introduire en premier lieu, dans cette section, les concepts théoriques et computationnels qui sous-tendent la prise en compte de ces aspects qualitatifs et subjectifs par une approche linguistique. Nous détaillerons ainsi en~\ref{sec:Modélisation floue des concepts} certains concepts propres à une modélisation floue des concepts, avant de nous attarder sur le raisonnement qu'il est possible d'y appliquer dans la sous-section~\ref{sec:Raisonnement flou}, puis, en~\ref{sec:Formalismes à base de 2-tuples}, nous établirons une liste non-exhaustive des formalismes se fondant sur la notion de 2-tuple.
+
+\subsection{Modélisation floue des concepts\index{Modèle!flou}} % Fuzzy Sets
+\label{sec:Modélisation floue des concepts}
+
+%% <import JUCS 2.2>
+
+%Pierre 18/02/10 : modif --> on parle d'abord d'approche "linguistique", mais pas "linguistique floue"
+L'approche linguistique représente les aspects qualitatifs sous forme de valeurs exprimées, par le biais de variables linguistiques~\cite{zad75}. Des descripteurs linguistiques appropriés doivent être choisis pour former l'ensemble des termes ainsi que leur sémantique. L'univers du discours sur lequel l'ensemble des termes est défini peut être arbitraire mais est, en pratique, souvent ramené à $[0,p]$ où $p=1$. Par ailleurs, les ensembles de termes à cardinalité impaire, généralement 5, 7 ou 9, sont préférés~\cite{del93, Her00a},  le terme médian est alors évalué à ``approximativement 0.5'' et les autres termes placés symétriquement autour de lui. 
+
+Par exemple, un ensemble de 5 termes $T$ pourrait être défini tel que : $T=\{s_{0}:\mbox{\textit{very low}},s_{1}:\mbox{\textit{low}},s_{2}:\mbox{\textit{medium}},s_{3}:\mbox{\textit{high}},s_{4}:\mbox{\textit{very high}}\}$. 
+
+Selon un modèle de calcul linguistique purement symbolique~\cite{yager1981new}, il est aussi requis que soient définis sur cet ensemble l'opérateur de négation \textit{Neg}, et les opérateurs \textit{max} et \textit{min}~\cite{Her00a} de telle sorte que :
+
+ \begin {enumerate}
+  \item Neg$(s_{i}) = s_{j}$ tel que $j = g-i$ (où $g+1$ est la cardinalité),
+  \item $\max(s_i,s_j)= s_i$ if $s_i \geq s_j$,
+  \item $\min(s_i,s_j)= s_i$ if $s_i \leq s_j$.
+ \end{enumerate}
+
+%Pierre 18/02/10 : modif --> on effectue maintenant la jonction entre approches linguistiques et floues
+Cependant, dans le cadre d'une modélisation floue des concepts, la sémantique des termes est donnée par leurs fonctions d'appartenance, selon la \index{Théorie!des sous-ensembles flous}\emph{théorie des sous-ensembles flous}. Ainsi, des fonctions trapézoïdales linéaires par morceaux (et même triangulaires) sont le plus souvent considérées comme suffisantes pour capturer l'imprécision des perceptions utilisateur.
+
+%% </import JUCS 2.2>
+
+%% <import These Isis/Prolégomènes + Cours Isis isis_MorceauDeCM_LogFloue.pdf>
+
+Nous reproduisons ci-dessous certains concepts fondateurs de cette théorie de référence, ainsi que les notations que nous allons utiliser, tous issus de l'ouvrage de référence de Bouchon-Meunier~\cite{bouchon1995logique}. 
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+  \item Soit $F(X)$ l'ensemble de tous les sous-ensembles flous (SEF)\index{Sous-ensemble flou (SEF)}\index{Logique floue!Sous-ensemble flou (SEF)} de $X$ (ensemble de référence, encore appelé domaine ou univers).
+ 
+  \begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=90mm]{figures/etat_art_FA_quelconque.pdf}
+    \caption{\label{fig:etat_art_FA_quelconque} Exemple de fonction d'appartenance du sous-ensemble flou $A$.}
+  \end{center}
+\end{figure} 
+
+  \item Soit $A$ un sous-ensemble flou de $X$, appartenant à $F(X)$. A est caractérisé par sa fonction d'appartenance notée $f_A(x)$, pour tout $x \in X$, c'est-à-dire $f_A:X \rightarrow [0,1]$. La figure~\ref{fig:etat_art_FA_quelconque} montre un exemple de fonction d'appartenance de forme quelconque.
+	
+  \item La hauteur, notée $h(A)$, du sous-ensemble flou $A$ de $X$ est la plus grande valeur prise par sa fonction d'appartenance~:
+	$$h(A) = \sup_{x \in X} f_A(x)$$
+	Dans l'exemple de la figure~\ref{fig:etat_art_FA_quelconque}, $h(A)$ vaut 1.
+	
+  \item Un \SEF est dit \emph{normalisé}\index{Sous-ensemble flou (SEF)!normalisé} si sa hauteur vaut 1.
+	
+  \item On note Noy($A$) le noyau de $A$ qui correspond à toutes les valeurs $x$ de $X$ pour lesquelles $f_A(x) = 1$.
+	
+  \item On note Supp($A$) le support de $A$ qui correspond à toutes les valeurs $x$ de $X$ pour lesquelles $f_A(x) \ne 0$.
+
+ \item Pour représenter le \SEF $A \in F(X)$, on note
+	$$\begin{tabular}{ll}
+		$A=\sum_{x \in X} f_A(x) /x$, & \mbox{ si $X$ est dénombrable}\\
+		$A=\int_X f_A(x) /x$, & \mbox{ sinon}
+	  \end{tabular}$$
+
+  \item On appelle \emph{intervalle flou}\index{Intervalle flou} un \SEF \index{Sous-ensemble flou (SEF)!intervalle flou} convexe, normalisé. Dans la figure~\ref{fig:etat_art_FA_quelconque}, $A$ est un intervalle flou.
+	
+  \item On appelle \emph{nombre flou}\index{Nombre flou} un intervalle flou dont le noyau est réduit à un point\index{Sous-ensemble flou (SEF)!nombre flou}.
+	
+  \item On appelle \emph{intervalle flou de type L-R} ou \SEF \index{Sous-ensemble flou (SEF)!trapézoïdal}\index{Sous-ensemble flou (SEF)!de type $L$-$R$}\index{Intervalle flou!de type $L$-$R$}trapézoïdal un intervalle flou dont la fonction d'appartenance est définie entièrement grâce à des droites.\\Plus précisément, soient quatre paramètres réels $(m,m',a,b)$, $a$ et $b$ étant strictement positifs, et deux fonctions, notées $L$ et $R$ (pour Left et Right), définies sur l'ensemble des réels positifs, à valeurs dans $[0,1]$, semi-continues supérieurement, telles que $L(0)=R(0)=1$, $L(1)=0$ ou $\forall x\in ]0,1[,~L(x)>0$, avec $\lim_{x\rightarrow \infty} L(x)=0, R(1)=0$ ou $\forall x \in ]0,1[, R(x)>0$ avec $\lim_{x\rightarrow \infty} R(x)=0$. Un intervalle flou est de type $L$-$R$ si sa fonction d'appartenance est définie par~:
+	$$f(x)=\left\{	\begin{tabular}{ll}
+				$L((m-x)/a)$ & si $x \le m$ \\
+				$1$          & si $m < x < m'$ \\
+				$R((x-m')/b)$ & si $x \ge m'$ 
+		     	\end{tabular}
+	       \right.$$ 
+	       
+  \item On appelle \emph{nombre flou de type L-R} ou \SEF \index{Sous-ensemble flou (SEF)!triangulaire}\index{Nombre flou!de type $L$-$R$}triangulaire un intervalle flou de type $L$-$R$ dont le noyau est réduit à un point, c'est-à-dire, pour lequel $m$ et $m'$ sont confondus.
+ 
+% Isis 24/02/10, a retirer car on ne parle plus de 'bornes' plus tard
+%
+%\begin{figure}[h]
+%  \begin{center}
+%    \includegraphics[width=100mm]{figures/etat_art_bornesSEF_Isis.pdf}
+%    \vspace{-0.5cm}
+%    \caption{\label{fig:etat_art_bornesSEF_Isis} Bornes d'un sous-ensemble flou.}
+%  \end{center}
+%\end{figure} 
+
+%  \item Soit $A$ un sous-ensemble flou trapézoïdal de $X$. On note $a, b, c, d$ les \index{Bornes d'un sous-ensemble flou}\index{Sous-ensemble flou (SEF)!bornes}\emph{bornes} du support et du noyau de $A$, avec $(a, b, c, d) \in X^4$ et sachant que $a \le b \le c \le d$ (cf. figure~\ref{fig:etat_art_bornesSEF_Isis}). NB : $a, b, c, d$ sont des valeurs sur l'axe des abscisses.
+	
+  \item Soient $A$ et $B$ deux sous-ensembles flous de $X$. L'\emph{intersection} de $A$ et $B$ est le \SEF $C$, noté $A \cap B$, tel que~:
+	$$\forall x \in X, f_C(x)=\min(f_A(x),f_B(x))$$
+	
+  \item Soient $A$ et $B$ deux sous-ensembles flous de $X$. L'\emph{union} de $A$ et $B$ est le \SEF $D$, noté $A \cup B$, tel que~:
+	$$\forall x \in X, f_D(x)=\max(f_A(x),f_B(x))$$
+
+  \item Pour l'intersection et l'union, les opérateurs choisis par défaut sont $\min$ et $\max$, mais d'autres sont possibles : plus généralement, il peut s'agir en fait d'une norme triangulaire (\textit{t-norme}, notée $\top$) et d'une conorme triangulaire (\textit{t-conorme}, notée $\bot$) respectivement.
+
+ \item Une t-norme est une fonction $\top : [0,1] \times [0,1] \rightarrow [0,1]$ telle que $\forall x,y,z \in [0,1]$ :
+ 	\begin{itemize}
+		\item $\top(x,y) = \top(y,x)$ (commutativité)
+		\item $\top(x, \top(y,z)) = \top(\top(x,y),z)$ (associativité)
+		\item $\top(x,y) \le \top(z,t)$ si $x \le z$ et $y \le t$ (monotonie)
+		\item $\top(x,1) = x$ (1 est élément neutre)
+	\end{itemize}
+	Les fonctions suivantes respectent ces propriétés : $\min(x,y)$, $x.y$ et $\max(x+y-1,0)$.
+ 
+  \item Une t-cornorme est une fonction $\bot : [0,1] \times [0,1] \rightarrow [0,1]$ telle que $\forall x,y,z \in [0,1]$ :
+	\begin{itemize}
+		\item $\bot(x,y) = \bot(y,x)$ (commutativité)
+		\item $\bot(x, \bot(y,z)) = \bot(\bot(x,y),z)$ (associativité)
+		\item $\bot(x,y) \le \bot(z,t)$ si $x \le z$ et $y \le t$ (monotonie)
+		\item $\bot(x,0) = x$ (0 est élément neutre)
+	\end{itemize}
+	Les fonctions suivantes respectent ces propriétés : $\max(x,y)$, $x+y-x.y$ et $\min(x+y,1)$.
+   
+  \item Une \emph{relation floue} $\mathcal{R}$ entre $r$ ensembles de référence $X_1, X_2,\ldots~X_r$ est un \SEF de $X_1 \times X_2\ldots~\times X_r$, de fonction d'appartenance $f_\mathcal{R}$.
+	
+  \item Si $X=Y$, une relation floue $\mathcal{R}$ définie sur les deux univers $X$ et $Y$ est une \emph{relation binaire floue} définie sur $X$.
+
+  \item La composition de deux relations floues $\mathcal{R}_1$ sur $X \times Y$ et $\mathcal{R}_2$ sur $Y \times Z$ définit une relation floue $\mathcal{R} = \mathcal{R}_1 \circ \mathcal{R}_2$ sur $X \times Z$ de fonction d'appartenance définie par :
+  	$$\forall (x,z) \in X \times Z, f_{\mathcal{R}}(x,z) = \sup_{y \in Y} \min(f_{\mathcal{R}_1}(x,y), f_{\mathcal{R}_2}(y,z)) $$
+	
+% Isis 19/02/10 : on supprime ce segment et on ajoute des éléments de son cours
+%  \item L'\emph{inverse} de la relation floue $\mathcal{R}$ entre $X$ et $Y$ est la relation floue $\mathcal{R}^{-1}$ entre $Y$ et $X$ définie par~: 
+%	$$\forall y \in Y, \forall x \in X, f_{\mathcal{R}^{-1}}(y,x)=f_{\mathcal{R}}(x,y)$$
+%	
+%  \item Le plus souvent, nous nous plaçons dans le cas où les sous-ensembles flous $A_0, \ldots, A_{m-1}$ sont définis sur des univers $X$ finis et dénombrables, avec $n$ le nombre d'éléments de $X$. $n$ est appelé la \emph{cardinalité} de $X$.
+%	
+%  \item Dans ce manuscrit, sauf précision contraire, nous utilisons des sous-ensembles flous trapézoïdaux --- ou triangulaires, puisque c'est un cas particulier du premier.
+
+  \item Une \emph{variable linguistique} est représentée par un triplet $(V,X,T_V)$ tel que $V$ est le nom de la variable, $X$ est l'univers des valeurs prises par $V$, $T_V = \{A_1, A_2, ...\}$ est l'ensemble des SEF de $X$ utilisés pour caractériser $V$. Par exemple (Bande-Passante, $[0, 1]$, \{Faible, Moyenne, Haute\}).
+
+  \item Un \emph{modificateur linguistique} est un opérateur $mod$ qui permet de passer d'un SEF $A$ à un autre SEF $mod(A)$ dont la fonction d'appartenance est $f_{mod(A)}=t_{mod}(f_A)$ avec $t$ une transformation mathématique.
+  
+  \item On appelle \emph{proposition floue élémentaire} la qualification ``$V$ est $A$'' d'une variable linguistique $(V,X,T_V)$, où A est un SEF de $T_V$ ou de $mod(T_V)$, avec $mod$ un modificateur linguistique de $T_V$. La valeur de vérité $p_A$ de ``$V$ est $A$'' est la fonction d'appartenance de $A$ $f_A$.
+  
+  \item On appelle \emph{proposition floue générale} la composition de propositions floues élémentaires de variables linguistiques qui peuvent être distinctes. Sa valeur de vérité $p$ correspond à l'agrégation des valeurs de vérité $p_A$ et $p_B$ de chaque proposition floue élémentaire.
+  	\begin{itemize}
+		\item Exemple 1 : ``$V$ est $A$ et $W$ est $B$'' : $p_{A \wedge B} = \min(p_A,p_B)$
+		\item Exemple 2 : ``$V$ est $A$ ou $W$ est $B$'' : $p_{A \vee B} = \max(p_A,p_B)$
+	\end{itemize}
+
+  \item $p \implies q$ équivaut, en logique classique, à $\neg p \vee q$. En logique floue\index{Logique floue}, il n'y a pas une seule définition de l'implication. Par exemple, l'extension de la définition précédente est appelée \emph{l'implication de Kleene-Dienes} et équivaut à $\max(1-f_A(x), f_B(y))$.
+	\begin{itemize}
+		\item L'implication ``$V$ est $A$ $\implies$ $W$ est $B$'' entre deux propositions floues se lit ``si $V$ est $A$ alors $W$ est $B$''.
+		\item L'implication entre deux propositions floues est elle-même une proposition floue dont la valeur de vérité est donnée, pour une fonction $\Phi$ de $[0,1] \times [0,1] \rightarrow [0,1]$, par la fonction d'appartenance $f_\mathcal{R}$ d'une relation floue $\mathcal{R}$ entre $X$ et $Y$ telle que :
+		$$\forall x \in X, \forall y \in Y, f_\mathcal{R}(x,y) = \Phi(f_A(x), f_B(y))$$
+		\item L'implication décrit le lien causal entre ``$V$ est $A$'' et ``$W$ et $B$''.
+	\end{itemize}
+
+%% </import These Isis/Prolégomènes + Cours Isis isis_MorceauDeCM_LogFloue.pdf>
+
+%% <import Cours Isis isis_fuzz_defuzz.ppt>
+  
+  \item Un \emph{partitionnement flou} consiste à définir $n$ SEF $F_i$ de façon à recouvrir $X$. C'est-à-dire que pour tout $x$ de $X$, il faut assurer une appartenance minimale $\epsilon$ à l'union des SEF : 
+  $$\forall x \in X, f_{F_1}(x) \vee ... \vee f_{F_i}(x) \vee ... \vee f_{F_n}(x) \geq \varepsilon$$
+  La figure~\ref{fig:etat_art_partitionnement_temperature} expose, à titre d'exemple, un partitionnement flou de la température en trois SEF distincts : \textit{Froid}, \textit{Tempéré}, \textit{Chaud}. 
+  \begin{figure}[h]
+   \begin{center}
+    \includegraphics[width=130mm]{figures/etat_art_partitionnement_temperature.pdf}
+    \caption{\label{fig:etat_art_partitionnement_temperature}Un partitionnement flou de domaine de la température.}
+   \end{center}
+  \end{figure}
+
+  \item On appelle \emph{fuzzification} le processus qui consiste à attribuer à la valeur réelle d'une entrée donnée sa fonction d'appartenance à chacune des classes préalablement définies, par exemple, par un partitionnement flou. On effectue donc une transformation de l'entrée réelle en un SEF. La fuzzification consiste à associer à une mesure de la variable $x_0$ une fonction d'appartenance par le biais d'un opérateur de fuzzification. Son choix est conditionné par la nature de la mesure : si elle est exacte (précise), on obtient un SEF singleton (cf. figure~\ref{fig:etat_art_sef_singleton}); sinon, le SEF peut être de forme triangulaire $f(x) = \max(0,1 - \frac{|x-x_0|}{\epsilon})$  (cf. figure~\ref{fig:etat_art_sef_triangulaire}), trapézoïdale  (cf. figure~\ref{fig:etat_art_sef_trapezo}), etc.
+\begin{figure}[h]
+  \begin{center}
+   \includegraphics[width=90mm]{figures/etat_art_sef_singleton.pdf}
+   \caption{\label{fig:etat_art_sef_singleton}Fuzzification par SEF singleton.}
+  \end{center}
+\end{figure}
+\begin{figure}[h]
+  \begin{center}
+   \includegraphics[width= 90mm]{figures/etat_art_sef_triangulaire.pdf}
+   \caption{\label{fig:etat_art_sef_triangulaire}Fuzzification par SEF triangulaire.}
+ \end{center}
+\end{figure}
+\begin{figure}[h]
+  \begin{center}
+   \includegraphics[width= 90mm]{figures/etat_art_sef_trapezo.pdf}
+   \caption{\label{fig:etat_art_sef_trapezo}Fuzzification par SEF trapézoïdal.}
+  \end{center}
+\end{figure}
+
+  \item Soit $A$ un SEF, on appelle \emph{défuzzification} le passage inverse de $A$ à une valeur réelle. On considère alors, à titre d'exemple, $A$ comme représenté par la figure~\ref{fig:etat_art_sef_mesure}, et illustre quatre méthodes de défuzzification :
+\begin{figure}[h!]
+  \begin{center}
+   \includegraphics[width=90mm]{figures/etat_art_sef_mesure.pdf}
+   \caption{\label{fig:etat_art_sef_mesure}Un SEF $A$ à défuzzifier.}
+ \end{center}
+\end{figure}
+
+  \begin{enumerate}
+  	\item Principe du maximum (cf. figure~\ref{fig:etat_art_sef_defuzz_max}) :
+	$$D(A) = \frac{x_0}{f_x(x_0)} = \sup(f_A(x)) $$
+	\begin{figure}[h!]
+  	 \begin{center}
+   	  \includegraphics[width=90mm]{figures/etat_art_sef_defuzz_max.pdf}
+    	  \caption{\label{fig:etat_art_sef_defuzz_max}Défuzzification de $A$ : principe du maximum.}
+	 \end{center}
+	\end{figure}
+
+	\item Moyenne des maxima (cf. figure~\ref{fig:etat_art_sef_defuzz_moyenne}).
+	\begin{figure}[h!]
+  	 \begin{center}
+   	  \includegraphics[width=90mm]{figures/etat_art_sef_defuzz_moyenne.pdf}
+    	  \caption{\label{fig:etat_art_sef_defuzz_moyenne}Défuzzification de $A$ : moyenne des maxima.}
+	 \end{center}
+	\end{figure}
+	
+	\item Egalité des intégrales (cf. figure~\ref{fig:etat_art_sef_defuzz_integ}) :
+	$$D(A) = \frac{x_0}{\int_a^{x_0}f_A(x) dx} = \int_{x_0}^b f_A(x) dx$$
+	\begin{figure}[h!]
+  	 \begin{center}
+	  \includegraphics[width=90mm]{figures/etat_art_sef_defuzz_integ.pdf}
+	  \caption{\label{fig:etat_art_sef_defuzz_integ}Défuzzification de $A$ : égalité des intégrales.}
+	 \end{center}
+	\end{figure}
+
+	\item Calcul du barycentre pour un univers $X$ (cf. figure~\ref{fig:etat_art_sef_defuzz_bary}) :
+	$$ D(A) = x_0 = \frac{\int_X x . f_A(x) dx}{\int_X f_A(x) dx} $$ 
+	\begin{figure}[h!]
+	 \begin{center}
+	  \includegraphics[width=90mm]{figures/etat_art_sef_defuzz_bary.pdf}
+	  \caption{\label{fig:etat_art_sef_defuzz_bary}Défuzzification de $A$ : calcul du barycentre.}
+	 \end{center}
+	\end{figure} 
+  \end{enumerate}
+
+%% </import Cours Isis isis_fuzz_defuzz.ppt>
+
+\end{itemize}
+
+\subsection{Raisonnement flou}
+\label{sec:Raisonnement flou} 
+
+Toujours en nous fondant sur les notions avancées par l'ouvrage de référence de Bouchon-Meunier ~\cite{bouchon1995logique}, nous nous attardons maintenant sur le processus de raisonnement qu'il est possible d'effectuer dans ce domaine. 
+
+Il existe un nombre important d'implications floues qui portent le plus souvent le nom de leur créateur : \textit{Kleene-Dienes} évoqué ci-dessus, \textit{Reichenbach}, \textit{Lukasiewicz}, etc. Ces différentes implications floues se traduisent par autant de fonctions d'appartenance distinctes, par exemple :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item Lukasiewicz : $\Phi(f_A(x), f_B(y)) = \min(1-f_A(x) + f_B(y), 1)$.
+\item Mamdani : $\Phi(f_A(x), f_B(y)) = \min(f_A(x), f_B(y))$.
+\end{itemize}
+
+\emph{``Le \emph{Modus ponens}, ou détachement, est une figure du raisonnement en logique classique concernant l'implication. Elle consiste à affirmer une implication (``si \emph{Prémisse} alors \emph{Conclusion}'') et à poser ensuite l'antécédent (``or, \emph{Prémisse} observé'') pour en déduire le conséquent (``donc \textit{Conclusion}''). Le terme Modus ponens (ou plus exactement \emph{Modus ponendo ponens}) vient de ce que l'on pose A (\emph{ponens} est le participe présent de verbe latin \emph{ponere}, poser) afin d'en tirer la conclusion.'' (Wikipedia)}
+
+Cette règle primitive du raisonnement en logique classique a été étendue aux propositions floues, elle porte alors le nom de \emph{Modus ponens généralisé}, ou MPG\index{Logique floue!Modus ponens généralisé (MPG)}~\cite{zad75}. Ainsi, pour deux variables linguistiques $(V, X, T_V)$ et $(W, Y, T_W)$, on peut poser la règle floue ``$V$ est $A$ $\implies$ $W$ est $B$'' dont on peut déduire, lorsqu'elle est suivie d'une observation floue ``$V$ est $A'$'', un conséquent ``$W$ est $B'$''. 
+
+Dès lors que les fonctions d'appartenance $f_A$, $f_B$ sont connues, ainsi que $f_{A'}$ qui représente l'observation, on va rechercher la valeur de $f_{B'}(y)$, $\forall y \in Y$. Le MPG permet en effet de combiner la règle floue avec l'observation ``$V$ est $A'$'' pour construire la conclusion $B'$. L'opérateur $\top$ de MPG  (une fonction de $[0,1] \times [0,1]$ dans $[0,1]$) permet de combiner $f_\mathcal{R}$ et $f_{A'}$ : $\top$ est une T-norme liée à $f_\mathcal{R}$ pour que le MPG soit compatible avec le Modus ponens de la logique classique, donc $\top$ et $\mathcal{R}$ doivent être compatibles. On a alors :
+$$\forall y \in Y : f_{B'} = \sup_{x \in X} \top(f_\mathcal{R}(x,y), f_{A'}(x))$$
+
+Un exemple d'opérateur de MPG, fondé sur l'implication floue de Lukasiewicz, qui pourrait alors être utilisé serait :
+$$\forall u,v \in [0,1], \top(u,v) = \max(u+v-1,0)$$
+
+\subsection{Formalismes à base de 2-tuples}
+\label{sec:Formalismes à base de 2-tuples}
+
+%% <import JUCS 2.2>
+L'utilisation de variables linguistiques implique un processus de calcul avec les mots pour traiter leur fusion, agrégation, comparaison, etc. Pour effectuer ces calculs, différents modèles ont été proposés, tels que le modèle sémantique\index{Modèle!2-tuple!sémantique}~\cite{deg88}, symbolique\index{Modèle!2-tuple!symbolique}~\cite{del93, Tru06}, ou linguistique\index{Modèle!2-tuple!linguistique}~\cite{Her00a}.
+%% </import JUCS 2.2>
+
+%% CW sans perte de précision, sortie par rapport à l'ens. de départ --> 2-tuples
+Lors de calculs avec des nombres, le résultat obtenu est toujours exprimable dans l'intervalle de départ, étant donné que celui-ci est continu. Lors de calculs avec des mots, le résultat obtenu est une valeur artificielle (``virtual linguistic term''~\cite{xu2004method}) qu'il faut exprimer dans l'intervalle (nécessairement discret) de départ. Or, sauf si le résultat ``tombe juste'', une approximation sera nécessaire. Ainsi, certains modèles ont cherché à exprimer ce résultat sans perte de précision. 
+
+Par exemple, l'approche de Truck et Akdag envisage des 2-tuples constitués d'un symbole et d'un ensemble de symboles (ensemble discret) et gère la perte de précision en changeant itérativement la granularité de cet ensemble~\cite{Tru06}. Les auteurs expriment la précision grâce à des modificateurs symboliques.
+
+L'approche de Wang et Hao considère des 2-tuples définis sur des intervalles continus. Ces couples sont constitués d'un terme linguistique, représenté par un SEF triangulaire, et d'une proportion symbolique~\cite{wang2006new}. C'est cette dernière qui endosse la perte de précision.
+
+%% 2-tuples --> on se focalise sur l'approche de Luis
+
+ \begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=110mm]{figures/etat_art_deplacement_lateral.pdf}
+    \caption{\label{fig:etat_art_deplacement_lateral}Déplacement latéral d'une étiquette linguistique $\Rightarrow$ 2-tuple $(s_2,-0.3)$.}
+  \end{center}
+\end{figure} 
+
+L'approche de Herrera et Mart{\'{\i}}nez qui a sous-tendu celle de Wang et Hao est assez similaire, sauf que les auteurs expriment l'écart entre le résultat de l'agrégation et la valeur linguistique la plus proche dans l'ensemble de départ par une \emph{translation symbolique}~\cite{Her00a}. Leur modèle computationnel est fondé sur le \emph{principe d'extension}, c'est-à-dire qu'ils étendent les agrégateurs classiques (addition, moyenne, etc.) à des agrégateurs \textit{ad hoc}, dédiés à leurs 2-tuples\index{2-tuples, comme modèle de représentation linguistique}. 
+%% <import JUCS 2.2>
+Ainsi, pour un terme linguistique donné, leur modèle fournit une paire (SEF, déplacement)~$=(s_i,\alpha_i)$ avec $\alpha_i~\in~[-0.5,0.5[$ tel que peut être vu sur la figure~\ref{fig:etat_art_deplacement_lateral}, où le 2-tuple obtenu est $(s_2,-0.3)$. De fait, grâce à la préservation du déplacement dans le tuple, ce modèle computationnel permet de conduire le processus de calcul avec des mots aisément et sans perte d'information. 
+%% </import JUCS 2.2>
+
+Cette représentation sur intervalles continus, et la distribution uniforme des valeurs linguistiques sur l'ensemble de définition qui en découle, est la garante du modèle 2-tuple : il est ainsi toujours possible de déterminer la valeur linguistique la plus proche à partir d'un déplacement sur $[-0.5,0.5[$. Une solution au problème posé alors par la distribution \emph{non-uniforme} des termes sur une échelle est amenée par l'introduction de hiérarchies linguistiques qui permettent la formalisation des différentes fonctions d'appartenance hétérogènes qui leurs sont associées~\cite{herrera2008fuzzy} sur des échelles respectives où le modèle 2-tuple peut s'appliquer. Les travaux de Jiang \textit{et al.} pour la modélisation d'environnements multi-granulaires permettent aussi de lever cet obstacle~\cite{jiang2008method}.
+
+
+%\section{Des langages graphiques de représentation compacte de préférences}
+\section{De la modélisation compacte de préférences}
+\label{sec:De la modélisation de préférences}
+
+C'est notamment par le développement des systèmes interactifs d'aide à la décision ainsi que par celui des systèmes autonomes dans la décision (mais qui nécessitent d'être préalablement ``calibrés'', nos travaux s'insérant dans cette deuxième catégorie), qu'un besoin en termes de modèles permettant de manipuler et de raisonner sur la préférence des utilisateurs s'est manifesté.
+
+Par conséquent, des travaux en théorie de la décision\index{Théorie!de la décision} se sont penchés sur la problématique de l'obtention d'un juste compromis entre deux aspects parfois opposés de la représentation compacte de ces préférences : d'une part, la nécessité de mettre au point des modèles riches en termes d'expressivité et flexibilité; et d'autre part, un besoin plus pragmatique en termes de simplicité lors de leur élicitation, ainsi que d'efficacité lors de la résolution de problèmes d'optimisation fondés sur ces préférences. Dans notre contexte SSOA, ces contraintes sont d'autant plus présentes que les systèmes répartis fondés sur ces architectures doivent répondre d'une certaine réactivité et facilité d'utilisation. Elles nous ont alors naturellement amenés à considérer avec intérêt les modèles pré-existant de préférences linguistiques (cf. section~\ref{sec:Modèles linguistiques}) et compactes, comme les réseaux GAI (cf. section~\ref{sec:Réseaux GAI}) ou les *CP-nets (cf. section~\ref{sec:*CP-Nets}).
+
+\subsection{Modèles linguistiques}
+\label{sec:Modèles linguistiques}
+
+Prendre une décision sur la base de préférences utilisateur est, le plus souvent, un problème de décision multi-critères\index{Décision multi-critères|textbf}. Or, ces dernières années, plusieurs modèles \emph{linguistiques} de calcul ont pu être appliqués au champ de la décision sur critères multiples, et une certaine notion du concept de préférence en émerger. Herrera \textit{et al.} établissent ainsi qu'il existe plusieurs étapes relatives à la résolution de problèmes de décision multi-critères par la méthodologie CW, lorsque l'on dispose d'informations linguistiques spécifiques~\cite{herrera2009computing}. L'injection de préférences établies par des experts fait partie intégrante de ces étapes qui sont au nombre de cinq :
+
+\begin{enumerate}
+\item la définition du problème;
+\item l'analyse d'un problème;
+\item l'identification de solutions alternatives;
+\item l'intervention d'experts et/ou critères distincts dans la décision. C'est lors de cette étape que les préférences par lesquelles les solutions peuvent être évaluées entrent en jeu;
+\item pour finir, la sélection de la meilleure solution.
+\end{enumerate}
+
+Dans le cadre d'une analyse classique d'un problème en décision floue, la dernière étape, effectuée en multi-critères ou sur la base d'un groupe d'experts, est subdivisée en deux phases distinctes~\cite{roubens1997fuzzy} : \emph{l'agrégation} des valeurs de performance (d'utilité) établies sur la base des multiples critères ou experts, pour obtenir un valeur collective de performance pour chaque alternative; \emph{l'exploitation} de ces valeurs globales de manière à en déduire un classement des alternatives.
+
+Il est possible de trouver un exemple de l'application des phases d'agrégation et exploitation dans les travaux de Wu et Mendel~\cite{wu2007aggregation}, où le processus de décision utilisé pour la sélection des contributions à retenir pour un journal est présenté. D'autres travaux~\cite{herrera2000linguistic} ont par ailleurs déterminé qu'il peut être nécessaire d'ajouter deux étapes préliminaires à l'application consécutive de l'agrégation et l'exploitation, de manière à obtenir concrètement un processus à trois étapes :
+
+\begin{enumerate}
+\item \emph{Le choix de l'ensemble de termes linguistiques avec leurs sémantiques}. Cela consiste à établir le domaine linguistique de définition utilisé pour fournir les valeurs de performance établies entre les alternatives considérées sur critères multiples. Pour ce faire, il faut choisir la granularité de l'ensemble de termes linguistiques, ses étiquettes et sémantiques.
+\item \emph{Le choix de l'opérateur d'agrégation d'information linguistique}. Cela consiste à établir l'opérateur approprié pour l'agrégation des valeurs de performance fournies sous forme linguistique. 
+\item \emph{La sélection de la meilleure alternative}, toujours découplée en une première phase d'agrégation et une seconde d'exploitation, mais qui est cette fois réalisée à partir des choix préalables en termes de domaine et d'opérateur.
+\end{enumerate}
+
+Il apparaît donc comme nécessaire, pour suivre cette approche, de disposer de modèles capables de traiter la représentation et l'agrégation d'informations linguistiques : la théorie des sous-ensembles flous ainsi que les modèles symboliques et 2-tuples précédemment évoqués, peuvent remplir ce rôle. Par ailleurs, dans le cadre des 2-tuples, la problématique de l'agrégation d'informations linguistiques hétérogènes (par exemple en provenance de sources ou domaines multiples) et multi-granulaires a été étudiée, notamment par Herrera \textit{et al.}~\cite{herrera2005managing}.
+
+Par conséquent, il est effectivement possible d'exprimer, grâce à ces modèles, des préférences sous une forme linguistique (et donc qualitative) pour ensuite obtenir une décision \textit{via} les outils du calcul avec les mots. Cependant, ces préférences ne présentent pas le même degré de flexibilité structurelle que linguistique. Plus précisément, une préférence de ce type suivra le plus souvent la forme \textit{``Il est plus ou moins vrai que l'alternative $a_k$ est préférée à toutes autres''} où $a_k$ est extrait de l'ensemble des alternatives possibles $A = \{a_1,...,a_n\}$~\cite{tong1980linguistic}. Il s'agit donc de préférences que l'on va qualifier \emph{d'inconditionnelles}, dans le sens où la préférence entre les alternatives est donnée \emph{directement} (par exemple par un expert), et ne peut dépendre d'un facteur tiers. Appliquée à notre contexte applicatif des Architectures Orientées Services, une préférence de ce type consisterait par exemple à décrire de manière fixe et définitive, avant toute prise de décision, qu'un service $S_1$ est préféré à un service $S_2$ en toute circonstance. Par conséquent, il induirait aussi la connaissance des services disponibles avant exécution du système, ce qui n'est pas toujours applicable dans le cadre du couplage lâche entre producteurs et fournisseurs de services. On remarque par ailleurs que le caractère flou de l'expression de préférence s'applique ici uniquement au degré de confiance qu'on lui accorde. 
+
+D'autres travaux ont cherché à marier décision multi-critères et calcul avec les mots~\cite{yager1981new, buckley1984multiple, shendrik1986approach}, mais ils se fondent sur un type comparable de préférences entre alternatives et un processus de décision faisant le plus souvent intervenir de manière active un ou plusieurs expert(s) du domaine. De surcroît, malgré l'abord naturel d'une représentation des préférences sous forme de phrases, les auteurs n'en proposent pas de modélisation graphique particulièrement accessible pour les utilisateurs finaux, leurs efforts étant davantage orientés vers la résolution de problématiques au demeurant plus fondamentales, telles l'hétérogénéité des préférences, leur agrégation et résolution, que vers leur élicitation. Cette absence, entièrement acceptable dans le cadre de préférences inconditionnelles, devient nettement plus aiguë dans le cadre de préférences conditionnelles de la forme \textit{``Si condition alors $\mathit{preference_1}$ sinon $\mathit{preference_2}$''}.
+
+%% <import JUCS 2.3>
+\subsection{*CP-Nets}
+\label{sec:*CP-Nets}
+
+La dénomination \emph{*CP-Nets} regroupe sous un même manteau lexical une famille de formalismes biens connus, qui sont utilisés pour l'expression de préférences utilisateur, et qui se présentent comme la solution de choix lorsque les préférences peuvent être facilement apparentées à des règles lexicographiques. Ces formalismes présentent des avantages significatifs tels qu'un abord facile pour l'utilisateur, des coûts de calcul relativement faibles, une structuration forte, et une certaine facilité d'extension, qui permet de leur adjoindre des propriétés supplémentaires en fonction de leur contexte d'application.
+
+\subsubsection{CP-Nets}
+
+Un CP-net\index{CP-net|textbf}\index{Modélisation de préférences!CP-net|textbf} (``Conditional Preference Network'') est une représentation graphique et qualitative de \emph{préférences utilisateur}~\cite{Bou04}. Cette représentation est par ailleurs particulièrement compacte et relativement intuitive.
+
+Les éléments principaux offerts par ce formalisme sont :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item les n\oe{}uds, qui représentent les variables du problème;
+\item les arcs (ou cp-arcs), qui dénotent les préférences \emph{entre} les variables en
+  fonction des valeurs prises par ces dernières;
+\item et, pour finir, des tables de préférences conditionnelles
+  (``Conditional Preference Tables'', ou CPT) directement rattachées
+  aux n\oe{}uds et qui expriment les préférences \emph{sur} les valeurs
+  prises par les variables. Ce faisant, elles définissent par
+  extension la relation binaire $>$ qui existe entre ces valeurs.
+\end{itemize}
+
+\vspace*{.5cm}
+\begin{definition}[CP-net]{
+	Un CP-net défini sur un ensemble de variables $V ={X_1, ..., X_n}$ est un graphe orienté défini sur $X_1, ..., X_n$ dont les n\oe{}uds sont annotés par des tables de préférences conditionnelles $CPT(X_i)$ pour chaque $X_i \in V$. Chaque $CPT(X_i)$ associe un \emph{ordre total} $>_u^i$ à chaque affectation $u$ des parents de $X_i$ telle que $Pa(X_i) = U$.
+}\end{definition}
+\vspace*{.5cm}
+
+Les CP-nets permettent la modélisation en termes de préférences de déclarations telles que ``Je préfère la valeur $V_1$ à $V_2$ pour la propriété $X$, si une autre propriété $Y$ vaut $V_Y$ et $Z$ vaut $V_Z$''. En fait, la représentation graphique permet précisément d'exprimer la dépendance entre les CPT interconnectées par le biais de leurs variables de rattachement. Ainsi, les préférences peuvent être définies conditionnellement aux valeurs prises par leurs n\oe{}uds parents dans le graphe, mais indifféremment aux valeurs des autres n\oe{}uds.
+
+Cette distinction constitue l'essence de la propriété dite de \textit{ceteris paribus} ou, pour reprendre la locution latine originelle et complète, \textit{Ceteris paribus sic stantibus}. Elle est fondamentale aux CP-nets et la locution peut se traduire, de manière générale, par ``toutes choses étant égales par ailleurs''. Elle est aussi utilisée en philosophie analytique, en philosophie du langage ou encore en sciences économiques, quand, dans un modèle théorique, l'influence de la variation d'une quantité (la variable explicative) sur une autre (la variable expliquée) est examinée à l'exclusion de tout autre facteur.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=50mm]{figures/etat_art_cpnet_exemple.pdf}
+    \caption{\label{fig:etat_art_cpnet_exemple} Exemple de préférence sous forme de CP-net.}
+  \end{center}
+\end{figure} 
+
+La figure~\ref{fig:etat_art_cpnet_exemple} illustre la représentation graphique des CP-Nets à partir de l'exemple suivant : on cherche à modéliser la préférence d'une personne sur le déroulement d'un repas. Le réseau est constitué de trois variables représentant les choix possibles sur le plat principal (n\oe{}ud $P$), la soupe (n\oe{}ud $S$) et le vin (n\oe{}ud $V$). Cette personne modélise alors une préférence stricte sur le choix d'un plat principal à base de viande $P_v$ plutôt qu'à base de poisson $P_p$. De plus, elle préfère ne pas avoir deux plats de poisson au cours d'un même repas, de ce fait, la préférence sur la soupe est directement conditionnée par le plat principal : elle préfère alors commencer le repas avec une soupe de poisson $S_p$ si le plat principal est à base de viande, et inversement. De la même façon, la préférence sur le choix du vin est conditionnée par la soupe qui va être servie : cette personne préfère qu'un vin rouge $V_r$ soit servi s'il s'agissait d'une soupe de légumes $S_l$, un vin blanc $V_b$ dans le cas contraire.
+
+Il existe par ailleurs une notion de préférence relative entre les préférences elles-mêmes : une CPT associée à un n\oe{}ud ``parent'' aura une priorité plus élevée que les CPT de ses descendants. Cette notion de préférence relative \emph{implicite} peut alors être prise en compte lors de la comparaison globale des affectations complètes d'un CP-net donné.
+
+La plupart des calculs d'inférence et raisonnements logiques pouvant être effectués sur un CP-net sont praticables du point de vue de la complexité algorithmique, mais ce CP-net est alors soumis à un certain nombre de restrictions. Les principales d'entre elles (et dont il faudrait tenir compte dans notre contexte) étant l'usage généralisé de graphes acycliques, celui au contraire très limité de la relation d'indifférence entre les variables, et donc, par là même, la définition systématique de pré-ordres totaux dans les CPTs de chaque n\oe{}ud parent distinct~\cite{Bou04}.
+
+\subsubsection{UCP-Nets}
+
+Les ``Utility CP-nets'', ou UCP-nets\index{UCP-net|textbf}\index{Modélisation de préférences!UCP-net|textbf}, différents des CP-nets dans la mesure où ils remplacent la relation binaire définie par extension entre les valeurs des n\oe{}uds, par des facteurs d'utilité sous forme numérique~\cite{Bou01}. Ce faisant, les valeurs des n\oe{}uds conservent leur forme qualitative : seules les préférences, concrétisées ici par les facteurs d'utilité, sont quantifiées.
+
+Ce changement est motivé par le fait que la précision d'une fonction d'utilité, par opposition à un ordonnancement préférentiel, est souvent nécessaire dans les contextes de prise de décision où l'incertitude est un facteur déterminant. Il est aussi motivé par le fait qu'un CP-net ne permet pas la comparaison ou l'ordonnancement de toutes ses alternatives. Cette limitation est, elle aussi, résolue par la quantification des préférences~\cite{Bou06}.
+
+Un facteur d'utilité est un nombre réel, associé à une affectation d'un n\oe{}ud $X$ du réseau, pour une affectation spécifique de ses parents. Ces facteurs d'utilité correspondent en fait aux degrés de préférence attribués, par les utilisateurs, pour les différentes affectations. En effet, grâce aux UCP-nets, un modélisateur de préférences va pouvoir se focaliser sur la définition de ces facteurs d'utilité pour exprimer sa préférence \emph{locale} à chaque CPT, tout en se reposant sur la sémantique du formalisme pour calculer l'utilité \emph{globale} de chaque affectation complète, de manière à pouvoir les comparer aisément.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=55mm]{figures/etat_art_ucpnet_exemple.pdf}
+    \caption{\label{fig:etat_art_ucpnet_exemple} Exemple de préférence sous forme d'UCP-net.}
+  \end{center}
+\end{figure} 
+
+Ces concepts sont illustrés par la figure~\ref{fig:etat_art_ucpnet_exemple} où la préférence précédemment exprimée sous forme de CP-net à l'aide de la relation binaire $>$ est transposée sous forme de divers facteurs d'utilité qui respectent les préférences locales à chaque table, tout en rendant explicite la notion de préférence relative entre les n\oe{}uds par le choix d'un ordre de grandeur différent pour les valeurs de chaque table, en fonction de la position de son n\oe{}ud respectif dans le réseau de préférences. Cet ordre de grandeur sur les valeurs doit respecter un certains nombres de critères pour que des contradictions n'apparaissent pas entre ce formalisme et le CP-nets~\cite{Bou01}.
+
+\subsubsection{TCP-Nets}
+
+Une autre extension des CP-nets, nommée ``Tradeoffs-enhanced CP-nets'', ou TCP-nets\index{TCP-net}\index{Modélisation de préférences!TCP-net}, permet d'exprimer des préférences de la forme ``Une meilleure affectation de $X$ est plus importante qu'une meilleure affectation de $Y$''~\cite{Bra02}. Il s'agit de \emph{déclarations d'importance relative}.
+
+Les TCP-nets effectuent aussi une généralisation de cette classe de préférences de manière à accepter des \emph{déclarations d'importance relative conditionnelles}. Avec ces dernières, il devient possible d'exprimer des préférences de la forme ``Une meilleure affectation de $X$ est plus importante qu'une meilleure affectation de $Y$, si $Z=z$''.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=50mm]{figures/etat_art_tcpnet_exemple.pdf}
+    \caption{\label{fig:etat_art_tcpnet_exemple} Exemple de préférence sous forme de TCP-net.}
+  \end{center}
+\end{figure} 
+
+Ce formalisme introduit par ailleurs une nouvelle forme de tables de préférences à l'avenant, les ``Conditional Importance Tables'' ou CIT, ainsi que deux nouveaux types d'arcs entre les n\oe{}uds d'un réseau de préférences : les \emph{i-arc} et \emph{ci-arcs}. Ils permettent, respectivement, la modélisation graphique des déclarations d'importance relative \emph{basiques} et \emph{conditionnelles}. L'introduction de la notion d'i-arc dans notre exemple sur la modélisation de la préférence d'un repas (cf. figure~\ref{fig:etat_art_tcpnet_exemple}) pourrait alors servir à indiquer que l'on accorde simplement plus d'importance au respect de la préférence sur le plat principal qu'à celle portant sur la soupe, sans pour autant conditionner la préférence sur la soupe sur le type de plat principal servi. Ce deuxième point marque une différence notable par rapport à l'arc classique du formalisme CP-net de base, il est en lien direct avec la notion de ``tradeoff'' (\textit{i.e.} compromis) propre aux TCP-nets.
+
+Ainsi, les TCP-nets donnent aux utilisateurs les moyens leur permettant d'exprimer les compromis que ces derniers sont prêts à concéder entre divers critères de préférence, en fonction de l'affectation courante des variables (\textit{i.e.} les n\oe{}uds). La notion de déclaration d'importance relative conditionnelle complète élégamment celle d'indépendance \emph{ceteris paribus} conditionnelle, de manière à fournir un canevas conceptuel à même de permettre la modélisation et le raisonnement sur les préférences utilisateur.
+
+
+%% </import JUCS 2.3>
+
+\subsection{Réseaux GAI}
+\label{sec:Réseaux GAI}
+
+Les \emph{réseaux GAI} (de l'anglais ``Generalized Additive Independence'', ou \textit{indépendance additive généralisée})~\cite{gonzales2005gai}, on parle aussi de \emph{GAI-nets}\index{Modélisation de préférences!GAI-nets|textbf}, font partie d'une famille de langages de représentation des préférences qui, contrairement à ceux reposant sur la logique propositionnelle pour représenter des relations de manière compacte (comme les CP-nets), utilise, dans un but similaire, une propriété \emph{d'indépendance additive entre variables}~\cite{bouveret2007allocation}. 
+
+De manière plus générale, cette famille comporte comme autres modèles de représentation les langages de lots \textit{k}-additifs~\cite{chevaleyre2004multiagent, grabisch1997k} que nous n'aborderons pas dans ce chapitre car la notion d'indépendance \textit{k}-additive, dans sa forme de base, ne s'applique qu'aux langages impliquant des variables binaires, là où nous avons vocation à traiter des domaines de Qualité de Service le plus souvent continus. Cependant, cette notion a une correspondance pour des langages sur des domaines combinatoires impliquant des variables non binaires : elle prend forme sous la notion d'indépendance additive généralisée, base des GAI-nets, qui a été appliquée à la représentation des utilités. L'idée est alors de transposer la notion d'indépendance probabiliste à la base du formalisme des réseaux bayésiens~\cite{pearl1988probabilistic} à la représentation des fonctions d'utilité.
+
+De fait, les \emph{décompositions GAI} ont été introduites dans le but d'augmenter la puissance descriptive des \emph{utilités additives}, tout comme s'y étaient déjà attelés les travaux sur l'\emph{utilité multilinéaire}~\cite{keeney1993decisions}. 
+
+Soit $\gtrsim$ la relation de préférence d'un utilisateur (un préordre large total) sur un ensemble $\chi$. $x \gtrsim y$ signifie alors que $x$ est au moins aussi bon que $y$.  Sous certaines hypothèses~\cite{debreu1964continuity}, cette relation de préférence peut être représentée par une utilité, c'est-à-dire une fonction $u: \chi \mapsto \mathbb{R}$ telle que $x \gtrsim y \Leftrightarrow u(x) \geq u(y)$ pour tout $x,y \in \chi$. Il est alors possible d'introduire la définition suivante :
+
+\vspace*{.5cm}
+\begin{definition}[Décomposition GAI]{
+
+Soit $\chi = \prod_{i=1}^n X_i$. Soit $Z_1,...,Z_k$ des sous-ensembles de $N={1,...,n}$ tels que $N=\bigcup_{i=1}^k Z_i$. Pour chaque $i$, soit $X_{Z_i} = \prod_{j \in Z_i	} X_j$. L'utilité $u(\cdot)$ qui représente $\gtrsim$ est GAI-décomposable par rapport aux $X_{Z_i}$ ssi il existe des fonctions $u_i : X_{Z_i} \mapsto \mathbb{R}$ telles que :
+$$\forall x = (x_1,..., x_n) \in \chi,  u(x) = \sum_{i=1}^k u_i (x_{Z_i})$$
+où $x_{Z_i}$ représente le n-uplet formé par les $x_j$, $j \in Z_i$.
+
+}\end{definition}
+\vspace*{.5cm}
+
+Différents modèles quantitatifs (fondés sur des utilités) de représentation de préférences multi-attributs, ont précédé l'établissement de ce principe de décomposition GAI. Ces modèles se basaient alors sur un type spécial d'indépendance entre les attributs nommé \emph{indépendance préférentielle mutuelle}, qui assure que les préférences sont représentables par une utilité additive. Bien qu'une telle décomposabilité rend le processus d'élicitation de préférence simple et rapide, de récents travaux sur les GAI-nets ont avancé que cette indépendance préférentielle n'est pas nécessairement vérifiée dans la pratique, car \textit{``elle élimine toute possibilité d'interaction entre les attributs''}~\cite{queiroz2007decision}. En conséquence de quoi, ces travaux indiquent qu'une décomposition GAI permet une interaction plus générale entre les attributs tout en préservant une certaine décomposabilité du modèle~\cite{bacchus1995graphical}.
+
+Les décompositions GAI peuvent être subséquemment représentées sous forme de graphes. Ce sont ces graphes que l'on appelle réseaux GAI~\cite{gonzales2004gai}. Ces modèles graphiques sont similaires aux graphes de jonction utilisés pour les réseaux bayésiens. C'est dans l'optique de tirer parti des caractéristiques spécifiques aux décompositions GAI que Gonzales et Perny ainsi que Braziunas et Boutilier ont alors proposé une procédure générale (en l'occurrence une séquence de questions) pour éliciter des utilités GAI dans le cadre de la décision dans le risque~\cite{gonzales2004gai, braziunas2005local}. Cette procédure est dirigée par la structure graphique des réseaux GAI.
+
+\vspace*{.5cm}
+\begin{definition}[Réseau GAI]{
+
+Soit $\chi = \prod_{i=1}^n X_i$. Soit $Z_1,...,Z_k$ des sous ensembles de $N={1,...,n}$ tels que $N=\bigcup_{i=1}^k Z_i$. Supposons que $\gtrsim$ est représentable par une utilité GAI $u(x) = \sum_{i=1}^k u_i (x_{Z_i})$ pour tout $x \in \chi$. Alors un réseau GAI qui représente $u(\cdot)$ est un graphe non-orienté $G=(V,E)$ qui satisfait les propriétés suivantes :
+\begin{enumerate}
+\item $V = {X_{Z_1},..., X_{Z_k}}$;
+\item pour toute arête $(X_{Z_i}, X_{Z_j}) \in E, Z_i \cap Z_j \neq \emptyset$. Pour tout $X_{Z_i}, X_{Z_j}$, tel que $Z_i \cap Z_j = T_{ij} \neq \emptyset$, il existe un chemin dans le graphe $G$ qui connecte $X_{Z_i}$ et $X_{Z_j}$ tel que tous ses n\oe{}uds contiennent tous les indices de $T_{ij}$ (propriété d'intersection courante). Les n\oe{}uds de $V$ sont appelés cliques. Chaque arête $(X_{Z_i}, X_{Z_j}) \in E$ est étiquetée par $X_{T_{ij}} = X_{Z_i \cap Z_j}$ et est appelée un séparateur. 
+\end{enumerate}
+}\end{definition}
+\vspace*{.5cm}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/etat_art_GAI_exemple.pdf}
+    \caption{\label{fig:etat_art_GAI_exemple} Exemple de réseau GAI sous forme graphique.}
+  \end{center}
+\end{figure} 
+
+D'après la précédente définition, les cliques d'un réseau GAI (correspondant à une décomposition GAI) doivent être les ensembles de variables des sous-utilités~\cite{queiroz2007decision}. Les cliques étant dessinées comme des ellipses et les séparateurs comme des rectangles, on illustre sur la figure~\ref{fig:etat_art_GAI_exemple} l'exemple suivant : si $u(a,b,c,d,e,f,g) = u_1(a,b) + u_2(c, e) + u_3(b,c,d) + u_4(b,d,f) + u_5(b,g)$ alors les cliques sont \textit{AB}, \textit{CE}, \textit{BCD}, \textit{BDF}, \textit{BG}. De plus, par la seconde propriété de la précédente définition, l'ensemble des arêtes d'un réseau GAI peut être determiné par des algorithmes qui préservent la propriété d'intersection courante~\cite{cowell1999probabilistic}.
+
+\subsection{Synthèse}
+
+Par rapport aux réseaux GAI, la simplicité voulue des *CP-nets (qu'elle s'exprime en termes d'élicitation ou de raisonnement) est particulièrement pertinente sur le Web en général, et tout particulièrement dans le contexte des SSOA où la solution préférée doit être trouvée parmi un ensemble combinatoire de possibilités. Les *CP-nets peuvent être aisément intégrés dans des systèmes où les préférences des utilisateurs doivent être capturées en utilisant quelques questions seulement, afin de trouver rapidement parmi les éléments disponibles (des services dans le contexte SSOA) ceux qui sont les ``meilleurs'' selon ces préférences. 
+
+C'est dans le cadre d'autres applications où on peut consacrer plus de temps à l'étape d'élicitation, qu'il s'agisse par exemple des problèmes de configuration, de répartition équitable de ressources ou d'enchères combinatoires, et ce afin d'obtenir une description plus fine des préférences que les décompositions GAI par utilités cardinales additives peuvent s'avérer plus adaptées que les modèles purement ordinaux grâce à leur plus grande puissance descriptive supposée~\cite{queiroz2007decision}, et se soustraient au problème bien connu du théorème d'impossibilité d'Arrow dans le cadre de la décision collective~\cite{pini2005aggregating}. 
+
+Il ne faut cependant pas perdre de vue que l'utilisation d'utilités cardinales n'est pas l'apanage exclusif des réseaux GAI. En effet, l'intérêt de cette dernière dans l'élicitation de préférences ainsi que sa mise en \oe{}uvre ont été aussi étudiés dans le cadre des modèles compacts de préférences *CP-nets, sous la forme des UCP-nets~\cite{Bou01}. 
+
+Les réseaux GAI présentent par ailleurs plusieurs approches pour l'intégration de préférences émises par divers utilisateurs dans le cadre d'une prise de décision collective, \textit{via} la recherche d'une solution de compromis~\cite{queiroz2007decision}. Il s'agit cependant d'une problématique peu étudiée à ce jour dans le cadre des *CP-nets : bien qu'abordée par Rossi \textit{et al.} \textit{via} le modèle \emph{mCP-net}~\cite{rossi2004mcp}, elle est peu applicable aux scénarios usuels d'utilisation de nos travaux dans le contexte SSOA, tel qu'il sera présenté par un cas d'utilisation précis au chapitre~\ref{ch:cas_utilisation}.
+
+Pour finir, on remarque en outre que les approches compactes de représentation graphique de préférences (*CP-nets ou GAI-nets), n'intègrent pas en leur sein une approche linguistique telle que nous l'avons définie ci-dessus et illustrée par les travaux actuels en termes de modèles linguistiques. Cette dernière permet pourtant, dans notre contexte, la prise en compte des domaines de valeurs continus d'une manière élégante. Les deux démarches évoluent donc, jusqu'à présent, dans des sphères conceptuelles distinctes, bien qu'elles partagent des objectifs applicatifs communs lorsqu'il s'agit de combler le fossé entre la connaissance métier informelle des utilisateurs d'un système d'une part, et une représentation ``formelle'' de cette connaissance qui soit interprétable par une machine d'autre part. Nous nous appliquerons alors à rapprocher ces deux approches dans le cadre de notre contribution pour la composition utile de services présentée au chapitre~\ref{ch:Composition utile de services}.
+
+
+\section{De la composition dynamique de services sous contraintes non-fonctionnelles}
+\label{sec:etat_art_compo}
+
+Par rapport à la définition très généraliste de la composition de services que nous avons fixée dans le contexte technologique (cf. section~\ref{sec:Concepts de base}), la composition \emph{dynamique} de service apporte une indication supplémentaire quant à la manière et au moment de l'effectuer. Bien qu'il n'existe pas de définition communément admise de cette notion, les différents travaux que nous abordons dans cette section partagent le plus souvent un ensemble de caractéristiques communes qui permettent d'en déterminer les contours :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item Contrairement à une composition ``classique'' de services où les liaisons entre processus et services sont indiquées précisément par un opérateur, l'approche dynamique de composition relègue cette \emph{décision de liaison} au canevas de support des SOA \textit{via} des algorithmes capables de prendre en compte divers facteurs.
+
+\item Les contraintes non-fonctionnelles des processus ainsi que les propriétés non-fonctionnelles des services, indiquées via leurs contrats de Qualité de Service respectifs, négociés ou non (cf. section~\ref{sec:Contrats de Qualité de Service}), constituent la majeure partie, si ce n'est la totalité, de ces facteurs.
+
+\item La \emph{recomposition} des services à l'exécution leur permet d'effectuer les ajustements induits par les variations de QoS des services, suite à leur composition initiale et aux premières décisions de liaison effectuées en amont de l'exécution de la partie métier des processus (leur ``charge utile'').
+
+\end{itemize} 
+
+
+\subsection{Gestion de la dynamicité par recomposition\index{Composition de services!dynamique!par recomposition}}
+\label{sec:Gestion de la dynamicité par recomposition}
+
+% 1 - compo hors ligne / statique
+Dans les travaux évoqués ci-dessous, la composition de services est considérée avant tout comme une première étape ``hors-ligne'' de choix d'une ou plusieurs affectations globales de services aux processus métiers.
+
+% 2 - agreg des donnees de QoS
+Au cours de la composition, ces travaux vont envisager, pour chaque site d'appel, l'ensemble des services disponibles. Un service est alors sélectionné pour l'affectation globale si sa QoS propre, ajoutée à celle des précédents choix, ne viole pas les contraintes imposées par le processus. 
+
+Pour le vérifier, ils font appel à des fonctions d'agrégation de QoS qui permettent d'obtenir la valeur \emph{globale} pour un processus d'une propriété de QoS, à partir des multiples QoS \emph{locales} des services. Schématiquement, pour un processus métier $P$ linéaire à une seule branche (aucune alternative ni boucle), afin d'obtenir sa valeur globale $A_P$ de QoS sur une dimension $A$, il faut procéder à l'agrégation des valeurs de $A$ locales à chaque service $S$ retenu pour l'affectation globale :
+
+$$ \forall S \in (S_1, ..., S_n), value(A_P) = \sum_{i=1}^n value(A_{S_i}) $$
+
+Dans cette formule, $\sum$ représente la formule mathématique utilisée pour l'agrégation des valeurs de types $A$.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=160mm]{figures/etat_art_compo_dynamique.pdf}
+    \caption{\label{fig:etat_art_compo_dynamique}Composition dynamique : calcul des affectations.}
+  \end{center}
+\end{figure} 
+
+Par exemple, pour un processus $process$ dont une contrainte non-fonctionnelle globale sur le temps maximum  $t$ à respecter a été fixée :
+
+$$t_{process} \leq 40 ms$$
+
+Plusieurs affectations globales peuvent être déterminées (cf. figure~\ref{fig:etat_art_compo_dynamique}). L'exécution du processus sur la base d'une de ces affectations est alors sensée respecter ses contrainte de QoS. 
+
+Les travaux considérés ci-dessous, proposent leurs propres définitions de $\sum$ pour chaque type de QoS qu'ils traitent. Les plus avancés ne se limitent plus à une approche linéaire, mais intègrent les instructions de gestion du flot de contrôle (utilisées habituellement dans un processus métier) au sein du calcul d'agrégation : par exemple, via l'utilisation de moyennes des valeurs de QoS pour traiter les branches conditionnelles. 
+
+% 3 - evaluation des alternatives (NP-Hard)
+% 4 - recompo
+Le caractère particulièrement coûteux d'une évaluation exhaustive et \textit{a priori} de toutes les combinaisons possibles d'affectations renforce le caractère statique de ces approches de composition. Ces travaux proposent alors de les compléter par un processus de \emph{recomposition}, déclenché lors de l'exécution des processus métiers : il s'agit de procéder à une nouvelle affectation de services aux différents sites d'appels du processus, de manière à respecter à nouveau les contraintes non-fonctionnelles. Son coût varie en fonction de l'étendue de la recomposition : pour une recomposition de tout le processus, il est total~\cite{ben2007cocoa, canfora2006service}; pour une ``reconfiguration'' limitée, il peut être minimisé~\cite{colombo2006scene, halima2008qos}.
+
+\subsubsection{Canevas COCOA}
+
+Le canevas COCOA (``COnversation-based service COmposition in pervAsive computing environments'')~\cite{mokhtar2005qos, ben2007cocoa} applique les principes de composition et recomposition de services au contexte de l'informatique omniprésente.
+
+Il prévoit un ensemble d'agrégateurs capables de traiter la \emph{disponibilité}, \emph{latence} et le \emph{coût} des services en fonction de certaines structures précises d'un processus métier (boucles, tests conditionnels, etc.). Le canevas va faire appel à ces formules lors de la composition puis de la recomposition. Cette recomposition est effectuée à partir des services disponibles dans son environnement, lorsqu'une violation de QoS globale est détectée à l'exécution. 
+
+Ces travaux adjoignent au processus de sélection de services un raisonnement logique fondée sur une ontologie de type OWL-S. Les concepts ontologiques utilisés par les consommateurs de services, corrélées à ceux des fournisseurs de services, vont alors influencer la composition de services au même titre que les valeurs de QoS. Les ontologies fixent en effet un cadre pour la définition de nouvelles caractéristiques non-fonctionnelles par extension du modèle de base proposé par COCOA. Dans ces travaux, les ontologies OWL-S ont même vocation à décrire l'ensemble d'une offre ou requête de service, et pas seulement les concepts métiers utilisés pour annoter des offres de type SAWSDL (cf. section~\ref{sec:Services Web sémantiques}). Cependant, on s'aperçoit que la norme SAWSDL s'est vite imposée comme spécification dominante dans les plus récents travaux sur les SSOA, ce qui va probablement induire une mise-à-jour de ces travaux sur le long terme.
+
+\subsubsection{Canfora \textit{et al.}}
+
+Les récents travaux de Canfora \textit{et al.} mettent en avant une approche globale pour traiter la problématique de la composition dynamique des services~\cite{canfora2005qos, canfora2006service}. Elle se décline, d'un point de vue architectural, en un évaluateur de QoS (``QoS evaluator'') et un composant de liaison (``binder''). 
+
+La composition y est réalisée sur la base de caractéristiques à la frontière du fonctionnel et du non-fonctionnel, le plus souvent liées aux domaines métiers. Pour définir ces caractéristiques, les auteurs introduisent un nouveau langage pour la description des propriétés de QoS ainsi qu'un second langage dédié, pour définir les formules mathématiques nécessaires à l'agrégation des données, inspiré des précédents travaux de Cardoso~\cite{cardoso2002quality}. L'\textit{évaluateur de QoS} mis au point est alors chargé d'interpréter les définitions formulées dans ces deux langages.
+
+La problématique de la complexité \textit{NP-difficile} de l'évaluation exhaustive des combinaisons possibles d'affectations de services est traitée, quant à elle, par l'utilisation d'algorithmes génétiques~\cite{canfora2005approach} là où d'autres auteurs ont pu déployer des techniques de programmation en nombres entiers (`ìnteger programming'')~\cite{zeng2004qos}.
+
+Le principe de recomposition est ici décliné sous le vocable de ``re-binding'' des services et de ``replanning'' des processus. En partant de la constatation de la volatilité des valeurs effectives de QoS et de leur évolution par rapport à celles contractées lors de la phase de composition, les auteurs ont mis au point un composant capable d'effectuer, \emph{dans certains cas précis}, une \emph{recomposition localisée} des services au cours de l'exécution des processus métiers. L'idée est donc de se soustraire au coût particulièrement important du calcul complet d'une nouvelle composition en limitant la recomposition à la branche (ou tranche, ``slice'') spécifique du processus en cours d'exécution. La recomposition va alors être déclenchée : 
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\item \textit{a posteriori}, après la constatation d'une violation par un service précédemment composé de ses engagements en termes de QoS;
+\item dans certains cas, de manière préventive avant que la violation ait lieu, si elle est considérée comme hautement probable.
+\end{itemize}
+
+\subsubsection{SCENE}
+
+Le canevas SCENE (``Service Composition ExecutioN Environment'') consiste en une architecture logicielle et un langage défini comme une extension de BPEL~\cite{colombo2006scene}. Le principe de fonctionnement du canevas consiste à permettre dans un premier temps la description des politiques/méthodes de \emph{reconfiguration} qui seront déclenchées suite à la violation d'une ou plusieurs ``règles''. La reconfiguration est en fait une terminologie utilisée dans ces travaux pour désigner une \emph{recomposition partielle} d'un processus, donc \emph{a priori} moins coûteuse. Il est par ailleurs possible de comparer le degré d'expressivité de ces règles à celui des contraintes non-fonctionnelles exprimables dans le langage QML (cf. section~\ref{sec:Contrats de Qualité de Service}). 
+
+A l'exécution, c'est grâce à l'architecture logicielle spécifiquement mise au point que les violations sont détectées et les politiques de recomposition interprétées et déclenchées. Il s'agit donc ici d'orienter la reconfiguration via ces politiques, et non la composition initiale des services effectuée en amont.
+
+\subsubsection{Halima \emph{et al.}}
+
+C'est une seconde approche pour la reconfiguration qui est cette fois proposée par Halima \emph{et al.}~\cite{halima2008qos}. Elle est particulièrement dynamique dans la mesure ou les auteurs préconisent d'observer les messages échangés au sein d'une application répartie fondée sur des services Web pour procéder à des opérations de reconfigurations ponctuelles, limitées dans dans le temps et dans l'espace (ce n'est que dans un cas extrême que la totalité d'un processus aurait à être recomposé). 
+
+Tout comme dans les précédents travaux, la reconfiguration passe par la définition préalable de politiques nécessaires à sa (bonne) conduite, avec la particularité toutefois que ces politiques disposent ici du moyen de provoquer jusqu'au déploiement de nouveaux services sur le réseau.
+
+Par cette dynamicité, ils introduisent la notion d'``auto-réparation'' des processus, qui reste cependant en grande partie à la charge du canevas de support et non du processus lui-même, comme pourrait le laisser entendre cette dénomination. On remarque toutefois que ce type de travaux se situent à la frontière de la notion de recomposition telle que précédemment définie, et une démarche plus \emph{active} comme préconisée dans l'introduction de ce manuscrit. Ils restent cependant prisonniers d'une logique de traitement des pannes et non d'adaptation agile aux fluctuations non-fonctionnelles des services qui les composent.
+
+\subsubsection{WSQoSX}
+
+Les travaux menés par Berbner \emph{et al.} sur l'architecture WSQoSX (``Web Service Quality of Service Architectural Extension''), reposent sur le principe d'une sélection de services réellement dynamique, effectuée lors de l'orchestration d'un processus métier, via un composant proxy qui s'intercale entre le moteur d'orchestration et les services disponibles~\cite{berbner2007wsqosx}.
+
+Cette sélection est menée sur la base des informations de QoS définies dans les contrats rattachés aux services disponibles, et non sur la QoS courante des services au moment de leur sélection. Si le service ne respecte pas son contrat, donc en cas d'erreur, une nouvelle sélection de service, locale au site d'appel du processus, est effectuée. Ce mécanisme est complété par une possibilité de ``replanning'' (donc de recomposition) du processus, si ce premier n'est plus suffisant pour absorber les variations de QoS des services qui avaient été considérés pour la composition.
+
+\subsection{Composition par génération de processus alternatifs équivalents\index{Composition de services!dynamique!par génération de processus alternatifs}}
+
+\subsubsection{Chiu \emph{et al.}}
+
+La composition dynamique sur critères non-fonctionnels proposée par Chiu \emph{et al.} est limitée aux deux dimensions \emph{``accuracy'' }et \emph{``time''}, qui sont intégrées dans le processus décisionnel au moment d'une composition effectuée avant exécution~\cite{chiu2009dynamic}. 
+
+Cette composition de services est donc fondée sur un ensemble très restreint de dimensions préétablies de QoS, dont l'agrégation des valeurs est effectuée grâce à un jeu de formules mathématiques comparables à celles mises en place dans COCOA.
+
+Ces travaux sont axés sur la génération de ``workflows'' : ils cherchent ainsi à établir à l'avance plusieurs \emph{processus alternatifs} capables de répondre à un même besoin fonctionnel décrit de manière abstraite, de manière à pouvoir en changer à l'exécution si les contraintes non-fonctionnelles l'exigent.
+
+\subsubsection{Chafle \emph{et al}}
+
+C'est une approche similaire que l'on retrouve chez Chafle \emph{et al.} : ces travaux cherchent à limiter l'impact de la recomposition de services par le précalcul hors-ligne de plusieurs processus métiers similaires fonctionnellement et qu'il est possible de classer en fonction de leur pertinence par rapport aux contraintes non-fonctionnelles initiales~\cite{chafle2006adaptation}.
+
+En cas de panne, l'algorithme mis au point par les auteurs passe au processus disponible suivant, et, s'il n'en reste plus, fait appel à une coûteuse recomposition globale.
+
+\subsubsection{Canevas CoRE}
+
+Tout comme pour COCOA, l'utilisation d'informations ``sémantiques'' est mise en \oe{}uvre dans un contexte SOA par le récent canevas CoRE (``Component Runtime Environment'')~\cite{fujii2009semantics}.
+
+Cette mise en \oe{}uvre s'effectue alors au travers de son composant SeGSeC (``Semantic Graph based Service Composition''), mais à beaucoup plus grande échelle que dans COCOA, car il s'agit ici de créer un ou plusieurs processus métier alternatifs de toute pièce, à partir de requêtes d'utilisateurs formulées en langage naturel. Ces travaux avancent que la création des alternatives est facilitée par la sémantique métier disponible et se fonde sur un calcul de correspondance entre concepts pour y parvenir.
+
+Ce type d'approche fondée sur le langage naturel est particulièrement tributaire de la richesse des informations fournies par les utilisateurs, de celles disponibles dans le ``contexte'' de l'application répartie, et du nombre de services disponibles. En effet, dans la mesure où un squelette de processus métier n'est pas établi par l'utilisateur avant la phase de composition de services, le composant SeGSeC va nécessiter un nombre important de services fonctionnellement équivalents pour atteindre son plein potentiel de création de processus métiers : chacun de ces services constitue une alternative possible pour répondre aux besoins des utilisateurs et créer un enchaînement logique fondé sur la sémantique.
+
+\subsection{Composition dynamique dirigée par CP-nets\index{Composition de services!dynamique!dirigée par CP-nets}}
+
+\subsubsection{Schröpfer \textit{et al.}} %"article tout pareil que nous"
+
+L'idée d'apparier CP-nets et propriétés non-fonctionnelles, de surcroît pour effectuer de la composition dynamique de services, a déjà fait l'objet d'une étude par Schröpfer \textit{et al.}, les auteurs y définissent des préférences au travers de CP-nets, de manière à pouvoir sélectionner le ``meilleur'' service sur la base de sa QoS~\cite{Sch07}. L'utilisation de TCP-nets leur permettent notamment d'intégrer la notion de compromis qui peut s'avérer indispensable pour l'expression de préférences véritablement utiles.
+
+Par rapport à notre problématique (cf.~\ref{sec:Genèse d'une problématique}) et l'approche que nous préconisons, il semble cependant que deux points manquent dans leur démarche : l'intégration de la notion de QoS courante des services lors du processus décisionnel (ils se fondent sur les contrats non-fonctionnels uniquement), ainsi que la définition explicite d'un procédé permettant de traiter convenablement les domaines par nature continus de QoS (tels que la latence, la bande passante, etc) dans leur représentation qualitative. Pour gérer ces valeurs, ils sont soumis aux même contraintes que celles des UCP et TCP-nets sur lesquels ils reposent : il est nécessaire d'effectuer un partitionnement des domaines strict, aux frontières artificielles, de manière à obtenir des variables manipulables dans les tables de préférences par nature discrètes des TCP-nets (par exemple : si $0 \leq \textrm{bande passante} < 10$ alors on l'appelle \emph{bande passante faible}).
+
+Par ailleurs, comparativement aux précédents travaux sur la recomposition, ceux menés par Schröpfer \textit{et al.} se focalisent bien plus sur l'étape de la sélection des services sur la base de préférences que sur la mise en place du canevas dans lequel s'insère cette sélection. Il apparaît donc comme nécessaire de les intégrer aux d'autres approches plus globales pour pouvoir les exploiter correctement.
+
+\subsubsection{TCP-Compose*}
+
+Les travaux menés par Santhanam \emph{et al.} ont consisté à mettre au point un algorithme \emph{TCP-Compose*} pour la composition ``efficace'' de services Web sur la base de préférences qualitatives. Pour arriver à cette fin, ils se fondent sur les réseaux de type TCP-net.
+~\cite{santhanam2008tcp}, ce qui leur permet de disposer de modèles dont les propriétés sont assez similaires à ceux de Schröpfer \textit{et al.}.
+
+Cependant, leur algorithme propose de s'atteler au calcul d'une composition dans son ensemble et non, contrairement à ces derniers, à celui d'une sélection individuelle de service. Cette approche ambitieuse repose alors sur le \emph{calcul de dominance} des affectations d'un TCP-net dont la définition doit englober toutes les caractéristiques non-fonctionnelles considérés de la composition.
+
+Cette démarche a néanmoins un impact non négligeable sur le caractère dynamique de la composition puisque celle ci devient insécable par la nature même de l'algorithme de comparaison TCP-Compose* et du calcul de dominance sur CP-nets. Elle devrait donc être probablement accompagnée d'une recomposition, même si celle-ci n'est pas encore envisagée par les auteurs.
+
+\subsection{Synthèse}
+
+Les différentes approches pour la composition dynamique de services sous contraintes non-fonctionnelles que nous avons abordées dans cet état de l'art présentent des fonctionnalités évoluées et sont le résultat d'une communauté scientifique toujours très active. Cependant, par rapport à notre problématique précise de mise en \oe{}uvre d'une composition agile de services, leurs limitations sont le plus souvent similaires : la composition des services est effectuée relativement tôt dans le cycle de vies de processus métiers et la mise en avant de la recomposation, comme principe d'adaptation aux évolutions du contexte à l'exécution, peu pertinente dans le cas où les caractéristiques non-fonctionnelles des services varient au sein de bornes de QoS définies comme acceptables dans les contrats de Qualité de Service : dans ce cas, les ``erreurs'' qui servent de déclencheurs à la recomposition ou la reconfiguration ne sont pas levées, ou alors seulement après accumulation.  C'est ce constat qui va mener à la distinction entre composition \emph{active} et composition \emph{dynamique} (cf. section~\ref{sec:Composition active vs composition dynamique}).
+
+\section{Conclusion}
+
+Nous avons effectué, dans ce chapitre, un état de l'art des travaux connexes aux contributions de cette thèse. Concernant l'\emph{approche linguistique pour raisonner} et la \emph{modélisation compacte de préférences}, il apparaît qu'une combinaison des deux approches au sein d'un même formalisme n'ait pas encore été, à ce jour, effectuée et appliquée à notre problématique de prise en compte des contraintes non-fonctionnelles lors de la composition de services : elle apporte pourtant la promesse d'une meilleure prise en charge des préférences des utilisateurs en fournissant les outils formels permettant notamment de franchir convenablement le fossé séparant domaines continus de QoS et termes linguistiques du langage courant, flous par nature. C'est cette démarche qui sera mise en \oe{}uvre lors de la \emph{composition utile} de services (cf. chapitre~\ref{ch:Composition utile de services}).
+
+A l'issue de l'état de l'art sur la \emph{composition dynamique de services sous contraintes non-fonctionnelles}, apparaît une absence certaine de la prise en charge des multiples variations de la QoS \emph{courante} des composants (services dans le contexte SSOA) d'une application répartie, quand ceux si se situent \emph{sous} le seuil de déclenchement d'une erreur bloquante pour la bonne marche processus métier en cours d'exécution. L'intégration dynamique de ces valeurs courantes, conditionnée par les préférences des utilisateurs, et ce pendant l'orchestration des services, aurait pourtant comme avantage de permettre une meilleure adaptivité des applications à leurs milieux. Cette adaptivité va d'ailleurs s'avérer particulièrement utile au cas d'utilisation de nos travaux (cf. chapitre~\ref{ch:cas_utilisation}). Par ailleurs, cette technique présenterait l'opportunité de palier, si possible, l'accumulation de petites déviations locales des propriétés non-fonctionnelles des services orchestrés. Ce constat est à la base de notre contribution en terme de \emph{composition active} des services (cf. chapitre~\ref{ch:Composition active de services}).
+

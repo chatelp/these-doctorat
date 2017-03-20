@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+		targetNamespace="http://www.eclipse.org/tptp/choreography/2004/engine/Print" 
+		xmlns:tns="http://www.eclipse.org/tptp/choreography/2004/engine/Print" 
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+		xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+		xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/" 
+		xmlns:java="http://schemas.xmlsoap.org/wsdl/java/"
+		>
+
+    <!-- engine printout port -->
+    <message name="PrintMessage">
+        <part name="value" type="xsd:string"/>
+    </message>
+    
+    <portType name="Print">
+        <operation name="print">
+            <input message="tns:PrintMessage"/>
+        </operation>
+    </portType>
+    
+    <binding name="PrintPortWsifBinding" type="tns:Print">
+        <java:binding/>
+        
+        <format:typeMapping encoding="Java" style="Java">
+            <format:typeMap typeName="xsd:string" formatType="java.lang.String"/>
+        </format:typeMapping>
+        
+        <operation name="print">
+            <java:operation methodName="print" parameterOrder="value"/>
+        </operation>
+    </binding>
+    
+    <service>
+        <port name="JavaPrintPort" binding="tns:PrintPortWsifBinding">
+            <java:address className="org.eclipse.tptp.choreography.jengine.internal.extensions.wsdlbinding.wsif.ports.EnginePrinterPort"/>
+        </port>
+    </service>
+    
+    <partnerLinkType name="printLink">
+        <role name="printService" portType="tns:Print"/>
+    </partnerLinkType>
+    
+</definitions>

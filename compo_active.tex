@@ -1,0 +1,270 @@
+% These - Composition active de services (Liaison tardive)
+% (c) 2009-2010 Pierre CHATEL
+
+\section{Introduction}
+
+\lettrine{D}{ans le contexte} de l'implantation d'applications réparties à large échelle, tout particulièrement \textit{via} le Web, les architectures de type SOA sont devenues, au cours des ans, un élément de réponse incontournable aux problématiques de répartition et de communication entre les entités de ces systèmes complexes. Comme nous l'avons vu, une seconde itération de ces architectures, les SSOA, vient compléter sans rupture technologique franche le panel des facilités mises à la disposition des fournisseurs de services : un meilleur découplage entre offres et demandes de services, ainsi qu'une augmentation du niveau d'abstraction lors de leur spécification.
+
+Bien que l'approche SSOA pose les bases indispensables à notre travail, elle reste cependant muette quant aux problématiques levées par le contexte dans lequel s'inscrit ce manuscrit. Dans ce dernier, les services utilisés par les applications réparties sont rarement connus au moment de l'écriture des processus métier, il est par ailleurs nécessaire de faire preuve d'une grande agilité à l'exécution de manière à pouvoir incorporer tardivement, au processus de composition, des services découverts dynamiquement, tout en prenant en compte de multiples contraintes non-fonctionnelles. Bien que ces problématiques découlent ici directement de notre contexte d'application (elle sont mises en exergue par notre cas d'utilisation en gestion de crise environnementale détaillé au chapitre~\ref{ch:cas_utilisation}), on peut aisément concevoir leur pertinence au delà de ces frontières. 
+
+Ainsi, la nécessité de répondre à ces diverses questions se traduit, dans le cadre de nos travaux, par la mise en \oe{}uvre d'une \emph{composition active de services} \textit{via} la description et l'implantation d'une \emph{approche pour la liaison tardive de services} lors de leur orchestration. Sont alors définis dans ce chapitre différents concepts et abstractions de programmation à adopter pour implanter une \emph{décision de liaison} tardive et efficace des fournisseurs aux consommateurs de services. De même, nous mettons en avant l'importance des décisions de liaison qui ne peuvent (ou ne doivent) être prisent que lors de l'exécution des processus, sur la base de leurs besoins non-fonctionnels et des caractéristiques courantes des services disponibles. L'approche permettant d'effectuer ces décisions de liaison, ainsi que le choix du moment le plus opportun pour les réaliser, constituent dès lors le c\oe{}ur de notre composition active de services.
+
+%Afin d'illustrer concepts et abstractions au cours du chapitre, nous nous fonderons tout naturellement sur le cas d'utilisation introduit au chapitre~\ref{ch:cas_utilisation}, tout en nous efforçant de ne pas égarer le lecteur dans une multitude des détails techniques.
+
+Ce chapitre est organisé comme suit : en tout premier lieu, on présente en ~\ref{sec:Composition active vs composition dynamique} une comparaison entre les compositions actives et dynamique. Ensuite, en ~\ref{sec:Une approche pour la liaison tardive de services}, on avance les principes dirigeant notre approche pour la liaison tardive de services lors de leur orchestration. On y aborde notamment les bénéfices à tirer de cette approche dans le contexte des SSOA. Les sous-chapitres~\ref{sec:Filtrage de services} et~\ref{sec:Supervision des services candidats} décrivent ensuite les étapes préliminaires qui sont nécessaires à la mise en \oe{}uvre de la liaison tardive à proprement parler, elle même approfondie dans le sous-chapitre~\ref{sec:Liaison tardive d'un service}.
+
+
+\section{Composition active \textit{vs.} composition dynamique}
+\label{sec:Composition active vs composition dynamique}
+
+Dans le cadre de l'état de l'art de ce manuscrit (cf. chapitre~\ref{ch:etat_art}), nous avons abordé de multiples travaux pré-existant dans le domaine de la composition de services sous contraintes non-fonctionnelles. Ils sont présentés comme ``dynamiques''\index{Composition de services!y@dynamique} dans la mesure où ils sont capables d'effectuer, lors du déploiement des processus, un ensemble de choix de liaison, en fonction des contraintes non-fonctionnelles des processus et des propriétés contractuelles statiques des services. 
+
+Ces choix d'affectation étant effectués en majeure partie lors du chargement des processus dans le canevas d'exécution, c'est-à-dire avant l'exécution de leur partie métier, ils ne sont remis en cause par recomposition que lors de \emph{violations manifestes des contraintes non-fonctionnelles} sur lesquelles se sont accordés les différents acteurs de la composition. On peut comparer ce mode de fonctionnement à celui d'un mécanisme de gestion d'``exceptions''. 
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=160mm]{figures/late_binding_recomposition.pdf}
+    \caption{\label{fig:late_binding_recomposition}Composition dynamique : violation de contrainte à l'exécution.}
+  \end{center}
+\end{figure} 
+
+Ainsi, en reprenant après composition l'exemple que nous avions introduit à la section~\ref{sec:Gestion de la dynamicité par recomposition} (cf. figure~\ref{fig:late_binding_recomposition}); si pendant l'exécution de $process$ le service $S_2$ ne respecte pas son contrat et dépasse 20ms ($t_{S2} = 30 ms$), tout le reste de la composition est remis en question car, dans le pire des cas, $t_{process} = 43 ms$. Il est alors nécessaire de gérer cette exception en effectuant une recomposition du segment en cours d'exécution de $process$, ou de le recomposer en totalité (ici \textit{Affectation \#2}).
+
+On peut donc qualifier ces approches pour la composition dynamique de services comme étant \emph{``défensives''}. La recomposition des services, processus particulièrement coûteux en temps malgré les optimisations, y est présentée bien souvent comme l'unique moyen d'adaptation aux contraintes environnementales courantes, et n'est déclenchée qu'\emph{en réaction à une erreur patente} pendant l'exécution du processus.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=160mm]{figures/late_binding_composition_active.pdf}
+    \caption{\label{fig:late_binding_composition_active}Composition active de services.}
+  \end{center}
+\end{figure} 
+
+Nous proposons alors un nouveau mécanisme qui peut être considéré comme \emph{complémentaire} de cette composition dynamique défensive : la \emph{composition active de services}\index{Composition de services!a@active|textbf}. Nous nous démarquons alors des approches traditionnelles dans la mesure où la recomposition n'y est considérée que comme dernier rempart aux écarts les plus importants lors de l'exécution. Sans attendre son intervention, la composition active va sélectionner \emph{pendant} l'orchestration de services, pour chaque site d'invocation, le service répondant le mieux, \emph{à cet instant}, aux contraintes non-fonctionnelles locales, par l'intégration de ses propriétés courantes mesurées (cf. figure~\ref{fig:late_binding_composition_active}). Ce mécanisme de sélection fait partie intégrante de notre approche pour la \emph{liaison tardive de services} présentée ci dessous.
+
+La sélection d'un service, qui est locale à chaque site d'invocation, est effectuée \emph{au sein d'un groupe de services fonctionnellement équivalents}. Ces groupes sont prédéterminés par le biais d'un mécanisme de filtrage que nous abordons dans la section~\ref{sec:Filtrage de services}. Il pourraient aussi être le fruit d'un processus amont de composition dynamique :  si les affectations globales de services issues de la composition dynamique ne prévoient normalement qu'un seul service pour chaque site d'appel (cf. affectation n°1 sur le figure~\ref{fig:late_binding_recomposition}), il est cependant raisonnable d'avancer que la composition dynamique serait aussi en mesure de fournir plusieurs alternatives pour chaque sites d'appels. Il s'agit là d'une nouvelle marque de la complémentarité potentielle entre approches dynamiques et composition active.
+
+\section{Une approche pour la liaison tardive de services\index{Liaison tardive de services|textbf}}
+\label{sec:Une approche pour la liaison tardive de services}
+
+Si la prise en compte des contraintes de Qualité de Service lors de l'exécution des processus métier apparaît effectivement comme importante, elle ne doit pas pâtir, dans notre contexte SSOA, du faible couplage entre processus et services (cf. section~\ref{sec:Services Web sémantiques}) : \emph{nous avançons qu'elle peut même en bénéficier} si elle est correctement exploitée. En effet, ce couplage lâche, qui s'exprime lors de la spécification d'un processus métier, induit tôt \emph{ou tard} la nécessité d'une décision de liaison effective à un service concret de manière à pouvoir poursuivre son exécution. Nous constatons alors que la pertinence de cette décision de liaison, effectuée notamment sur la base de critères non-fonctionnels, serait d'autant plus grande qu'elle reposerait sur des informations de QoS ponctuelles, recueillies \emph{le plus tardivement possible}. 
+
+Par conséquent, nous avançons que la décision doit être prise à la volée, à l'extremum du cycle de vie d'un processus : en l'occurrence pendant son orchestration, lors de chaque appel de service qui en émane. Ce positionnement temporel disqualifie \textit{per se} les liaisons fermement établies au moment de la définition du processus client; leur pertinence non-fonctionnelle étant relativement très faible, si ce n'est inadéquate. De cette observation naît notre démarche de liaison tardive de services~\cite{Chatel2010b}, tout particulièrement justifiée par les variations fréquentes du niveau courant de QoS des services ainsi que la durée moyenne d'exécution relativement longue des processus métiers dans le contexte du cas d'utilisation en gestion de crise environnementale que nous avons introduit. La liaison tardive des services de \emph{drones}, \emph{pompiers} et \emph{camions} au processus métier de gestion d'incendie que nous avons précédemment introduit est illustrée par la figure~\ref{fig:compo_active_cas_utilisation_ex1} : à chaque activité est associée une décision de liaison effectuée sur la base des valeurs de QoS recueillies tardivement sur les équipements et personnels disponibles.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=160mm]{figures/compo_active_cas_utilisation_ex1.pdf}
+    \caption{\label{fig:compo_active_cas_utilisation_ex1}Cas d'utilisation et liaison tardive.}
+  \end{center}
+\end{figure} 
+
+Cependant, l'impact de cette démarche sur les performances des intergiciels de support des SSOA ne doit pas être négligé. En effet, tandis que cette nouvelle forme de liaison ouvre la voie à des applications réparties plus agiles et plus robustes, les problématiques et spécificités liées à son implantation doivent être étudiées et traitées. Pour minimiser cet impact, nous proposons la mise en place d'une approche globale pour la liaison tardive de services. Cette approche inclue deux étapes préliminaires à la phase ultime de liaison tardive à proprement parler; de manière à passer outre, au moment de de la décision de liaison et de l'appel de service, certains délais liés aux premiers algorithmes d'appariement et au recueil des informations nécessaires à la décision. Pour ce faire, nous proposons premièrement de préétablir \emph{par filtrage statique} un ensemble de services candidats par source d'appel dans les processus métiers, avant leur exécution; ces ensembles seront alors immédiatement \emph{supervisés} de manière à pouvoir obtenir à tout moment l'état non-fonctionnel courant de chaque service lors de l'exécution des processus. Reste alors à effectuer, au moment précis de l'appel de service, les \emph{décisions tardives de liaison} qui s'imposent, en considérant ces ensembles prédéterminés de services et leurs valeurs courantes, pertinentes, de QoS.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/late_binding_layers.pdf}
+    \caption{\label{fig:late_binding_layers}Etapes d'une approche pour la liaison tardive de services.}
+  \end{center}
+\end{figure} 
+
+Nous nous focalisons donc, dans les sections suivantes, sur les diverses étapes logiques propres à cette approche de liaison tardive de services. Elles sont présentées de manière condensée dans la figure~\ref{fig:late_binding_layers} et dénombrées ci-après :
+
+\begin{enumerate}
+\setlength{\itemsep}{3mm}
+
+\item en tout premier lieu, le filtrage des services, détaillé en~\ref{sec:Filtrage de services}, ce dernier étant effectué au niveau des annuaires sur critères fonctionnels et non-fonctionnels. C'est à l'issue de cette étape que les ensembles de services candidats sont obtenus. Elle englobe par ailleurs, le cas échéant, le calcul des modèles d'adaptation de données utilisés lors du futur dialogue entre les services retenus et le processus métier client de ces services;
+
+\item suivi ensuite par la mise en place et le déclenchement de la supervision de services à partir de ces ensembles, détaillée en~\ref{sec:Supervision des services candidats}. Cette supervision sera effectuée en parallèle de l'exécution des processus métiers, de manière à pouvoir obtenir des informations ``fraîches'' sur l'état courant des services, et ce à tout moment;
+
+\item et pour finir, la liaison tardive d'un service, vue en~\ref{sec:Liaison tardive d'un service} qui se décompose en une première étape de sélection du service considéré comme le plus approprié à cet instant, puis une seconde étape d'invocation de ce service adaptation des données échangées. La décision de liaison faisant notamment appel aux valeurs de QoS obtenues \textit{via} le canevas de supervision des services préalablement déployé.
+
+\end{enumerate}
+
+On remarque que l'on retrouve respectivement dans ces étapes logiques les deux niveaux logiciels abstraits de \textit{filtrage des services et exécution du processus métier} et \textit{contrôle et décision} évoqués précédemment (cf. section~\ref{sec:intro_gene:Approche poursuivie}).
+
+
+\section{Filtrage de services}
+\label{sec:Filtrage de services}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/late_binding_filtering.pdf}
+    \caption{\label{fig:late_binding_filtering}Filtrage de services.}
+  \end{center}
+\end{figure} 
+
+Dans notre contexte de SOA Sémantique, les offres fonctionnelles et non-fonctionnelles de services vont être publiées et stockées dans des annuaires prévus à cet effet, de manière à pouvoir être ``découvertes'' et associées à des processus métiers, le moment venu. Les annuaires de services sont alors tout désignés pour implanter cette fonctionnalité de filtrage des services disponibles dépeinte par la figure~\ref{fig:late_binding_filtering}. Ainsi, à partir des besoins fonctionnels et non-fonctionnels (syntaxiques et sémantiques) qui lui sont communiqués pour chaque source d'appel de service d'un processus métier, un annuaire doit alors être capable d'établir l'ensemble des services pertinents et communiquer ce résultat. Ce procédé, qui implique notamment un raisonnement sur des concepts ontologiques, a un coût temporel non-négligeable, proportionnel au nombre de services répertoriés par l'annuaire et à la complexité de la requête.
+
+%Pierre 12/01/09 : Il faut des chiffres ! Ceux de SETHA 2.0, Aurélien ?
+
+\subsection{Impact du calcul des modèles pour l'adaptation de données}
+
+Le filtrage qui permet la construction d'ensembles de services candidats doit être complété, tôt ou tard, par le calcul de modèles d'adaptation entre les structures de données tels qu'utilisées lors de la définition des besoins des processus et ceux exposés dans les offres concrètes des services candidats, quitte à éliminer certains services retenus si le l'obtention de ces modèles d'adaptation est impossible. En effet, dans les SSOA, à partir du moment où l'appariement est dirigé par des critères sémantiques de haut niveau, rien ne garantit une parfaite correspondance entre processus et services au plus bas niveau syntaxique; niveau qui concerne les structures de données utilisées lors du passage d'arguments aux services et la récupération de leurs valeurs de retour. Une première approche de traitement de cette problématique d'adaptation de données a été précédemment abordée dans le contexte des service Web sémantiques (cf.~\ref{sec:Services Web sémantiques}), elle consiste à utiliser les capacités d'annotation de la spécification SAWSDL pour lier par transitivité offres et besoins au travers d'une ontologie pivot, \textit{via} la définition de transformations de données au format XML. L'ensemble de ces transformations constitue alors le modèle d'adaptation des données à appliquer lors de l'exécution d'une application Web. Cette solution technique ne précise cependant pas à quel moment les transformations doivent être calculées; et il ne faut pas sous-estimer, là non plus, le coût de l'obtention de ces transformations, qu'elle soit manuelle ou effectuée par inférence logique.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=160mm]{figures/late_binding_adaptateurs_aurelien.pdf}
+    \caption{\label{fig:late_binding_adaptateurs_aurelien}Comparaison des temps d'exécution de la génération des adaptateurs et de l'exécution de la composition.}
+  \end{center}
+\end{figure} 
+
+Afin d'illustrer l'impact très concret du calcul des modèles d'adaptation sur l'étape de filtrage des services, nous prenons pour exemple les récents travaux de Moreau \textit{et al.}~\cite{MoMD09} sur ``la mise en \oe{}uvre automatique de processus métier dans le domaine des architectures orientée services''. Ils cherchent à mettre au point de nouvelles solutions pour l'adaptation (automatique) de données et la sélection de services. Il s'agit donc bien ici d'obtenir des modèles d'adaptation par une inférence logique élaborée, sans intervention humaine. La génération automatique d'``adaptateur'' est effectuée par une étude particulièrement poussée de la structure des schémas de données à apparier, dirigée par des informations de niveau sémantique disposées de part et d'autre. Cependant, l'étude relative des performances du générateur d'adaptateur sur un cas d'utilisation concret montre clairement les limites de cette approche pour une utilisation dynamique au cours de l'orchestration des services : le cas d'utilisation UTP (où ``Urban Trip Planner'') défini par Baligand \textit{et al.}~\cite{baligand2007declarative} et repris par Moreau \textit{et al.} propose un processus métier où cinq activités d'invocation de services externes nécessitent la génération d'autant d'adaptateurs de données. Si l'on compare sur 150 itérations le temps d'exécution moyen de la génération consécutive de ces cinq adaptateurs sous forme de feuilles XSL (au total \textit{140 ms}), avec celui de la composition elle-même (\textit{130 ms}), on constate une quasi-équivalence des deux durées; ce qui signifie que si les deux processus (génération des adaptateurs et composition de services) sont effectués conjointement, le temps d'exécution total du processus métier\emph{ va plus que doubler}. La figure~\ref{fig:late_binding_adaptateurs_aurelien} compare ainsi les résultats obtenus pour la génération d'adaptation au temps d'exécution des différentes tâches de l'orchestration. La longueur des pavés est proportionnelle à leur temps d'exécution en milliseconde. Les pavés $Gen A_i$ représentent les temps d'exécution du module de génération d'adaptateurs pour les activités $A_i$ correspondantes.
+
+Nous en déduisons que le filtrage des services disponibles ainsi que le calcul des modèles d'adaptation de données doivent être effectués \emph{préalablement à l'exécution du processus métier}, et ce pour d'évidentes raisons de performance : par un tel procédé on minimise l'impact sur l'exécution du processus des algorithmes d'appariement de services, de calcul des modèles d'adaptation de données, et des accès réseau subséquents.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/late_binding_from_static_to_dynamic.pdf}
+    \caption{\label{fig:late_binding_from_static_to_dynamic}Transition progressive
+      du statique au dynamique.}
+  \end{center}
+\end{figure} 
+
+Cependant, cette approche d'application précoce des algorithmes se heurte aux caractéristiques intrinsèques du contexte, et plus particulièrement à celle de couplage lâche des services aux processus qui plaide, au contraire, pour leur mise en \oe{}uvre tardive. Un ``juste milieu'' doit donc être trouvé entre ces deux tendances antagonistes, il passe par une étude plus approfondie du cycle de vie des processus. De fait, on distingue, dans le cadre d'un SSOA, deux principaux ``moments'' auxquels peuvent se rattacher les différentes étapes qui doivent précéder l'exécution d'un processus métier : lors de la définition du processus (\textit{t1}), ou bien au moment du chargement préalable à son exécution (\textit{t2}). Dans ces deux cas, on parlera alors d'une étape \textit{statique} puisqu'effectuée avant l'exécution du code métier de l'application répartie; par opposition à une étape dite \textit{dynamique} qui pourra être mise en \oe{}uvre ``juste à temps'' (``just-in-time'') au cours de l'exécution d'un processus (\textit{t3}). Il faut cependant rester conscient qu'il n'existe pas de stricte séparation entre les moments statiques et dynamiques, plutôt une transition progressive, telle qu'illustrée par la figure~\ref{fig:late_binding_from_static_to_dynamic} où l'on retrouve les moments de définition, chargement et exécution d'un processus. 
+
+\subsection{Options pour la répartition temporelle des tâches de filtrage et de calcul des modèles}
+\label{sec:repartition_temporelle}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=140mm]{figures/late_binding_filtrage_repartition.pdf}
+    \caption{\label{fig:late_binding_filtrage_repartition}Répartition des tâches de filtrage et de calcul des modèles d'adaptation de données.}
+  \end{center}
+\end{figure} 
+
+En se basant sur le cycle de vie des processus métiers, la figure~\ref{fig:late_binding_filtrage_repartition} présente de multiples solutions (numérotées de 1 à 4) quant à la répartition des tâches de filtrage et de calcul des modèles d'adaptation de données. Le choix d'une option par rapport à l'autre s'effectue lors de l'implantation de l'architecture de support de la composition active de services, en fonction des contraintes liées à son contexte usuel de déploiement.
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item La première option de filtrage et calcul statique des modèles d'adaptation a été suivie par Moreau \textit{et al.}~\cite{MoMD09}. Ces travaux mettant en \oe{}uvre des techniques élaborées pour le calcul des modèles d'adaptation de données entre offres et besoins de services, les algorithmes incriminés sont particulièrement gourmands en temps, comme il a été précédemment évoqué. Cependant, puisque le filtrage des services et le calcul des modèles d'adaptation de données sont ici effectués tous deux en \textit{t1}, cette option présente l'avantage de lever en très grande partie les contraintes temporelles sur leur exécution. Par conséquent, il est donc possible de procéder à des appariements plus fins, ou qui seraient peut-être même inaccessibles à des algorithmes plus simples et donc moins coûteux en temps. Toutefois, le couplage lâche entre services et processus dont nous somme tributaires proscrit cette approche dans la mesure où les offres de services ne sont pas encore connues lors de la définition du processus en \textit{t1}. L'adjonction d'un cache pour conserver les adaptateurs entre chaque exécution d'un processus est avancé dans ces travaux pour optimiser leur génération, dans l'optique d'utiliser les même algorithmes mais cette fois pendant l'exécution des processus métiers. Cependant, ces améliorations restent difficilement applicables dans le contexte qui est le notre où les services et leurs types de données sont amenés à varier entre chaque exécution.
+
+\item La seconde option découple le calcul des modèles d'adaptation effectué en \textit{t1} de l'étape de filtrage des services à proprement parler qui n'intervient que dans un second temps en \textit{t2}, c'est-à-dire lors du chargement du processus métier. Cette approche, tout comme les deux suivantes, est plus appropriée dans un contexte SSOA particulièrement dynamique : le filtrage n'intervenant que lors du chargement du processus, il est en mesure de ne considérer que les services effectivement disponibles à cet instant. La complexité du calcul des modèles d'adaptation est effectivement reléguée au moment de la définition des offres de services et des processus de façon à ce qu'elle n'influe en rien sur l'exécution de ces derniers, tout comme dans la première approche. C'est par ailleurs l'approche qui est implicitement préconisée par la spécification SAWSDL et mise en \oe{}uvre dans nos précédents travaux sur une une architecture pour la découverte et l'orchestration de services Web sémantiques~\cite{Chatel2007a, Chatel2007b} : le calcul des modèles d'adaptation est possible avant même de filtrer les services dans la mesure où il fait intervenir un modèle pivot de données auxquels doivent se référer tous les producteurs et consommateurs de services. Il s'agit d'ailleurs là de sa principale faiblesse car il nécessite une forte implication des différents protagonistes pour décrire à l'avance les transformations de données rattachées aux annotations \textit{lifting} et \textit{loweringSchemaMappings} des offres et demandes de services SAWSDL. Par ailleurs, ces transformations doivent logiquement être décrites pour \emph{tous} les types de données considérés.
+
+\item La troisième alternative opte pour une co-localisation temporelle du filtrage des services et du calcul des modèles d'adaptation en \textit{t2}, et ce pour un maximum de dynamicité. Contrairement à l'approche précédente, les modèles d'adaptation ne doivent être calculés que pour les sous-ensembles de services effectivement filtrés au chargement d'un processus, et non dans leur intégralité. Cependant, ce calcul étant initié lors du chargement du processus, il doit être effectuée de manière intégralement autonome et automatique (plus d'opérateurs humain pour le guider à cet instant) et ce dans un temps contraint : l'utilisation d'algorithmes complexes d'appariement n'est plus une option. Concrètement, il s'agit donc de mettre ici à l'\oe{}uvre des techniques d'adaptation de données plus simples et moins coûteuses en temps car le processus métier ne doit pas avoir à s'arrêter pour attendre que les modèles d'adaptation de données soient calculés. Des services qui auraient été appariés par l'utilisation d'algorithmes plus complexes peuvent ne plus l'être. Cependant, cet inconvénient est contre-balancé par la diversité de choix induite par le paradigme SSOA : de nombreux services fonctionnellement équivalents sont sensés entrer en concurrence au sein d'une infrastructure sous-jacente hautement dynamique.
+
+\item La quatrième et dernière option positionne, tout comme dans les deux précédentes approches, l'étape de filtrage des services (et donc de constitution des multiples ensembles de services candidats) en \textit{t2}, lors du chargement du processus. Cette option présente cependant l'originalité de ne pas pré-calculer de modèles d'adaptation de donnée, mais se contente de faire une adaptation directe des données transmises entre processus et services lors de l'exécution.  Dans ce cas de figure, seul un mécanisme d'adaptation \emph{particulièrement basique} (et donc rapide) peut alors être implanté : on cherche en effet à minimiser l'impact très direct sur le temps d'exécution du processus de l'algorithme d'adaptation des données, ces dernières étant transformées ``sur le fil''.
+
+\end{itemize}
+
+%Cette subtile distinction est alors exploitée dans notre approche afin d'améliorer la performance globale de la liaison tardive de services en reléguant les tâches les plus gourmandes en temps aux moments statiques, tâches dont font ici partie le filtrage de services et le calcul des modèles d'adaptation de données, tout en tirant au mieux parti des moments dynamiques en y réalisant la sélection non-fonctionnelle des services et leur invocation (cf. section~\ref{sec:Liaison tardive d'un service}).
+
+Pour finir, tel qu'illustré dans la figure~\ref{fig:late_binding_filtering}, à l'issue de cette étape de filtrage fonctionnel et non-fonctionnel des services, les informations techniques nécessaires à l'invocation ultérieure en liaison tardive de chaque service retenu sont obtenues (les offres de service retenues et les éventuels modèles d'adaptation de données), ainsi que celles indispensables à la mise en place de leur supervision (les contrats non-fonctionnels négociés entre le processus client et les services qui décrivent les multiples dimensions de QoS mesurables). Cette remarque étant par ailleurs valable quelque-soit l'option retenue parmi les trois dernières alternatives viables pour le calcul des modèles d'adaptation de données.
+
+
+\section{Supervision des services candidats}
+\label{sec:Supervision des services candidats}
+
+La supervision\index{Supervision|textbf} des services (on parle aussi de \textit{``monitoring''}) est l'étape de notre approche par laquelle des informations non-fonctionnelles que l'on considère comme cruciales aux prises de décision de liaison ultérieures sont recueillies et exposées. Il s'agit donc de répondre ici à deux questions diffuses concernant cette supervision : le \textit{``comment ?''} puis le \textit{``quand ?''}, et ce dans notre contexte SSOA à faible couplage.
+
+%% --> Comment ?
+\subsection{Mise en \oe{}uvre de la supervision}
+
+Nous présentons ci-dessous trois alternatives concrètes pour la réalisation de la supervision au sein de la composition active de services :
+
+\begin{enumerate}
+\setlength{\itemsep}{3mm}
+
+\item \emph{Une participation volontaire des fournisseurs de services}, où l'on dispose éventuellement d'un tiers de confiance. Dans ce cas de figure, ce sont alors les services eux-mêmes qui vont fournir en continu les valeurs courantes de chacune de leurs propriétés de QoS.
+
+\item \emph{Une supervision réalisée au niveau de l'intergiciel SSOA} et de son bus de services (dans le cadre de SemEUsE, il s'agirait de Petals\footnote{\href{http://petals.ow2.org/}{http://petals.ow2.org/}}), en supposant effectivement que le processus métier client s'exécute sur le même bus que celui où les services candidats seront enregistrés. Les données ainsi recueillies pourraient aussi être capitalisées et partagées à plusieurs niveaux : par exemple entre les processus métiers qui s'exécutent sur un même bus, entre plusieurs clients ayant chacun plusieurs processus métiers à exécuter, entre de très nombreux processus métiers dans le cas d'un bus s'exécutant sur une grappe de machine de type ``cloud'', etc.
+
+\item \emph{Une supervision effectuée par le processus métier lui-même}, qui accumule des données lors de chaque appel de services, en suivant donc une approche d'apprentissage en ligne. Il s'agit donc moins dans cette option de QoS \emph{courante} que de valeurs résultants d'un calcul effectué à partir des valeurs obtenues depuis le début de l'exécution du processus.
+
+\end{enumerate}
+
+%% Justification de l'option #1
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/compo_active_cas_utilisation_ex2.pdf}
+    \caption{\label{fig:compo_active_cas_utilisation_ex2}Participation volontaire des drones à la supervision.}
+  \end{center}
+\end{figure} 
+
+\emph{C'est la première des trois options qui a été retenue dans notre approche}, elle est illustrée schématiquement par la figure~\ref{fig:compo_active_cas_utilisation_ex2} où les drones rendent volontairement disponibles leurs valeurs courantes de QoS en terme de résolution d'image, via un canevas de supervision, à partir duquel les valeurs courantes de QoS sont ensuite récupérées pour effectuer une décision de liaison de service. Il faut cependant noter qu'elles ne sont pas antinomiques et pourraient conjointement faire partie d'une approche plus globale, bien que probablement redondante, de la supervision. Cette participation volontaire est viable car nous partons du constat qu'un service donné aura avantage à publier sa Qualité de Service courante si cette dernière est bien meilleure que celle portée comme extremum dans son contrat non-fonctionnel précédemment annoncé. Ce qui sera le cas si le fournisseur a pris de grandes marges dans le contrat afin de ne pas avoir à  payer de pénalités en cas de violation des garanties, mais qu'il fourni habituellement en pratique une bien meilleure QoS. Dans ce contexte, concurrence entre services aidant, ses semblables suivront si les consommateurs de services plébiscitent les fournisseurs qui fournissent ces valeurs courantes.
+
+Bien que cette option puisse malgré-tout sembler avant-gardiste compte tenu de l'état actuel du déploiement de ce type de technologies dans le monde de l'entreprise, elle risque de devenir inévitable, à plus ou moins courte échéance, si les besoins actuels et bien réels en termes de \emph{certification} des activités liées aux technologies non-fonctionnelles de services se concrétisent au niveau industriel. De fait, quand les fournisseurs de services chercherons à obtenir des certifications de type \textit{ISO-900X}, fort est à parier que la possibilité de vérifier la qualité du service rendu (ou perçu) fera partie intégrante de ces certifications; la capacité à \emph{s'auto-évaluer} en est le plus souvent une caractéristique essentielle. Ce modèle économique, fondé sur la crédibilité des fournisseurs de services, ne peut alors que renforcer la pertinence de la participation volontaire de ces derniers au processus de supervision.
+
+Ainsi, une hypothèse centrale à notre approche est que les contrats non-fonctionnels, ``signés'' par les fournisseurs de services suite aux négociations effectuées lors du précédent filtrage, expriment les propriétés de QoS qu'il est possible de superviser tout au long de l'existence des services. Cependant, si la supervision des services est effectivement un moyen particulièrement adapté à l'obtention des valeurs pertinentes de QoS pour la prise de décision de liaison, une alternative sensiblement dégradée consisterait à toujours considérer lors de la décision la ``pire'' valeur possible de QoS selon les bornes définies dans le contrat statique. Cette approche pessimiste, qui n'a pas été retenue pour nos travaux, pourrait néanmoins y être utilisée comme mécanisme de secours en cas de défaillance technique du canevas de supervision.
+
+\subsection{Un ensemble de contraintes spécifiques}
+\label{sec:Un ensemble de contraintes spécifiques}
+
+L'approche générale pour la supervision des services étant fixée, il subsiste un ensemble de contraintes, propre à la prise de décision dynamique, qui s'y applique. Ces contraintes portent sur :
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+\setlength{\itemsep}{3mm}
+
+\item \emph{la cohérence des données}. En effet, la comparaison entre plusieurs services étant le plus souvent effectuée sur la base des valeurs courantes de multiples propriétés de QoS, les données relevées doivent exhiber un certain degré de cohérence sur le plan temporel. Cette cohérence doit se retrouver aussi bien entre les différentes propriétés d'un même service (cohérence \textit{interne}), qu'entre les services considérés (cohérence \textit{externe}). Par exemple, selon notre cas d'utilisation, on doit être en mesure d'obtenir à tout moment la valeur courante de la bande passante $B$ et de la résolution d'image $R$ d'un drone de surveillance donné. Lors de la comparaison entre drones dans l'optique d'une décision de liaison, il s'agit alors d'une part de ne pas mettre sur un pied d'égalité deux drones $D_1$ et $D_2$ dont le degré d'obsolescence des valeurs obtenues ne serait pas le même (par exemple si $D_1$ offre une meilleure valeur $B_1$ sur la bande passante que $D_2$, mais que $B_2$, bien qu'inférieure, est beaucoup plus récente donc pertinente pour la décision); et, d'autre part, de s'assurer de la proximité temporelle interne des valeurs sur $B$ et $R$ au sein de $D_1$, $D_2$ et tous les autres drones;
+
+\item \emph{la flexibilité de l'accès aux données}. Pour une même propriété de QoS, chaque fournisseur de services peut utiliser son propre ``vocabulaire'', matérialisé dans le contexte SSOA par des concepts ontologiques (voir des ontologies) distincts, ou ses propres unités de mesure. Nous avançons que c'est au canevas de supervision de gérer ces discordances, tout en les masquant à ses clients (en l'occurrence le processus de composition active de services). Toujours selon notre cas d'utilisation, de telles différences subtiles pourraient apparaître entre les offres de services issues des pompiers et des gendarmes pour un même type de matériel : par exemple, des camions citernes dont la vitesse est caractérisée par le concept ontologique \textit{Vitesse} et mesurée en Km/h d'un côté, et le concept \textit{Speed} en mph\footnote{``mile per hour'', aussi noté mi/h, unité de vitesse issue du monde anglo-saxon} de l'autre.
+
+\item \emph{la performance dans l'accès aux données}. Le processus décisionnel, client des valeurs fournies par le canevas de supervision, ne doit pas pâtir d'éventuels délais dans l'accès au valeurs de QoS. Ces délais proviennent essentiellement des contraintes techniques liées à la transmission des valeurs numériques depuis les services ainsi qu'à leur éventuelle conversion. Or, dans les cas usuels, les délais de transmission vers les clients sont proportionnellement importants (par exemple de l'ordre de plusieurs milli-secondes) par rapport à celui de la décision effectuée en local.
+
+\end{itemize}
+
+Le canevas de supervision M4ABP (\emph{``Monitoring for Adaptive Business Process''}),  mis au point par Le Duc~\textit{et al.}~\cite{BaoLeDuc2009} dans le cadre du projet SemEUsE et de travaux connexes à cette thèse apporte de nombreux éléments de réponse à ces contraintes en mettant en \oe{}uvre différentes techniques telles la mise en cache des valeurs de QoS obtenues des services pour en augmenter la performance d'accès, ainsi que leur marquage temporel (``timestamp'') pour assurer une certaine cohérence temporelle des données. Il repose par ailleurs sur l'obtention des valeurs courantes de QoS que chaque service s'engage à fournir volontairement au travers d'une interface dédiée. C'est ce canevas qui sera intégré à l'implantation de la composition active des services.
+
+%% --> Quand ?
+\subsection{Intégration au processus de composition active}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/late_binding_monitoring.pdf}
+    \caption{\label{fig:late_binding_monitoring}Initialisation de la
+      supervision des services ayant été filtrés.}
+  \end{center}
+\end{figure} 
+
+Si la réponse aux contraintes précédemment définies est en partie fournie par l'implantation du canevas de supervision, son utilisation habile et ciblée constitue un second vecteur d'optimisation en termes de performance globale du processus de composition de services. En effet, du point de vue externe de ce dernier, les interactions avec le canevas de supervision vont être séparées en deux étapes distinctes: 
+
+\begin{itemize}
+\setlength{\itemsep}{3mm}
+
+\item Tout d'abord \emph{l'initialisation de la supervision}, qui entraîne son déclenchement. Elle doit être effectuée le plus tôt possible (en amont de l'exécution du processus métier) afin de ne pas en influencer le bon déroulement.
+ 
+\item Vient ensuite \emph{le recueil des informations de supervision} en tant que telles (c'est-à-dire celui des valeurs courantes de QoS des services supervisés) qui sera effectué dans cette approche au moment ultime de la sélection de service avant invocation, de manière à obtenir les valeurs de QoS les plus fraîches possible (cf. section~\ref{sec:Liaison tardive d'un service}).
+
+\end{itemize}
+
+Nous proposons donc, comme optimisation dans l'usage du canevas, d'effectuer son initialisation de manière précoce, dans la foulée de l'étape de filtrage des services, ce qui permet aussi de la restreindre aux seuls services exhibant les propriétés non-fonctionnelles contractuelles nécessaires. L'initialisation et le déclenchement de la supervision seront donc, tout comme le filtrage, effectués de manière statique au chargement du processus (en \textit{t2} sur la figure~\ref{fig:late_binding_filtrage_repartition}), avant l'exécution de sa partie métier.
+
+Par la suite, le coût du recueil des informations non-fonctionnelles est en grande partie minimisé par ce déclenchement préalable en \textit{t2} du canevas de supervision. En effet, à sa suite, des sondes ont été déployées sur la base des informations techniques contenues dans les contrats non-fonctionnels, tel qu'illustré sur la figure~\ref{fig:late_binding_monitoring}. Le rôle de ces sondes est de s'abonner aux interfaces de supervisions locales à chaque service de manière à faire remonter, \emph{de manière asynchrone} à l'exécution du processus métier, les valeurs courantes de Qualité de Service pour consultation ultérieure. Cette asynchronicité permet de s'affranchir, lors de la prise de décision de liaison dynamique à l'exécution du processus, des délais relatifs à la demande, puis l'obtention \textit{via} le réseau des valeurs courantes de QoS des services.
+
+% Pierre 06/11/09 : Faut-il détailler le canevas de supervision dans cette partie (ou dans le manuscrit en général), ou alors on n'en met pas plus ?
+% Pierre 13/11/09 : Attention, on n'a pas parlé des vues et de leur co-localisation ! Plus tard dans la partie implem ?
+
+\section{Liaison tardive d'un service}
+\label{sec:Liaison tardive d'un service}
+
+L'étape de liaison tardive d'un service, que l'on peut décomposer en une sélection tardive d'un service spécifique suivie de son invocation, est effectuée juste-à-temps, lors de l'évaluation d'une source d'appel de services pour un processus donné. Ce faisant, on passe d'une démarche statique mise en \oe{}uvre pour les étapes préliminaires de filtrage et d'initialisation de la supervision, à une approche fortement dynamique. On dispose alors, à cet instant, des valeurs de QoS les plus ``fraîches'' possibles, obtenues \textit{via} le canevas de supervision préalablement déployé : après la première étape de filtrage qui a permis l'élaboration d'ensembles distincts de services candidats pour chaque source d'appel, on peut donc utiliser une nouvelle fois des informations non-fonctionnelles, mais cette fois plus pertinentes, pour diriger la décision finale de liaison entre le processus et un service. On est aussi en mesure de prendre en compte la disponibilité effective des services : en effet, un service candidat préalablement filtré pourrait ne plus être marqué comme disponible à cet instant précis. Cette étape dynamique de sélection est alors garante, dans le prolongement du filtrage de services, de l'agilité de notre approche pour la composition de services : l'exécution d'un processus métier est ainsi capable de prendre en compte, au mieux, l'état actuel de son contexte d'exécution. 
+
+Cependant, si le cadre technique ainsi posé répond effectivement de l'agilité de l'approche, il n'est pas suffisant, à lui seul, pour effectuer une décision de liaison ``performante'' : un mécanisme d'intégration intelligente des propriétés non-fonctionnelles doit être défini. Ce mécanisme a la charge de diriger la décision, de manière à maximiser l'\textit{utilité} de chaque liaison processus/service, et, \textit{in fine}, la performance globale du processus. Pour ce faire, les besoins non-fonctionnels usuels, exprimés sous forme de contrats, sont complétés dans notre approche par des préférences utilisateur qui permettent au programmeur d'un processus métier d'exprimer ses politiques de décision dans la liaison et l'utilisation des services physiques en fonction des valeurs courantes de Qualité de Service. Ces dernières sont établies, statiquement, avant le chargement de leur processus parent, et les valeurs courantes de QoS leur sont appliquées lors de son exécution. Cette approche, qui permet une \textit{composition utile de services} en s'imbriquant au c\oe{}ur de la liaison tardive des services, les préférences non-fonctionnelles qui en dépendent, et le principe de raisonnement sur ces préférences, sont présentés en détails au chapitre~\ref{ch:Composition utile de services}. 
+
+Les préférences sont aussi tout à fait adéquates utiles pour gérer certains besoins pouvant se révéler contradictoires en termes de QoS (par exemple \textit{prix} vs. \textit{qualité}), car elles permettent d'établir la préférence relative entre les propriétés non-fonctionnelles supervisées : ainsi, pour chaque ensemble de services candidats, un ordre total sur les services peut être obtenu, et les décisions finales de liaison peuvent alors être effectuées automatiquement, sans nécessiter d'arbitrage à l'exécution par un opérateur humain.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=130mm]{figures/late_binding_selection_invocation.pdf}
+    \caption{\label{fig:late_binding_selection_invocation}Sélection et invocation d'un service en liaison tardive.}
+  \end{center}
+\end{figure} 
+
+Une fois la sélection d'un service effectuée, à partir de sa QoS courante et des préférences, son invocation constitue l'ultime phase de la liaison tardive de services. Elle consiste à envoyer un message d'appel de service au travers du réseau et en exploiter la ou les valeur(s) de retour en appliquant les modèles d'adaptation de données qui ont été calculés au préalable. Ces différents paliers sont dépeints dans la figure~\ref{fig:late_binding_selection_invocation}. Il est par ailleurs à noter que si plusieurs services sont sélectionnés au lieu d'un, c'est qu'il sont alors, à cet instant précis, strictement équivalents sur les plans fonctionnels et non-fonctionnels : la probabilité pour que cette configuration apparaisse est très faible, mais, le cas échéant, un de ces services sera choisi au hasard pour invocation. Cette démarche permet de minimiser les risques de famines des services (``starvation'') bien connus en gestion de la concurrence~\cite{cleaveland1996strategic}.
+
+Par ailleurs, le précepte d'agilité ici présenté s'applique aussi à la définition des préférences utilisateur établies pour la composition de services. En effet, s'il est nécessaire dans ce contexte que les préférences soient établies statiquement, cela ne signifie pas pour autant qu'elles doivent l'être conjointement à la définition de leur processus parent. De fait, la pertinence des préférences est d'autant plus importante que ces dernières ont été adaptées au contexte de déploiement de leur processus; ce contexte restant la plupart du temps indéterminé au moment de sa définition. 
+
+L'influence du contexte de déploiement et l'intérêt d'une définition tardive (et par là-même particulièrement dynamique) des préférences peuvent être facilement illustrés. En prenant pour exemple notre cas d'utilisation en lutte anti-incendie (cf. chapitre~\ref{ch:cas_utilisation}), une préférence simple, nommée $P$, concernant les camions de pompier considérés à un instant précis serait de chercher à maximiser simultanément leur \textit{contenance en eau} courante, appelée $E$, et leur rayon d'action possible, tributaire de leur \textit{réserve en carburant} courante, appelée $C$. Mais si l'on cherche, dans l'absolu, à maximiser $E$ et $C$, la préférence relative entre ces deux caractéristiques va dépendre du contexte de déploiement : dans le cas d'un incendie de grande ampleur en milieu naturel on va vouloir augmenter la couverture du dispositif anti-incendie en favorisant les camions disposant d'un grand rayon d'action au détriment de ceux disposant d'une plus grande réserve en eau. Cette relativité entre $E$ et $C$ sera alors exprimée dans la préférence rattachée à la source d'appel aux services ``camions de pompier'' de ce micro-processus de gestion d'incendie.
+
+Par conséquent, en se reportant à l'échelle définie par la figure~\ref{fig:late_binding_from_static_to_dynamic}, les préférences devront être spécifiées et rattachées à leurs processus respectifs à un instant $\mathit{t_{prefs}}$ compris entre la définition de ces derniers en $t_1$ et leur chargement en $t_2$; où plus précisément: $\mathit{t_{prefs}} \in [t_1,t_2[$.
+
+
+\section{Conclusion}
+
+Dans ce chapitre nous avons présenté, le plus souvent de manière abstraite, les fondations de notre contribution pour la composition active de services. Le but de cette approche est cependant de répondre à un besoin bien concret, celui d'améliorer les capacités d'adaptation des systèmes informatiques complexes. En tant qu'incarnation de ces systèmes complexes, les applications réparties reposant sur une architecture SOA et plus particulièrement SSOA sont, de fait, de plus en plus déployées ``sur le terrain''.
+
+Dans ce contexte, la \emph{dynamicité} et la \emph{flexibilité} d'une application est évaluée à l'aune de sa capacité à réagir promptement aux constantes évolutions de son contexte d'exécution, ce qui est grandement facilité par la  liaison tardive de services, sur la base des valeurs courantes de QoS, que nous avons mis en place. De plus, une implantation de cette liaison tardive a été effectuée et sera présentée au chapitre~\ref{ch:implantation}. 
+
+La \emph{performance} de l'application est quant à elle évaluée sur sa capacité à choisir et à utiliser les services les plus ``utiles'' à son exécution, ce que nous aborderons au chapitre~\ref{ch:Composition utile de services}.
+

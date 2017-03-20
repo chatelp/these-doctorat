@@ -1,0 +1,88 @@
+	  ...
+	  <wsag:GuaranteeTerm wsag:name="garantieRequise" wsag:Obligated="ServiceConsumer">
+		<wsag:ServiceScope>...</wsag:ServiceScope>
+		<wsag:ServiceLevelObjective>
+		  <wsag:KPITarget>
+			<wsag:KPIName>Resolution</wsag:KPIName>
+			<wsag:Target>
+			  <ws-qml:constraint ws-qml:operator=">">
+				<ws-qml:value>
+				  2
+				  <ws-qml:unit ws-qml:name="megapixels"
+					ws-qml:semantic-concept="http://www.w3.org/2007/ont/unit#megapixels"/>
+				  <ws-qml:type ws-qml:name="decimal"
+					ws-qml:semantic-concept="http://www.w3c.org/2001/XMLSchema:integer"/>
+				</ws-qml:value>
+			  </ws-qml:constraint>
+			</wsag:Target>
+		  </wsag:KPITarget>
+		</wsag:ServiceLevelObjective>
+		<wsag:BusinessValueList>...</wsag:BusinessValueList>
+	  </wsag:GuaranteeTerm>
+	  
+	  <wsag:GuaranteeTerm wsag:name="garantieOfferte" wsag:Obligated="ServiceProvider">
+		<wsag:ServiceScope>...</wsag:ServiceScope>
+		<wsag:ServiceLevelObjective>
+		  <wsag:KPITarget>
+			<wsag:KPIName>Resolution</wsag:KPIName>
+			<wsag:Target>
+			  <ws-qml:constraint ws-qml:operator="=">
+				<ws-qml:value>
+				  10
+				  <ws-qml:unit ws-qml:name="megapixels"
+					ws-qml:semantic-concept="http://www.w3.org/2007/ont/unit#megapixels"/>
+				  <ws-qml:type ws-qml:name="decimal"
+					ws-qml:semantic-concept="http://www.w3c.org/2001/XMLSchema:integer"/>
+				</ws-qml:value>
+			  </ws-qml:constraint>
+			</wsag:Target>
+		  </wsag:KPITarget>
+		</wsag:ServiceLevelObjective>
+		<wsag:BusinessValueList>...</wsag:BusinessValueList>
+	  </wsag:GuaranteeTerm>
+	
+	  <wsag:GuaranteeTerm wsag:name="garantieRequise" wsag:Obligated="ServiceConsumer">
+		<wsag:ServiceScope>...</wsag:ServiceScope>
+		<wsag:ServiceLevelObjective>
+		  <wsag:KPITarget>
+			<wsag:KPIName>Bandwidth</wsag:KPIName>
+			<wsag:Target>
+			  <ws-qml:constraint ws-qml:operator=">">
+				<ws-qml:value>
+				  100
+				  <ws-qml:unit ws-qml:name="mbs"
+					ws-qml:semantic-concept="http://www.w3.org/2007/ont/unit#megabitsps"/>
+				  <ws-qml:type ws-qml:name="decimal"
+					ws-qml:semantic-concept="http://www.w3c.org/2001/XMLSchema:decimal"/>
+				</ws-qml:value>
+			  </ws-qml:constraint>
+			</wsag:Target>
+		  </wsag:KPITarget>
+		</wsag:ServiceLevelObjective>
+		<wsag:BusinessValueList>...</wsag:BusinessValueList>
+	  </wsag:GuaranteeTerm>
+	  
+	  <wsag:GuaranteeTerm wsag:name="garantieOfferte" wsag:Obligated="ServiceProvider">
+		<wsag:ServiceScope>...</wsag:ServiceScope>
+		<wsag:ServiceLevelObjective>
+		  <wsag:KPITarget>
+			<wsag:KPIName>BandePassante</wsag:KPIName>
+			<wsag:Target>
+			  <ws-qml:constraint ws-qml:operator=">">
+				<ws-qml:value>
+				  20
+				  <ws-qml:unit ws-qml:name="MoS"
+					ws-qml:semantic-concept="http://www.w3.org/2007/ont/unit#megabytesps"/>
+				  <ws-qml:type ws-qml:name="decimal"
+					ws-qml:semantic-concept="http://www.w3c.org/2001/XMLSchema:decimal"/>
+				</ws-qml:value>
+			  </ws-qml:constraint>
+			</wsag:Target>
+		  </wsag:KPITarget>
+		</wsag:ServiceLevelObjective>
+		<wsag:BusinessValueList>...</wsag:BusinessValueList>
+	  </wsag:GuaranteeTerm>
+	  ...
+	</wsag:all>
+  </wsag:Terms>
+</wsag:Agreement>

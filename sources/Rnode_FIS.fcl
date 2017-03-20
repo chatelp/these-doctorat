@@ -1,0 +1,46 @@
+FUNCTION_BLOCK fbName
+
+VAR_INPUT
+	B : REAL;
+	R : REAL;
+END_VAR
+
+VAR_OUTPUT
+	Utility : REAL;
+END_VAR
+
+FUZZIFY B
+	TERM Bandwidth_High :=  (0.5, 0.0) (1.0, 1.0) ;
+	TERM Bandwidth_Low :=  (0.0, 1.0) (0.5, 0.0) ;
+	TERM Bandwidth_Medium :=  (0.0, 0.0) (0.5, 1.0) (1.0, 0.0) ;
+END_FUZZIFY
+
+FUZZIFY R
+	TERM Resolution_High :=  (0.0, 0.0) (1.0, 1.0) ;
+	TERM Resolution_Low :=  (0.0, 1.0) (1.0, 0.0) ;
+END_FUZZIFY
+
+DEFUZZIFY Utility
+	TERM Utility_H :=  (0.5, 0.0) (0.75, 1.0) (1.0, 0.0) ;
+	TERM Utility_L :=  (0.0, 0.0) (0.25, 1.0) (0.5, 0.0) ;
+	TERM Utility_M :=  (0.25, 0.0) (0.5, 1.0) (0.75, 0.0) ;
+	TERM Utility_VH :=  (0.75, 0.0) (1.0, 1.0) ;
+	TERM Utility_VL :=  (0.0, 1.0) (0.25, 0.0) ;
+	ACCU : MAX;
+	METHOD : COG;
+	DEFAULT := 0.0;
+	RANGE := (0.0 .. 1.0);
+END_DEFUZZIFY
+
+RULEBLOCK Rules
+	ACT : MIN;
+	AND : MIN;
+	RULE 1 : IF (B is Bandwidth_Low) and (R is Resolution_Low) THEN Utility is Utility_VH;
+	RULE 2 : IF (B is Bandwidth_Low) and (R is Resolution_High) THEN Utility is Utility_VL;
+	RULE 3 : IF (B is Bandwidth_Medium) and (R is Resolution_Low) THEN Utility is Utility_H;
+	RULE 4 : IF (B is Bandwidth_Medium) and (R is Resolution_High) THEN Utility is Utility_L;
+	RULE 5 : IF (B is Bandwidth_High) and (R is Resolution_Low) THEN Utility is Utility_VL;
+	RULE 6 : IF (B is Bandwidth_High) and (R is Resolution_High) THEN Utility is Utility_VH;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

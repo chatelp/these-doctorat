@@ -1,0 +1,33 @@
+Le 6 janvier 2006, Mael Hilléreau <mael.hillereau@univ-reims.fr>
+m'a envoyé des fichiers permettant d'utiliser LyX avec thloria.
+Voici ce qu'il en dit :
+
+==========================================================================
+   Je commence actuellement à rédiger ma thèse et j'utilise
+habituellement le logiciel LyX en sur-couche de LaTeX pour la
+composition de documents. J'ai choisi d'utiliser votre classe thloria
+que je trouve très bien faite mais pour laquelle il n'existe pas encore
+de support sous LyX. J'ai donc écrit un petit fichier "layout"
+permettant d'utiliser thloria sous LyX.
+
+   Toutes les commandes ne sont pas encore directement supportées dans
+l'interface graphique du logiciel mais elles peuvent quand même être
+utilisées en insérant le code LaTeX comme on le ferait avec un éditeur
+standard (ce qui s'effectue via une boîte ERT dans LyX), ou dans le
+préambule du document.
+
+   Je vous transmets ce fichier (fichier "thloria.layout") ainsi qu'un
+exemple d'utilisation (fichier "exemple.lyx") afin que vous puissiez, si
+vous le jujez utile, les essayer et les intégrer à la distribution thloria.
+
+   Merci de me tenir au courant de votre décision, et le cas échéant de
+me dire si vous souhaitez que je rédige une petite documentation qui
+pourrait éventuellement être intégrée au manuel de thloria.
+
+   Cordialement,
+
+Mael Hilléreau.
+
+PS: je joins également à ce mail deux captures d'écran présentant le
+fichier d'exemple ouvert sous LyX.
+==========================================================================

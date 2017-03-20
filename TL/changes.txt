@@ -1,0 +1,180 @@
+Changements importants dans TheseCRIN/thloria depuis la version 0.62
+------------------------------------------------------------
+
+Version 0.63  (1994/12/09): - commande \PutLineInToc
+
+Version 0.63b (1994/12/21): - cette version supprime la remise
+                              à 1 des notes de bas de page à chaque chapitre;
+                              c'est donc une modification incompatible avec les
+                              versions précédentes ; on retrouve le
+                              comportement précédent en ajoutant la 
+                              commande \ResetFootnotesAtChapters;
+
+------- ce qui précède est documenté dans le 
+        << Guide local (La)TeX du site LORIA >>, 1994, chapitre 8 ------------
+
+Version 0.64  (1994/12/30): - nouvelle meta-version `version2'
+
+                            - commandes \ChapterPageStyle et \PartPageStyle
+
+                            - le style de chaque page de résumé
+                              est maintenant le même que celui
+                              d'une première page de chapitre,
+                              sauf si on a demandé de ne pas
+                              numéroter les pages de résumé.
+
+                            - diverses améliorations internes
+
+                            - possibilité d'avoir le glossaire sur 
+                              une OU deux colonnes
+
+                            - l'index est toujours sur deux colonnes
+
+Version 0.64a (1994/12/31): - commande \PutNewPageInToc
+
+Version 0.65  (1994/01/08): - suppression de la mention STMIA si 
+                              l'option `version2' est spécifiée
+                              (ce qui est fortement conseillé)
+
+Version 0.66a (1995/03/15): - Ajout des commandes \Annexe et \Annexes.
+
+Version 0.67  (1995/04/15): - Nouvelle option `version3'; cette option
+                              change la forme des entrées dans la table
+                              des matières pour les environnements
+                              de remerciements, de resumés, de bibliographie,
+                              d'index, de glossaire et pour les commandes
+                              \listoffigures et \listoftables.
+
+                            - Commandes \SpecialSection et \NormalSection
+
+Version 0.68  (1995/04/19): - Commande \Annex (en fait, nouvelle implantation
+                              du mécanisme des annexes)
+
+Version 0.69  (1995/06/08): - Il n'est plus necessaire d'indiquer 
+                              \NormalSection pour faire fonctionner
+                              \DontWriteThisInToc sur les sections spéciales.
+
+Version 0.70a (1995/07/31): - \SetBounding renommé en \SetBinding
+
+Version 0.70b (1995/11/08): - Ajout de \ShowLogos et du logo de l'université
+                              Henri Poincaré.
+
+------- ce qui précède est documenté dans le 
+        << Guide local (La)TeX du site LORIA >>, 1995, chapitre 9 ------------
+
+Version 0.71a (1995/12/13): - Mise à jour pour la version de LaTeX de décembre.
+                              Cette version de TheseCRIN ne fonctionne plus
+                              avec les versions précédentes de LaTeX.
+
+   idem       (1996/05/14): - Ajout de floatTC.sty, version spéciale
+                              de float.sty pour TheseCRIN. 
+
+Version 0.72  (1996/06/16): - Correction de bugs dans le fonctionnement de
+                              la commande \ThesisDraft (sans conséquence
+                              sur le document final)
+
+Version 0.72a (1996/06/20): - Ajout de la commande \EmptyPageStyle.
+
+Version 0.72c (1996/10/04): - Correction d'un bug dans l'affichage de la
+                              ligne sous les en-têtes des pages impaires.
+                              (la ligne n'apparaissait pas lorsqu'une
+                               section n'avait pas encore été rencontrée)
+
+Version 0.72d (1996/11/16): - Logo de l'UHP baissé de 5mm.
+
+                            - Ajout de la commande \ChapterPrefix, pendant
+                              de \NoChapterPrefix. Les \chapter* déclenchent
+                              automatiquement \NoChapterPrefix.
+
+Version 0.72e (1996/11/17): - Ajout de la commande \NewPageAfterParts, pendant
+                              de \NoNewPageAfterParts.
+
+                            - Les \section, \subsection, etc. numerotées
+                              obéissent maintenant à \DontWriteThisInToc.
+
+Version 0.73  (1996/11/17): - Ajout de \OddHead, \EvenHead, \OddFoot,
+                              \EvenFoot et du style de page `Fancy'.
+
+                            - Correction d'un bug qui rendait le style
+                              `ThesisHeadingsII' inopérant.
+
+------- ce qui précède est documenté dans le 
+       << Guide local (La)TeX du site LORIA >>, 1996, chapitre 10 ------------
+
+Version 0.73a (1996/12/11): - Les numéros de chapitre n'apparaissent
+                               plus dans les numéros d'equations,
+                               de figures et de tables des chapitres
+                               non numérotés (\chapter*) et dans les
+                               références à ces parties.
+                               (modification de la commande \NoChapterPrefix)
+
+Version 0.74  (1996/12/11): - Ajout de \EmptyNewPage, \AbstractsOnOddPage
+                               et \AbstractsOnEvenPage.
+
+Version 0.76  (1997/01/27): - Mise à jour pour la version de LaTeX de décembre.
+                              Cette version de TheseCRIN ne fonctionne plus
+                              avec les versions precedentes de LaTeX.
+
+Version 0.76b (1997/03/19): - Ajout de la mention UFR STMIA sur la première
+                              page des thèses de Nancy I.
+
+Version 0.76d (1997/03/25): - Mise à jour pour la version de LaTeX de février.
+                              Cette version de TheseCRIN ne fonctionne plus
+                              avec les versions précédentes de LaTeX.
+
+Version 0.77  (1997/04/17): - Nouvelle option `noprintercorrection'
+
+Version 0.77a (1997/06/04): - \SpecialSection admet maintenant un paramètre
+                              optionnel, comme \chapter, \part, etc.
+
+Version 0.78  (1997/06/16): - \ShowLogos devient l'état par défaut ;
+                              nouvelles commandes \DontShowLogos,
+                              \ShowLogoUHP, \ShowLogoCRIN et \ShowLogoINPL. 
+
+Version 0.78d (1997/06/24): - Nouvelles commandes \TheBanner et \TimeStamp
+
+Version 0.79c (1997/07/04): - Meilleure finition de l'en-tête de l'INPL
+
+Version 0.79d (1997/07/05): - Meilleure finition de l'en-tête de Nancy 2
+
+Version 0.80  (1997/07/07): - Remerciements automatiques sur la deuxième
+                              page de couverture (désactivables)
+
+Version 0.80a (1997/07/07): - Compatibilité avec le package `index'
+
+Version 0.85  (1998/06/01): - Renommage en thloria. TheseCRIN n'est désormais
+                              plus distribué.
+
+Version 0.87a (1998/07/22): - Compatibilité avec le package `hyperref'
+
+------- ce qui précède est documenté dans le 
+       << Guide local (La)TeX du site LORIA >>, 1998, chapitre 9 ------------
+
+Version 0.88c (1999/04/14): - Correction d'un bug affectant les liens
+                              hypertextes avec pdflatex/hyperref.
+                              thloria a maintenant été testé avec 
+                              hyperref 6.56.
+
+Version 0.89  (1999/06/29): - Correction d'un bug dans \SetRealMargins,
+                              produisant une incompatibilité avec 
+                              le package geometry.
+
+Version 0.89a  (1999/07/07): - Commande \ContinuousNumbering
+
+Version 0.90   (1999/07/13): - Compatibilité avec hyperref 6.63
+
+Version 0.92   (2001/01/18): - Suite au passage du package french
+                               de Bernard Gaulle en shareware, le chargement
+                               par défaut de ce package est remplacé
+                               par le chargement par défaut de l'option
+                               frenchb de babel. Il est toujours possible
+                               d'utiliser french grâce à l'option nofrench
+                               de thloria.
+Version 0.93   (2002/07/18): - l'option `noprintercorrection' devient le  
+                               cas par défaut, ce qui rendra thloria          
+                               moins sensible aux mises à jour de LaTeX ;
+                               cette option n'existe plus et est remplacée
+                               par son complémentaire `printercorrection'.
+
+D. Roegel, 18 juillet 2002.
+

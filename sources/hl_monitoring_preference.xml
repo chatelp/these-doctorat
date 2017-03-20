@@ -1,0 +1,69 @@
+<lcpnet name="Security_Camera_Preference">
+	<utilityDomain name="Utility" lowerBound=0.0 upperBound=1.O>
+		<subset name="Utility_VL">
+			<coordinate x="O.O" y="1.0" />
+			<coordinate x="O.25" y="0.0" />
+		</subset>
+		<subset name="Utility_L">
+			<coordinate x="O.O" y="0.0" />
+			<coordinate x="O.25" y="1.0" />
+			<coordinate x="O.5" y="0.0" />
+		</subset>
+		(...)
+	</utilityDomain>
+	
+	<valueDomains>
+		<valueDomain name="Security" lowerBound="0.0" upperBound="1.O">
+			(...)
+		</valueDomain>
+		<valueDomain name="Bandwidth" lowerBound="0.0" upperBound="1.O">
+			(...)
+		</valueDomain>
+		<valueDomain name="Resolution" lowerBound="0.0" upperBound="1.O">
+			(...)
+		</valueDomain>
+	</valueDomains>
+		
+	<nodes>
+		<node name="security" valueDomain="Security">
+			<table>
+				<line>
+					<entry nodeValue="Security_None" utility="Utility_VL"/>
+					<entry nodeValue="Security_Full" utility="Utility_VH"/>
+				</line>
+			</table>
+		</node>
+		
+		<node name="bandwidth" valueDomain="Bandwidth">
+			<table>
+				<line>
+					<entry nodeValue="Bandwidth_L" utility="Utility_VL"/>
+					<entry nodeValue="Bandwidth_M" utility="Utility_M"/>
+					<entry nodeValue="Bandwidth_H" utility="Utility_VH"/>
+				</line>
+			</table>
+		</node>
+		
+		<node name="resolution" valueDomain="Resolution">
+			<table>
+				<line parentValues="Bandwidth_L">
+					<entry nodeValue="Resolution_L" utility="Utility_VH"/>
+					<entry nodeValue="Resolution_H" utility="Utility_VL"/>
+				</line>
+				<line parentValues="Bandwidth_M">
+					<entry nodeValue="Resolution_L" utility="Utility_H"/>
+					<entry nodeValue="Resolution_H" utility="Utility_L"/>
+				</line>
+				<line parentValues="Bandwidth_H">
+					<entry nodeValue="Resolution_L" utility="Utility_VL"/>
+					<entry nodeValue="Resolution_H" utility="Utility_VH"/>
+				</line>
+			</table>
+		</node>
+	</nodes>
+	
+	<arcs>
+		<iarc name="BtoS" startNode="bandwidth" endNode="security"/>
+		<arc name="BtoR" startNode="bandwidth" endNode="resolution"/>
+	</arcs>
+</lcpnet>

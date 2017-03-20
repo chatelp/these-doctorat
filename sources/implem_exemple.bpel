@@ -1,0 +1,64 @@
+<process name="semeuse">
+	(...)
+	<partnerLinks>
+		<!-- The 'client' role represents the requester of this service. -->
+		<partnerLink name="client" partnerLinkType="tns:semeuse" myRole="semeuseProvider" />
+	</partnerLinks>
+  
+	<variables>
+		<!-- Reference to the message passed as input during initiation -->
+		<variable name="input" messageType="tns:semeuseRequestMessage"/>
+				  
+		<!-- Reference to the message that will be returned to the requester -->
+		<variable name="output" messageType="tns:semeuseResponseMessage"/>
+				  
+		<variable name="invoke_in" messageType="tns:invoke_request"/>
+		<variable name="invoke_out" messageType="tns:invoke_response"/>
+	</variables>
+	   
+	<sequence name="main">
+		   
+		<extensionActivity>
+			<semeuse:lateBindingConfigure invocationID="invocation1" preference="preferences.lcpnet">
+				<semeuse:candidateServices>
+					(...)
+				</semeuse:candidateServices>
+			</semeuse:lateBindingConfigure>
+		</extensionActivity>
+	
+		<extensionActivity>
+			<semeuse:monitoring state="start" />
+		</extensionActivity>
+			
+		<!-- Receive input from requester.-->
+		<receive name="receiveInput" partnerLink="client" portType="tns:semeuse" operation="process" variable="input" createInstance="yes"/>
+		
+		<assign>
+			<copy>
+				<from>$input.payload/tns:input</from>
+				<to>$invoke_in.payload</to>
+			</copy>
+		</assign>
+		
+		<sequence name="invocation">
+			<extensionActivity>
+				<semeuse:lateBindingInvoke invocationID="invocation1" inputVariable="invoke_in" outputVariable="invoke_out" preference="preferences.lcpnet"/>
+			</extensionActivity>
+				
+			<assign>
+				<copy>
+					<from>$invoke_out.payload</from>
+					<to>$output.payload/tns:result</to>
+				</copy>
+			</assign>
+		</sequence>
+		
+		<!-- Generate reply to synchronous request -->
+		<reply name="replyOutput" partnerLink="client" portType="tns:semeuse" operation="process" variable="output" />
+			   
+		<extensionActivity>
+			<semeuse:monitoring state="stop" />
+		</extensionActivity>
+	</sequence>
+</process>
+

@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.chatelp.org/lcpnets"
+	xmlns="http://www.chatelp.org/lcpnets">
+
+<xs:complexType name="valueDomain">
+	<xs:attribute name="name" type="xs:string" use="required"/>
+	<xs:attribute name="lowerBound" type="xs:float" use="required"/>
+	<xs:attribute name="upperBound" type="xs:float" use="required"/>
+	<xs:sequence>
+        <xs:element name="subset" maxOccurs="unbounded">
+			<xs:complexType>
+				<xs:attribute name="name" type="xs:string" use="required"/>
+				<xs:sequence>
+					<xs:element name="coordinate" maxOccurs="3">
+						<xs:attribute name="x" type="xs:float" use="required"/>
+						<xs:attribute name="y" type="xs:float" use="required"/>
+					</xs:element>
+				</xs:sequence>
+			</xs:complexType>
+		</xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="node">
+	<xs:attribute name="name" type="xs:string" use="required"/>
+	<xs:attribute name="valueDomain" type="xs:string" use="required"/>
+	<xs:sequence>
+		<xs:element name="table">
+			<xs:complexType>
+				<xs:sequence>
+					<xs:element name="line" type="clptLine" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+		</xs:element>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="arc">
+	<xs:attribute name="name" type="xs:string" use="required"/>
+	<xs:attribute name="startNode" type="xs:string" use="required"/>
+	<xs:attribute name="endNode" type="xs:string" use="required"/>
+</xs:complexType>
+
+<xs:complexType name="iarc">
+	<xs:complexContent>
+	    <xs:extension base="arc"/>
+	</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="ciarc">
+	<xs:complexContent>
+	    <xs:extension base="arc">
+	      	<xs:sequence>
+				<xs:element name="table">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="line" type="citLine" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+	    </xs:extension>
+	  </xs:complexContent>
+</xs:complexType>
+
+	
+<xs:element name="lcpnet">
+	<xs:complexType>
+		<xs:attribute name="name" type="xs:string" use="required"/>
+	    <xs:sequence>
+			<xs:element name="utilityDomain" type="valueDomain"/>
+			
+			<xs:element name="valueDomains">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="valueDomain" type="valueDomain" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		
+			<xs:element name="nodes">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="node" type="node" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			
+			<xs:element name="arcs">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="arc" type="arc" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			
+		</xs:sequence>
+	</xs:complexType>
+</xs:element>	
+	
+</xs:schema>

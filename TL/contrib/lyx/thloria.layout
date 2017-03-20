@@ -1,0 +1,218 @@
+#% Do not delete the line below; configure depends on this
+#  \DeclareLaTeXClass[thloria]{ThLoria}
+# ThLoria textclass definition file. Taken from initial LyX source code
+# Author:      Mael Hilléreau <mael.hillereau@free.fr>
+# Last modif.: 04/01/2006
+
+# Input standard definitions
+Input stdclass.inc
+Input algorithm.inc
+
+# Global parameters.
+Sides			2
+#PageStyle		Headings
+
+DefaultFont
+  Family		Sans
+  Series		Medium
+  Shape			Up
+  Size			Normal
+  Color			None
+EndFont
+
+# There is no abstract environment in book.cls
+NoStyle			Abstract
+	
+# a few changes to the bibliography
+Style Bibliography
+  TopSep		4
+  LabelString		Bibliography
+  # label font definition
+  LabelFont 
+    Series		Bold
+    Size		Huge
+  EndFont
+End
+
+Style Title
+  LatexName		ThesisTitle
+  InTitle		0
+  Font
+    Size		Giant
+    Color		Red
+  EndFont
+End
+
+Style Author
+  CopyStyle		Title
+  LatexName		ThesisAuthor
+  Font
+    Size		Large
+  EndFont
+End
+
+Style Date
+  CopyStyle		Title
+  LatexName		ThesisDate
+  Font
+    Size		Large
+  EndFont
+End
+
+Style President
+  CopyStyle		Author
+  LatexName		President=
+End
+
+Style Rapporteurs
+  CopyStyle		Author
+  LatexName		Rapporteurs=
+End
+
+Style Examinateurs
+  CopyStyle		Author
+  LatexName		Examinateurs=
+End
+
+Style Diplome
+  CopyStyle		Author
+  LatexName		ThesisDiploma
+End
+
+Style EntetePageDeTitre
+  LatexType		Command
+  LatexName		ThesisFirstPageHead
+  LabelType		Top_Environment
+  LabelString		"En-tête"
+  TopSep		0.7
+  BottomSep		0.7
+  LabelBottomSep	0.5
+  LabelFont
+    Color		Red
+    Series		Bold
+  EndFont
+End
+
+Style PiedPageDeTitre
+  CopyStyle		EntetePageDeTitre
+  LatexName		ThesisFirstPageFoot
+  LabelString		"Pied de page"
+End
+
+Style FinPageDeTitre
+  LatexType		Command
+  LatexName		MakeThesisTitlePage
+  KeepEmpty		1
+  Margin		Static
+  ParSkip		0
+  TopSep		1
+  BottomSep		1
+  ParSep		0
+  LabelType		Centered_Top_Environment
+  LabelBottomSep	-1
+  LabelString		"~=~"
+  OptionalArgs		0
+  LabelFont
+    Series		Bold
+    Size		Huge
+    Color		Red
+  EndFont
+End
+
+Style Remerciements
+  LatexType		Environment
+  LatexName		ThesisAcknowledgments
+  LabelType		Centered_Top_Environment
+  LabelString		"Remerciements"
+  TopSep		0.7
+  BottomSep		0.7
+  LabelBottomSep	0.5
+  LabelFont
+    Color		Blue
+    Series		Bold
+    Size		Large
+  EndFont
+End
+
+Style Dedicace
+  CopyStyle		Remerciements
+  LatexName		ThesisDedication
+  LabelString		"Dédicace"
+End
+
+Style FinPreface
+  CopyStyle		FinPageDeTitre
+  LatexName		mainmatter
+  LabelFont
+    Color		Blue
+  EndFont
+End
+
+Style Annexes
+  CopyStyle		FinPreface
+  LabelString		"Annexes"
+  LatexName		Annexes
+  LabelFont
+    Color		None
+  EndFont
+End
+
+Style Annex
+  CopyStyle		Chapter
+  LatexName		Annex
+  LabelString		"Annexe #"
+End
+
+Style ResumeFrancais
+  CopyStyle		FinPageDeTitre
+  LatexName		begin{ThesisAbstract}\begin{FrenchAbstract}
+  LabelString		"Résumé"
+  LabelBottomSep	0.2
+  LabelFont
+    Size		Large
+    Color		Magenta
+  EndFont
+End
+
+Style ResumeAnglais
+  CopyStyle		ResumeFrancais
+  LatexName		end{FrenchAbstract}\begin{EnglishAbstract}
+  LabelString		"Abstract"
+End
+
+Style FinResumeAnglais
+  CopyStyle		FinPageDeTitre
+  LatexName		end{EnglishAbstract}\end{ThesisAbstract}
+  LabelFont
+    Color		Magenta
+  EndFont
+End
+
+Style Part
+  CopyStyle		Part
+  LabelString		"Partie #"
+End
+
+Style Chapter
+  CopyStyle		Chapter
+  LabelString		"Chapitre "
+End
+
+Style SectionSpeciale
+  CopyStyle		Chapter
+  LatexName		SpecialSection
+  LatexType		Top_Environment
+  LabelString		"Section spéciale"
+End
+
+Style MiniTOC
+  CopyStyle		FinPageDeTitre
+  LatexName		minitoc
+  LabelString		"-- minitoc --"
+  LabelType		Top_Environment
+  LabelFont
+    Shape		Italic
+    Size		Large
+    Color		None
+  EndFont
+End

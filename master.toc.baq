@@ -1,0 +1,175 @@
+\select@language {french}
+\@frame@switchfalse 
+\@framechaptersintoc 
+\chapterbegin 
+\contentsline {spsection}{Table des figures}{ix}{division.4}
+\contentsline {spsection}{Extraits de programmes}{xiii}{division.5}
+\contentsline {chapter}{\numberline {Chapitre\ 1}Introduction}{1}{division.6}
+\contentsline {section}{\numberline {1.1}De l'approche \`a objets au paradigme de service}{1}{section.6.1}
+\contentsline {section}{\numberline {1.2}Gen\`ese d'une probl\'ematique}{3}{section.6.2}
+\contentsline {section}{\numberline {1.3}Objectifs de recherche et approche poursuivie}{3}{section.6.3}
+\contentsline {section}{\numberline {1.4}Contributions scientifiques}{6}{section.6.4}
+\contentsline {section}{\numberline {1.5}Organisation du document}{6}{section.6.5}
+\contentsline {part}{Partie\ I\hspace {1em}Contexte et Etat de l'Art}{7}{division.7}
+\contentsline {chapter}{\numberline {Chapitre\ 2}Contexte technologique}{9}{division.8}
+\contentsline {section}{\numberline {2.1}Architectures Orient\'ees Services}{10}{section.8.1}
+\contentsline {subsection}{\numberline {2.1.1}Concepts de base}{10}{subsection.8.1.1}
+\contentsline {subsubsection}{Objet}{10}{subsection.8.1.1}
+\contentsline {subsubsection}{Composant}{11}{subsection.8.1.1}
+\contentsline {subsubsection}{Service}{11}{subsection.8.1.1}
+\contentsline {subsubsection}{Composition de services}{12}{subsection.8.1.1}
+\contentsline {subsection}{\numberline {2.1.2}Service Web}{13}{subsection.8.1.2}
+\contentsline {subsection}{\numberline {2.1.3}Service Web s\'emantique}{19}{subsection.8.1.3}
+\contentsline {subsection}{\numberline {2.1.4}Composition de services Web}{22}{subsection.8.1.4}
+\contentsline {subsubsection}{Moteurs d'orchestration de services Web}{23}{subsection.8.1.4}
+\contentsline {subsubsection}{Autres approches de composition}{23}{subsection.8.1.4}
+\contentsline {section}{\numberline {2.2}Processus m\'etier}{24}{section.8.2}
+\contentsline {subsection}{\numberline {2.2.1}Normes de conception}{24}{subsection.8.2.1}
+\contentsline {subsection}{\numberline {2.2.2}Norme d'ex\'ecution : BPEL 2.0}{25}{subsection.8.2.2}
+\contentsline {section}{\numberline {2.3}Propri\'et\'es et contraintes non-fonctionnelles de services}{29}{section.8.3}
+\contentsline {subsection}{\numberline {2.3.1}Taxonomies et ontologies de QoS}{31}{subsection.8.3.1}
+\contentsline {subsubsection}{WS-QoS}{34}{definition.7}
+\contentsline {subsubsection}{DAML-QoS}{34}{definition.7}
+\contentsline {subsubsection}{QoSOnt}{34}{definition.7}
+\contentsline {subsubsection}{Synth\`ese}{35}{definition.7}
+\contentsline {subsection}{\numberline {2.3.2}Politiques}{35}{subsection.8.3.2}
+\contentsline {subsubsection}{De nombreuses alternatives technologiques}{35}{definition.8}
+\contentsline {subsubsection}{Synth\`ese}{36}{definition.8}
+\contentsline {subsection}{\numberline {2.3.3}Contrats de Qualit\'e de Service}{37}{subsection.8.3.3}
+\contentsline {subsubsection}{GCCL}{38}{figure.caption.16}
+\contentsline {subsubsection}{De QML \`a CQML+}{38}{figure.caption.16}
+\contentsline {subsubsection}{WS-Agreement}{38}{figure.caption.16}
+\contentsline {subsubsection}{Synth\`ese}{39}{figure.caption.16}
+\contentsline {section}{\numberline {2.4}Conclusion}{39}{section.8.4}
+\contentsline {chapter}{\numberline {Chapitre\ 3}Etat de l'Art}{41}{division.9}
+\contentsline {section}{\numberline {3.1}De l'approche linguistique pour raisonner}{41}{section.9.1}
+\contentsline {subsection}{\numberline {3.1.1}Mod\'elisation floue des concepts}{42}{subsection.9.1.1}
+\contentsline {subsection}{\numberline {3.1.2}Raisonnement flou}{48}{subsection.9.1.2}
+\contentsline {subsection}{\numberline {3.1.3}Formalismes \`a base de 2-tuples}{50}{subsection.9.1.3}
+\contentsline {section}{\numberline {3.2}De la mod\'elisation compacte de pr\'ef\'erences}{51}{section.9.2}
+\contentsline {subsection}{\numberline {3.2.1}Mod\`eles linguistiques}{51}{subsection.9.2.1}
+\contentsline {subsection}{\numberline {3.2.2}*CP-Nets}{53}{subsection.9.2.2}
+\contentsline {subsubsection}{CP-Nets}{53}{subsection.9.2.2}
+\contentsline {subsubsection}{UCP-Nets}{55}{figure.caption.28}
+\contentsline {subsubsection}{TCP-Nets}{56}{figure.caption.29}
+\contentsline {subsection}{\numberline {3.2.3}R\'eseaux GAI}{57}{subsection.9.2.3}
+\contentsline {subsection}{\numberline {3.2.4}Synth\`ese}{59}{subsection.9.2.4}
+\contentsline {section}{\numberline {3.3}De la composition dynamique de services sous contraintes non-fonctionnelles}{59}{section.9.3}
+\contentsline {subsection}{\numberline {3.3.1}Gestion de la dynamicit\'e par recomposition}{60}{subsection.9.3.1}
+\contentsline {subsubsection}{Canevas COCOA}{61}{figure.caption.32}
+\contentsline {subsubsection}{Canfora \textit {et al.}}{62}{figure.caption.32}
+\contentsline {subsubsection}{SCENE}{62}{figure.caption.32}
+\contentsline {subsubsection}{Halima \emph {et al.}}{63}{figure.caption.32}
+\contentsline {subsubsection}{WSQoSX}{63}{figure.caption.32}
+\contentsline {subsection}{\numberline {3.3.2}Composition par g\'en\'eration de processus alternatifs \'equivalents}{64}{subsection.9.3.2}
+\contentsline {subsubsection}{Chiu \emph {et al.}}{64}{subsection.9.3.2}
+\contentsline {subsubsection}{Chafle \emph {et al}}{64}{subsection.9.3.2}
+\contentsline {subsubsection}{Canevas CoRE}{64}{subsection.9.3.2}
+\contentsline {subsection}{\numberline {3.3.3}Composition dynamique dirig\'ee par CP-nets}{65}{subsection.9.3.3}
+\contentsline {subsubsection}{Schr\"opfer \textit {et al.}}{65}{subsection.9.3.3}
+\contentsline {subsubsection}{TCP-Compose*}{65}{subsection.9.3.3}
+\contentsline {subsection}{\numberline {3.3.4}Synth\`ese}{66}{subsection.9.3.4}
+\contentsline {section}{\numberline {3.4}Conclusion}{66}{section.9.4}
+\contentsline {chapter}{\numberline {Chapitre\ 4}Un cas d'utilisation en gestion de crise environnementale}{67}{division.10}
+\contentsline {section}{\numberline {4.1}Introduction}{67}{section.10.1}
+\contentsline {subsection}{\numberline {4.1.1}Contexte d'intervention}{69}{subsection.10.1.1}
+\contentsline {subsection}{\numberline {4.1.2}Phases principales en gestion de crise}{70}{subsection.10.1.2}
+\contentsline {section}{\numberline {4.2}Des liens \'etroits avec les SOA S\'emantiques et nos travaux}{70}{section.10.2}
+\contentsline {section}{\numberline {4.3}D\'eroulement du cas d'utilisation en lutte anti-incendie}{71}{section.10.3}
+\contentsline {subsection}{\numberline {4.3.1}Sc\'enario 1 : d\'efinition des offres services}{71}{subsection.10.3.1}
+\contentsline {subsubsection}{Camions citerne d'intervention anti-incendies}{72}{figure.caption.34}
+\contentsline {subsubsection}{Drones de surveillance}{74}{figure.caption.34}
+\contentsline {subsubsection}{Equipes au sol : pompiers et gendarmes}{75}{figure.caption.34}
+\contentsline {subsection}{\numberline {4.3.2}Sc\'enario 2 : d\'efinition d'un processus abstrait de gestion d'incendie}{78}{subsection.10.3.2}
+\contentsline {subsection}{\numberline {4.3.3}Sc\'enario 3 : \'elicitation de pr\'ef\'erences utilisateur sp\'ecifiques \`a la crise}{79}{subsection.10.3.3}
+\contentsline {subsection}{\numberline {4.3.4}Sc\'enario 4 : composition agile de services pendant la crise}{80}{subsection.10.3.4}
+\contentsline {section}{\numberline {4.4}Conclusion}{81}{section.10.4}
+\contentsline {part}{Partie\ II\hspace {1em}Contributions et mise en \oe {}uvre}{83}{division.11}
+\contentsline {chapter}{\numberline {Chapitre\ 5}Composition active de services}{85}{division.12}
+\contentsline {section}{\numberline {5.1}Introduction}{85}{section.12.1}
+\contentsline {section}{\numberline {5.2}Composition active \textit {vs.} composition dynamique}{86}{section.12.2}
+\contentsline {section}{\numberline {5.3}Une approche pour la liaison tardive de services}{87}{section.12.3}
+\contentsline {section}{\numberline {5.4}Filtrage de services}{90}{section.12.4}
+\contentsline {subsection}{\numberline {5.4.1}Impact du calcul des mod\`eles pour l'adaptation de donn\'ees}{91}{subsection.12.4.1}
+\contentsline {subsection}{\numberline {5.4.2}Options pour la r\'epartition temporelle des t\^aches de filtrage et de calcul des mod\`eles}{93}{subsection.12.4.2}
+\contentsline {section}{\numberline {5.5}Supervision des services candidats}{95}{section.12.5}
+\contentsline {subsection}{\numberline {5.5.1}Mise en \oe {}uvre de la supervision}{95}{subsection.12.5.1}
+\contentsline {subsection}{\numberline {5.5.2}Un ensemble de contraintes sp\'ecifiques}{96}{subsection.12.5.2}
+\contentsline {subsection}{\numberline {5.5.3}Int\'egration au processus de composition active}{97}{subsection.12.5.3}
+\contentsline {section}{\numberline {5.6}Liaison tardive d'un service}{98}{section.12.6}
+\contentsline {section}{\numberline {5.7}Conclusion}{100}{section.12.7}
+\contentsline {chapter}{\numberline {Chapitre\ 6}Composition utile de services}{103}{division.13}
+\contentsline {section}{\numberline {6.1}Introduction}{103}{section.13.1}
+\contentsline {section}{\numberline {6.2}Probl\'ematique d'une mod\'elisation qualitative des pr\'ef\'erences non-fonctionnelles}{104}{section.13.2}
+\contentsline {section}{\numberline {6.3}Linguistic CP-nets (LCP-nets)}{106}{section.13.3}
+\contentsline {subsection}{\numberline {6.3.1}Un ensemble de contraintes \`a prendre en compte}{106}{subsection.13.3.1}
+\contentsline {subsection}{\numberline {6.3.2}Cas d'utilisation et LCP-nets}{107}{subsection.13.3.2}
+\contentsline {subsection}{\numberline {6.3.3}S\'erialisation XML}{109}{subsection.13.3.3}
+\contentsline {section}{\numberline {6.4}De l'\'elicitation de LCP-nets \`a la s\'election de services}{111}{section.13.4}
+\contentsline {subsection}{\numberline {6.4.1}Elicitation des pr\'ef\'erences}{111}{subsection.13.4.1}
+\contentsline {subsection}{\numberline {6.4.2}Traduction des pr\'ef\'erences}{113}{subsection.13.4.2}
+\contentsline {subsection}{\numberline {6.4.3}Evaluation des pr\'ef\'erences}{114}{subsection.13.4.3}
+\contentsline {subsubsection}{Injection des valeurs de QoS des services}{114}{subsection.13.4.3}
+\contentsline {subsubsection}{Inf\'erence des utilit\'es locales pour chaque service}{118}{figure.caption.59}
+\contentsline {subsubsection}{Calcul de l'utilit\'e globale de chaque service}{119}{figure.caption.60}
+\contentsline {subsection}{\numberline {6.4.4}S\'election d'un service : ind\'ecision lev\'ee par l'usage d'un LCP-net}{122}{subsection.13.4.4}
+\contentsline {subsubsection}{Int\'er\^et patent de l'approche linguistique floue lors de la s\'election}{123}{figure.caption.65}
+\contentsline {section}{\numberline {6.5}Vers un traitement enti\`erement linguistique des pr\'ef\'erences}{125}{section.13.5}
+\contentsline {section}{\numberline {6.6}Conclusion}{126}{section.13.6}
+\contentsline {chapter}{\numberline {Chapitre\ 7}Composition agile de services}{129}{division.14}
+\contentsline {section}{\numberline {7.1}Introduction}{129}{section.14.1}
+\contentsline {section}{\numberline {7.2}Int\'egration conjointe des compositions actives et utiles dans l'orchestration de services}{130}{section.14.2}
+\contentsline {subsection}{\numberline {7.2.1}D\'efinition d'une activit\'e BPEL de liaison et invocation tardive de service}{131}{subsection.14.2.1}
+\contentsline {subsection}{\numberline {7.2.2}D\'efinition incr\'ementale des pr\'ef\'erences utilisateur}{134}{subsection.14.2.2}
+\contentsline {subsection}{\numberline {7.2.3}Notion de fragment de pr\'ef\'erences}{135}{subsection.14.2.3}
+\contentsline {subsubsection}{Premi\`ere illustration du m\'ecanisme de d\'efinition incr\'ementale}{137}{subsection.14.2.3}
+\contentsline {subsubsection}{Seconde illustration du m\'ecanisme de d\'efinition incr\'ementale}{140}{figure.caption.82}
+\contentsline {section}{\numberline {7.3}Repr\'esentation de plus haut niveau des LCP-nets}{140}{section.14.3}
+\contentsline {subsection}{\numberline {7.3.1}Syntaxe XML}{141}{subsection.14.3.1}
+\contentsline {subsection}{\numberline {7.3.2}Syntaxe abstraite de ce nouveau langage}{142}{subsection.14.3.2}
+\contentsline {subsection}{\numberline {7.3.3}S\'emantique op\'erationnelle : r\`egles de production}{145}{subsection.14.3.3}
+\contentsline {subsubsection}{R\`egles de production des \emph {HL}-LCP-net}{146}{subsection.14.3.3}
+\contentsline {subsubsection}{R\`egles de production des \emph {HL}-LCP-frags}{149}{table.caption.111}
+\contentsline {section}{\numberline {7.4}Int\'egration des \emph {HL}-LCP-nets et \emph {HL}-LCP-frags dans les processus m\'etiers}{151}{section.14.4}
+\contentsline {subsection}{\numberline {7.4.1}Pr\'ef\'erences anonymes en port\'ee lexicale}{151}{subsection.14.4.1}
+\contentsline {subsubsection}{S\'emantique op\'erationnelle}{151}{figure.caption.121}
+\contentsline {subsection}{\numberline {7.4.2}Vers des LCP-nets entit\'es de plein droit}{154}{subsection.14.4.2}
+\contentsline {subsubsection}{S\'emantique op\'erationnelle}{155}{figure.caption.125}
+\contentsline {section}{\numberline {7.5}QoS globale des processus et liaison tardive des services}{156}{section.14.5}
+\contentsline {section}{\numberline {7.6}Conclusion}{157}{section.14.6}
+\contentsline {chapter}{\numberline {Chapitre\ 8}Formalisation du mod\`ele LCP-net}{159}{division.15}
+\contentsline {section}{\numberline {8.1}Introduction}{159}{section.15.1}
+\contentsline {section}{\numberline {8.2}Notations pr\'eliminaires}{159}{section.15.2}
+\contentsline {section}{\numberline {8.3}Formalisme et test de dominance sur un LCP-net}{161}{section.15.3}
+\contentsline {section}{\numberline {8.4}Conclusion}{164}{section.15.4}
+\contentsline {chapter}{\numberline {Chapitre\ 9}Mise en \oe {}uvre}{165}{division.16}
+\contentsline {section}{\numberline {9.1}Introduction}{165}{section.16.1}
+\contentsline {section}{\numberline {9.2}Canevas de mod\'elisation et d\'ecision sur LCP-nets}{165}{section.16.2}
+\contentsline {subsection}{\numberline {9.2.1}Mod\`ele de donn\'ees structur\'e des pr\'ef\'erences et des fragments}{166}{subsection.16.2.1}
+\contentsline {subsubsection}{Mod\`ele \emph {ecore} des donn\'ees}{166}{subsection.16.2.1}
+\contentsline {subsubsection}{D'un mod\`ele \emph {ecore} vers une repr\'esentation Java}{169}{figure.caption.132}
+\contentsline {subsection}{\numberline {9.2.2}Outillage des LCP-nets}{171}{subsection.16.2.2}
+\contentsline {subsubsection}{Primitives d'une machine virtuelle LCP-net}{172}{subsection.16.2.2}
+\contentsline {subsubsection}{Editeur graphique de pr\'ef\'erences et fragments}{175}{Item.54}
+\contentsline {subsubsection}{Proc\'edure d'application des fragments}{177}{figure.caption.137}
+\contentsline {subsection}{\numberline {9.2.3}Calculs et d\'ecisions sur LCP-nets}{178}{subsection.16.2.3}
+\contentsline {subsubsection}{Choix d'un moteur d'inf\'erence floue}{180}{lstnumber.-12.29}
+\contentsline {subsubsection}{Limitations de l'implantation actuelle}{181}{lstnumber.-12.29}
+\contentsline {subsection}{\numberline {9.2.4}Retour sur les principaux choix d'implantation}{181}{subsection.16.2.4}
+\contentsline {section}{\numberline {9.3}Canevas de liaison tardive de services Web}{182}{section.16.3}
+\contentsline {subsection}{\numberline {9.3.1}Contexte technique et architectural}{182}{subsection.16.3.1}
+\contentsline {subsection}{\numberline {9.3.2}Implantation de l'activit\'e \emph {lateBindingInvoke} dans Orchestra}{183}{subsection.16.3.2}
+\contentsline {subsection}{\numberline {9.3.3}Configuration et int\'egration de la supervision de services}{191}{subsection.16.3.3}
+\contentsline {subsubsection}{Configuration de la supervision}{191}{subsection.16.3.3}
+\contentsline {subsubsection}{Int\'egrations des valeurs de supervision lors de la s\'election de services}{194}{figure.caption.148}
+\contentsline {section}{\numberline {9.4}Conclusion}{195}{section.16.4}
+\contentsline {chapter}{\numberline {Chapitre\ 10}Conclusion et perspectives}{197}{division.17}
+\contentsline {section}{\numberline {10.1}Travail r\'ealis\'e}{197}{section.17.1}
+\contentsline {section}{\numberline {10.2}Perspectives \`a court terme}{197}{section.17.2}
+\contentsline {subsection}{\numberline {10.2.1}Sur une validation exp\'erimentale \'etendue}{197}{subsection.17.2.1}
+\contentsline {subsection}{\numberline {10.2.2}Sur la g\'en\'eralisation du concept de liaison tardive \`a d'autres cadres techniques}{198}{subsection.17.2.2}
+\contentsline {subsection}{\numberline {10.2.3}Sur la construction de LCP-nets valides}{198}{subsection.17.2.3}
+\contentsline {section}{\numberline {10.3}Perspectives \`a long terme}{199}{section.17.3}
+\contentsline {subsection}{\numberline {10.3.1}Sur un approfondissement du travail autour des LCP-nets}{199}{subsection.17.3.1}
+\contentsline {subsection}{\numberline {10.3.2}Perspective archi/logiciel}{199}{subsection.17.3.2}
+\contentsline {spsection}{Bibliographie}{201}{division.18}
